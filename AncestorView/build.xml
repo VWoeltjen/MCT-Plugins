@@ -1,0 +1,62 @@
+<project name = "AncestorView" default = "dist" basedir = ".">
+ 	
+	<property name = "src" location = "src/main/java"       />
+	<property name = "res" location = "src/main/resources"  />
+	<property name = "lib" location = "lib"                 />
+	
+	<property name = "out" location = "dist"                />
+	<property name = "tmp" location = "tmp.dir"             />
+	
+	<basename property = "project.name" file = "${basedir}" />
+
+	<path id = "project.lib">
+		<fileset dir = "${lib}">
+			<include name = "*.jar" />
+		</fileset>
+	</path>
+	
+	<target name = "clean">
+		<delete dir = "${out}" />
+		<delete dir = "${tmp}" />
+	</target>
+	
+	<target name = "dist">
+		<!-- Ensure "mct.dir" is set -->
+		<fail unless = "mct.dir">
+			Please supply the location of MCT's packaging for use in this plugin's classpath.
+			Example: ant -Dmct.dir=[location of MCT packaging]
+		</fail>
+
+		<!-- Prepare output directories -->
+		<mkdir dir  = "${out}" />
+		<mkdir dir  = "${tmp}" />
+		
+		<!-- Compile sources    -->
+	    <javac srcdir  = "${src}"
+	           destdir = "${tmp}"
+	           target  = "1.6" 
+	    	   includeantruntime = "false">
+	      	<classpath>
+	      		<fileset dir = "${mct.dir}">
+	      			<include name = "lib/*.jar"          />
+	      			<include name = "resources/**/*.jar" />
+	      		</fileset>
+	        	<path refid = "project.lib" />
+	    	</classpath>
+	    </javac>
+		
+		<!-- Copy support files -->
+		<copy todir = "${tmp}">
+			<path refid = "project.lib" /> 
+			<fileset dir = "${res}">
+				<include name = "**/*" />
+			</fileset>
+		</copy>
+		
+		<!-- Package into jar   -->
+		<jar destfile = "${out}/${project.name}.jar"
+		     manifest = "META-INF/MANIFEST.MF"
+		     basedir  = "${tmp}" />
+		
+	</target>
+</project>

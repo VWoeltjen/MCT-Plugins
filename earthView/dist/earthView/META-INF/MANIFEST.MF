@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.8.2
+Created-By: 1.6.0_31-b04-415-10M3646 (Apple Inc.)
+Bundle-ManifestVersion: 2
+Bundle-Name: Globe View
+Bundle-SymbolicName: gov.nasa.arc.mct.earth
+Bundle-Version: 1.1.0
+Import-Package: gov.nasa.arc.mct.api.feed;version="1.1.0",gov.nasa.arc
+ .mct.components;version="1.1.0",gov.nasa.arc.mct.gui;version="1.1.0",
+ gov.nasa.arc.mct.policy;version="1.1.0",gov.nasa.arc.mct.roles.events
+ ;version="1.1.0",gov.nasa.arc.mct.services.activity;version="1.1.0",g
+ ov.nasa.arc.mct.services.component;version="1.1.0",gov.nasa.arc.mct.p
+ latform.spi,gov.nasa.arc.mct.services.internal.component,org.osgi.fra
+ mework;version="1.4.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Service-Component: OSGI-INF/services.xml
+

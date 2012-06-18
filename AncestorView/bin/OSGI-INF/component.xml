@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="gov.nasa.arc.mct.labs.ancestorview.provider.ComponentRegistryAccess">
+	<implementation class="gov.nasa.arc.mct.labs.ancestorview.provider.ComponentRegistryAccess"/>
+	<reference name="componentRegistryAccess"
+		interface="gov.nasa.arc.mct.services.component.ComponentRegistry"
+		bind="setRegistry"
+		unbind="releaseRegistry"
+		cardinality="1..1"
+		policy="dynamic"/>
+
+</component>

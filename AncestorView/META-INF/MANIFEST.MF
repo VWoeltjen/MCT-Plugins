@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ancestor view
+Bundle-SymbolicName: ancestorview
+Bundle-Version: 1.0.0
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: gov.nasa.arc.mct.components;version="1.1.0",
+ gov.nasa.arc.mct.gui;version="1.1.0",
+ gov.nasa.arc.mct.policy;version="1.1.0",
+ gov.nasa.arc.mct.roles;version="1.1.0",
+ gov.nasa.arc.mct.roles.events;version="1.1.0",
+ gov.nasa.arc.mct.services.component;version="1.1.0",
+ gov.nasa.arc.mct.util;version="1.1.0",
+ org.osgi.framework;version="1.5.0",
+ org.slf4j;version="1.5.0"
+Service-Component: OSGI-INF/services.xml, OSGI-INF/component.xml
+Bundle-ClassPath: .,prefuse.jar
