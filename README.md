@@ -8,27 +8,27 @@ ant -Dmct.dir=/Applications/MCT
 
 Ancestor View:
 
-A plug-in for viewing a graph of referencing components within MCT.
+A plug-in for viewing a graph of referencing components within MCT. Select "Ancestor View" to see a graph indicating which components (such as collections) refer to this component, with more information further up the tree.
 
 
 Chronology:
 
-A set of interfaces used for communicating time-stamped information between plugins.
+A set of interfaces used for communicating time-stamped information between plugins. 
 
 
 Notebook:
 
-A plug-in for making and maintaining notes within MCT. Notes may be annotated with other objects, such as telemetry elements, by dragging and dropping them into the note's text field.
+A plug-in for making and maintaining notes within MCT. Notes may be annotated with other objects, such as telemetry elements, by dragging and dropping them into the note's text field. Notes are also time-stamped, so they can be viewed in time-enabled views (such as timelines). Depends upon Chronology.
 
 
 Timeline:
 
-A plug-in for viewing time-stamped information (notes, events) in a graphical timeline. Depends upon Chronology.
+A plug-in for viewing time-stamped information (notes, events) in a graphical timeline. The "Timeline" view shows event sequences, such as notebook entries, horizontally in relation to their occurrence in time. These events may be reorganized using drag and drop if the event sequence permits changes. Depends upon Chronology.
 
 
 Earth View:
 
-A plug-in for viewing state vectors relative to the Earth. To view, create an "Orbit" object from the Create menu. You may set initial vectors (units are km and km/s respectively, and position is relative to Earth's center; orbits are approximated at an accelerated rate and are not physically accurate). 
+A plug-in for viewing state vectors relative to the Earth. To view, create an "Orbit" object from the Create menu. You may set initial vectors (units are km and km/s respectively, and position is relative to Earth's center; orbits are approximated at an accelerated rate and are not physically accurate). The resulting collection of state vectors can be viewed as spatial coordinates using the "Orbit" view.
 
 Contains a true-color image of the Earth, owned by NASA, from the Visible Earth catalog. 
 
