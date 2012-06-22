@@ -109,4 +109,10 @@ public class CoordinateComponent extends AbstractComponent implements FeedProvid
 		return true;
 	}
 
+	@Override
+	public boolean isNonCODDataBuffer() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
