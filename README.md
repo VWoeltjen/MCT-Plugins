@@ -35,3 +35,8 @@ Contains a true-color image of the Earth, owned by NASA, from the Visible Earth 
 http://visibleearth.nasa.gov/view.php?id=73909
 
 R. Stockli, E. Vermote, N. Saleous, R. Simmon and D. Herring (2005). The Blue Marble Next Generation - A true color earth dataset including seasonal dynamics from MODIS. Published by the NASA Earth Observatory. Corresponding author: rstockli@climate.gsfc.nasa.gov
+
+
+Quickstart Persistence:
+
+Provides a simple in-memory persistence service populated with a small number of components and displays. To use, the compiled jar should be placed in the resources/platform of an MCT installation, in lieu of databasePersistence-1.1.0.jar. Note that the example plugin may need to be moved from resources/plugins to resources/platform as well, as this quickstart persistence service is pre-populated with example telemetry components.
