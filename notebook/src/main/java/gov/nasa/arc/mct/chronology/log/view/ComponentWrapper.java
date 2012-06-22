@@ -223,6 +223,11 @@ public class ComponentWrapper extends AbstractComponent {
 		public boolean isPrediction() {
 			return feed.isPrediction(); //TODO : True?
 		}
+
+		@Override
+		public boolean isNonCODDataBuffer() {
+			return feed.isNonCODDataBuffer();
+		}
 		
 	}	
 	
