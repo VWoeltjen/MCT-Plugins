@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0">
+	<scr:component name="gov.nasa.arc.mct.qspersistence.service.PersistenceServiceImpl" 
+				   immediate="true">
+		<implementation class="gov.nasa.arc.mct.qspersistence.service.PersistenceServiceImpl"/>
+		<service>
+			<provide interface="gov.nasa.arc.mct.api.persistence.PersistenceService"/>
+			<provide interface="gov.nasa.arc.mct.platform.spi.PersistenceProvider"/>
+		</service>		
+	</scr:component>
+	<scr:component name="gov.nasa.arc.mct.qspersistence.provider.QSPersistenceProvider" 
+				   immediate="true">
+		<implementation class="gov.nasa.arc.mct.qspersistence.provider.QSPersistenceProvider"/>
+		<service>
+			<provide interface="gov.nasa.arc.mct.services.component.ComponentProvider"/>
+		</service>
+	</scr:component>
+</root>
