@@ -3,9 +3,13 @@
 *.class
 
 # Package Files #
-*.jar
+*/dist/*.jar
+*/bin/*.jar
 *.war
 *.ear
+
+*/target/*
+*/tmp.dir/*
 
 .svn
 .svn*
