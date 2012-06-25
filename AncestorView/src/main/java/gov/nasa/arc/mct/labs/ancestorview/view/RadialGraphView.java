@@ -260,7 +260,7 @@ public class RadialGraphView extends Display {
     			row = nodes.addRow();
     			nodes.set(row, label, comp.getDisplayName());
     			nodes.set(row, RadialGraphView.manifestation, NodeView.VIEW_INFO.createView(comp));
-    			addNodes(comp, nodes, g);
+    			//addNodes(comp, nodes, g);
     		}
             g.addEdge(parentRow, row);
     	}

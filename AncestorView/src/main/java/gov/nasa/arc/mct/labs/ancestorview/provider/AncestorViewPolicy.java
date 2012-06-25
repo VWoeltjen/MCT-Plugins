@@ -18,7 +18,7 @@ public class AncestorViewPolicy implements Policy {
 		if (AncestorView.class.isAssignableFrom(viewInfo.getViewClass())) {
 			AbstractComponent targetComponent = context.getProperty(PolicyContext.PropertyName.TARGET_COMPONENT.getName(), AbstractComponent.class);
 			
-			result = !targetComponent.getReferencingComponents().isEmpty();
+			result = true; //!targetComponent.getReferencingComponents().isEmpty();
 		}
         return new ExecutionResult(context, result, "Component did not have ancestors");
 	}
