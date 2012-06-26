@@ -86,7 +86,7 @@ public class EarthView extends FeedView implements RenderingCallback, ViewChange
 		for (FeedProvider fp : feedProviders) {
 			DoubleField field = fieldProviders.get(fp.getSubscriptionId());
 			List<Map<String, String>> subdata = data.get(fp.getSubscriptionId());
-			if (field != null && subdata != null) {
+			if (field != null && subdata != null && subdata.size() > 0) {
 				Map<String, String> packet = subdata.get(subdata.size() - 1);
 				RenderingInfo ri = fp.getRenderingInfo(packet);
 				try {

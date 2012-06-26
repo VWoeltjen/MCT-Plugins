@@ -534,6 +534,9 @@ public class TimelineView extends View {
 					v.getViewProperties().setProperty("NonTimeMaxPadding", "1.0");
 					v.getViewProperties().setProperty("GroupByOrdinalPosition", "true");
 					v.getViewProperties().setProperty("PinTimeAxis", "true");
+					v.getViewProperties().setProperty("PlotLineConnectionType", "STEP_X_THEN_Y");
+					v.getViewProperties().setProperty("PlotLineDrawLines", "true");
+					v.getViewProperties().setProperty("PlotLineDrawMarkers", "false");
 					clone.save();
 					v = vi.createView(clone);
 					plotManager.addPlot(v);
@@ -699,11 +702,14 @@ public class TimelineView extends View {
 				if (index == -1) before = null; // Not a direct child
 			}
 			
+			PlatformAccess.getPlatform().getPersistenceProvider().startRelatedOperations();
 			if (before != null && index < getManifestedComponent().getComponents().size()) {
 				getManifestedComponent().addDelegateComponents(index + 1, childComponents);
 			} else {
 				getManifestedComponent().addDelegateComponents(childComponents);
 			}
+			getManifestedComponent().save();
+			PlatformAccess.getPlatform().getPersistenceProvider().completeRelatedOperations(true);
 		}
 		
 		private void showAdapterDialog(final AbstractComponent before, final List<AbstractComponent> needAdapters) {

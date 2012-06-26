@@ -53,6 +53,7 @@ public class OrbitalDataProvider implements DataProvider {
 	
 	private Trajectory getIndexedTrajectory(String name, int index) {
 		if (!trajectories.containsKey(name)) trajectories.put(name, new ArrayList<Trajectory>());
+		if (index < 0) index = 0;
 		
 		List<Trajectory> history = trajectories.get(name);
 		

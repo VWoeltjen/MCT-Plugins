@@ -1,14 +1,14 @@
 .DS_Store
-
+*.DS_Store
 *.class
 
 # Package Files #
 */dist/*.jar
-*/bin/*.jar
+*/bin/*
 *.war
 *.ear
 
-*/target/*
+*/target/**
 */tmp.dir/*
 
 .svn

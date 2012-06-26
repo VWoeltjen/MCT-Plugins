@@ -79,6 +79,10 @@ public class TimelinePlotManager {
 			
 			UNIXTimeInstant adjustedStart = UNIXTimeInstant.DOMAIN.instantAt(interval.getInterval(), offset);
 			
+			if (adjustedStart.getTimeMillis() >= end.getTimeMillis()) {
+				adjustedStart = new UNIXTimeInstant(end.getTimeMillis() - 1);
+			}
+			
 			plot.getViewProperties().setProperty("TimeMin", 
 					Long.toString(adjustedStart.getTimeMillis()));
 			plot.getViewProperties().setProperty("TimeMax", 
