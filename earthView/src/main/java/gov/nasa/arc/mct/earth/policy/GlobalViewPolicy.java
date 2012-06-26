@@ -2,6 +2,7 @@ package gov.nasa.arc.mct.earth.policy;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.FeedProvider;
+import gov.nasa.arc.mct.earth.component.UserOrbitalComponent;
 import gov.nasa.arc.mct.earth.view.EarthView;
 import gov.nasa.arc.mct.policy.ExecutionResult;
 import gov.nasa.arc.mct.policy.Policy;
@@ -16,6 +17,13 @@ public class GlobalViewPolicy implements Policy {
 	
 	private boolean hasGrandchildFeeds(AbstractComponent component, int count) {
 		int c = 0;
+		
+		// Suppress for non-orbital components. This should be removed or modified if 
+		// constructing from collections generally 
+		if (!UserOrbitalComponent.class.isAssignableFrom(component.getClass())) {
+			return false;
+		}
+		
 		for (AbstractComponent child : component.getComponents()) {
 			for (AbstractComponent grandchild : child.getComponents()) {
 				if (hasFeed(grandchild)) {
@@ -24,6 +32,7 @@ public class GlobalViewPolicy implements Policy {
 				}
 			}
 		}
+		
 		return false;
 	}
 	

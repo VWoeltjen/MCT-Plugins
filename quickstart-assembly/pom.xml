@@ -60,6 +60,7 @@
 							<ant antfile="build.xml"
 							    dir="./src/installer"
 							    inheritAll="false">
+							    <property name="build.compiler" value="extJavac" />
 								<property name="project.build.directory" location="${project.build.directory}" />
 								<property name="buildNumber" value="${buildNumber}" />
 								<property name="settings.localRepository" location="${settings.localRepository}" />
