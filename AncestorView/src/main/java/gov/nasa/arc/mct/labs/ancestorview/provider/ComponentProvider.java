@@ -1,5 +1,7 @@
 package gov.nasa.arc.mct.labs.ancestorview.provider;
 
+import gov.nasa.arc.mct.gui.MenuItemInfo;
+import gov.nasa.arc.mct.gui.MenuItemInfo.MenuItemType;
 import gov.nasa.arc.mct.labs.ancestorview.view.AncestorView;
 import gov.nasa.arc.mct.policy.PolicyInfo;
 import gov.nasa.arc.mct.services.component.AbstractComponentProvider;
@@ -13,6 +15,7 @@ public class ComponentProvider extends AbstractComponentProvider {
 
 	private final Collection<ViewInfo> views;
 	private final Collection<PolicyInfo> policyInfos;
+	private final Collection<MenuItemInfo> menus;
     
     public ComponentProvider() {
         views = Collections.<ViewInfo>singleton(
@@ -20,6 +23,11 @@ public class ComponentProvider extends AbstractComponentProvider {
         policyInfos = Collections.singletonList(
 		           new PolicyInfo(PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(),
 				   AncestorViewPolicy.class));
+        menus = Collections.<MenuItemInfo>singleton(
+        		new MenuItemInfo("/help/additions", 
+        				"ANCESTOR_VIEW_ACTION", 
+        				MenuItemType.NORMAL, 
+        				AboutAncestorViewAction.class));
     }
     
 
@@ -33,6 +41,9 @@ public class ComponentProvider extends AbstractComponentProvider {
 		return views;
 	}
 
-
+    @Override
+    public Collection<MenuItemInfo> getMenuItemInfos() {
+    	return menus;
+    }
 
 }

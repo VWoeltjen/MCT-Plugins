@@ -8,6 +8,7 @@ import gov.nasa.arc.mct.earth.EarthPanel;
 import gov.nasa.arc.mct.earth.EarthPanel.ViewChangeListener;
 import gov.nasa.arc.mct.earth.Trajectory;
 import gov.nasa.arc.mct.earth.Vector;
+import gov.nasa.arc.mct.earth.component.UserOrbitalComponent;
 import gov.nasa.arc.mct.gui.FeedView;
 import gov.nasa.arc.mct.gui.FeedView.RenderingCallback;
 import gov.nasa.arc.mct.roles.events.PropertyChangeEvent;
@@ -58,7 +59,10 @@ public class EarthView extends FeedView implements RenderingCallback, ViewChange
 					}
 				}
 			}
-			if (i > 3) { // Did we find enough feeds to plot the course of this object?
+			// This restricts view to UserOrbitalComponent for demo purposes. In principle could
+			// work for any appropriate set of three data points
+			if (UserOrbitalComponent.class.isAssignableFrom(candidate.getClass()) && 
+			    i > 3) { // Did we find enough feeds to plot the course of this object?
 				trajectories.put(TinyView.VIEW_INFO.createView(candidate), tp);
 			}
 		}
