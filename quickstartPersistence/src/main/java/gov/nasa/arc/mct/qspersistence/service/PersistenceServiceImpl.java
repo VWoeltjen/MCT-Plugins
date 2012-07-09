@@ -472,4 +472,31 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 		return new HashMap<String, ExtendedProperties>();
 	}
 	
+	@Override
+	public void tagComponents(String tag,
+			Collection<AbstractComponent> components) {
+		for (AbstractComponent component : components) {
+			if (component != null) {
+				tagComponent(tag, component);
+			}
+		}
+	}
+	
+	private void tagComponent(String tag, AbstractComponent component) {
+		if (component == null) return;
+		String id = component.getComponentId();
+		List<String> target = null;
+		if (tag.equals("bootstrap:admin")) {
+			target = bootstrap;
+		} else if (tag.equals("bootstrap:creator")) {
+			String creator = component.getCreator();
+			if (!userBootstrap.containsKey(creator)) {
+				userBootstrap.put(creator, new ArrayList<String>());
+			}
+			target = userBootstrap.get(creator);
+		}
+		if (target != null && !target.contains(id)) {
+			target.add(id);
+		}
+	}
 }
