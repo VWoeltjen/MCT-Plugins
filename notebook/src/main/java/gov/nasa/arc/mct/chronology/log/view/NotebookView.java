@@ -193,9 +193,9 @@ public class NotebookView extends View {
 								List<AbstractComponent> references = referenceArea.getReferences();
 								((UserLogComponent) comp).addEntry(textArea.getText(), references);
 								//comp.addDelegateComponents(references);
-								PlatformAccess.getPlatform().getPersistenceProvider().startRelatedOperations();
+								//PlatformAccess.getPlatform().getPersistenceProvider().startRelatedOperations();
 								comp.save();
-								PlatformAccess.getPlatform().getPersistenceProvider().completeRelatedOperations(true);
+								//PlatformAccess.getPlatform().getPersistenceProvider().completeRelatedOperations(true);
 								
 								textArea.setText("");
 								updateButton.setVisible(false);
@@ -299,7 +299,9 @@ public class NotebookView extends View {
 	             (entry == logEntry ? "</b>" : "") + 
 	             "</html>");
 		panel.add(contents, gbc); //BorderLayout.CENTER);
-		if (entry == logEntry) highlightedComponents.add(contents);
+		if (entry != null && logEntry != null && entry.getEntryTime() == logEntry.getEntryTime()) {
+			highlightedComponents.add(contents);
+		}
 
 		JPanel referencePanel = new JPanel();
 		referencePanel.setLayout(new BoxLayout(referencePanel, BoxLayout.PAGE_AXIS));

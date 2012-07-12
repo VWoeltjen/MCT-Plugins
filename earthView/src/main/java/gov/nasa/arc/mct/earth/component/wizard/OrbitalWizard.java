@@ -105,9 +105,7 @@ public class OrbitalWizard extends CreateWizardUI {
 	@Override
 	public AbstractComponent createComp(ComponentRegistry registry,
 			AbstractComponent parentComp) {
-
-		
-		
+	
 		UserOrbitalComponent orbitalComponent = registry.newInstance(UserOrbitalComponent.class, parentComp);
 		orbitalComponent.setDisplayName(name.getText());
 		orbitalComponent.setOrbitalParameters(new Vector(value(0), value(1), value(2)), new Vector(value(3), value(4),  value(5)), System.currentTimeMillis());

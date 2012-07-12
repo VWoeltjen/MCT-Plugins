@@ -149,7 +149,7 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 				updateComponentsFromDatabase();
 			}
 			
-		}, 5000, 2000);
+		}, 5000, 1500);
 		
 	}
 	
@@ -190,7 +190,6 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 			ci.setOwner(owner);
 			ac.setDisplayName(displayName);
 			ac.getCapability(Updatable.class).setVersion(0);
-			//if (!ac.isLeaf()) ac.addDelegateComponent(AbstractComponent.NULL_COMPONENT);
 			persistedComponents.put(componentId, ac);
 			switch (tag) {
 			case BOOTSTRAP_ALL:
@@ -280,7 +279,7 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 			AbstractComponent clone = comp.clone();
 			clone.getCapability(ComponentInitializer.class).setId(comp.getComponentId());
 			clone.getCapability(Updatable.class).setVersion(comp .getVersion() + 1);
-			comp .getCapability(Updatable.class).setVersion(clone.getVersion() + 1);
+			comp .getCapability(Updatable.class).setVersion(clone.getVersion());
 			List<String> children = new ArrayList<String>();
 			if (!comp.isLeaf()) {
 				for (AbstractComponent child : clone.getComponents()) {
@@ -289,8 +288,8 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 			}
 			references.put(clone.getComponentId(), children);
 			persistedComponents.put(comp.getComponentId(), clone);
-			updated.add(comp.getComponentId());
 			putComponentInCache(comp);
+			updated.add(comp.getComponentId());
 			comp.componentSaved();
 		}
 	}
@@ -356,7 +355,9 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 	public void updateComponentsFromDatabase() {
 		initialize();
 		List<AbstractComponent> maybeStale = new ArrayList<AbstractComponent>();
-		for (String id : updated) {
+		List<String> updates = new ArrayList<String>();
+		updates.addAll(updated);
+		for (String id : cache.keySet()) { //TODO: Figure out why updated set is incomplete
 			if (cache.containsKey(id)) {
 				AbstractComponent current = getComponentFromStore(id);
 				for (AbstractComponent cached : cache.get(id)) {
@@ -364,7 +365,7 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 					cached.getCapability(Updatable.class).setStaleByVersion(current.getVersion());
 					AbstractComponent delegate = cached.getWorkUnitDelegate();
 					if (delegate != null) {
-						cached.getCapability(Updatable.class).setStaleByVersion(Integer.MAX_VALUE);
+						delegate.getCapability(Updatable.class).setStaleByVersion(Integer.MAX_VALUE);
 						maybeStale.add(delegate);
 					}
 				}
@@ -383,7 +384,7 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 			}
 		}
 			
-		updated.clear();
+		updated.removeAll(updates);
 	}
 
 	@Override

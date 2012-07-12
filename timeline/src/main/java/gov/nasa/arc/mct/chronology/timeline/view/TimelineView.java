@@ -702,14 +702,12 @@ public class TimelineView extends View {
 				if (index == -1) before = null; // Not a direct child
 			}
 			
-			PlatformAccess.getPlatform().getPersistenceProvider().startRelatedOperations();
 			if (before != null && index < getManifestedComponent().getComponents().size()) {
 				getManifestedComponent().addDelegateComponents(index + 1, childComponents);
 			} else {
 				getManifestedComponent().addDelegateComponents(childComponents);
 			}
 			getManifestedComponent().save();
-			PlatformAccess.getPlatform().getPersistenceProvider().completeRelatedOperations(true);
 		}
 		
 		private void showAdapterDialog(final AbstractComponent before, final List<AbstractComponent> needAdapters) {

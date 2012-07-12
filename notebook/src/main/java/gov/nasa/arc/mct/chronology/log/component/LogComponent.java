@@ -124,9 +124,9 @@ public abstract class LogComponent<T> extends AbstractComponent {
 	}
 	
 	public LogEntryComponent<T> addEntry(T entry, List<AbstractComponent> components) {
-		PlatformAccess.getPlatform().getPersistenceProvider().startRelatedOperations();
 		LogEntryComponent<T> child;
 		child = PlatformAccess.getPlatform().getComponentRegistry().newInstance(getEntryComponentClass(), this); //getEntryComponentClass().newInstance();
+		PlatformAccess.getPlatform().getPersistenceProvider().startRelatedOperations();
 		child.initialize(entry, components);
 		child.setDisplayName(new UNIXTimeInstant(child.getEntry().getEntryTime()).toString());
 		child.save();

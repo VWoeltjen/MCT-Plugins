@@ -82,8 +82,8 @@ public class TimelineAreaLayoutManager<T extends ChronologicalInstant> implement
 				}
 			}
 			
-			if (comp.getPreferredSize().getHeight() > rowHeights[y]) 
-				rowHeights[y] = comp.getPreferredSize().height; 
+			if (comp.getPreferredSize().getHeight() >= rowHeights[y]) 
+				rowHeights[y] = comp.getPreferredSize().height + 1; 
 			widthUsed[y] = x + w;		
 			
 			xPos[i]   = x;
@@ -98,10 +98,10 @@ public class TimelineAreaLayoutManager<T extends ChronologicalInstant> implement
 		
 		for (int i = 0; i < components.length; i++) {
 			components[i].setLocation( xPos[i],   rowPos[rows[i]]     );
-			components[i].setSize    ( widths[i], rowHeights[rows[i]] );
+			components[i].setSize    ( widths[i], rowHeights[rows[i]] * 2 );
 		}
 		
-		size = new Dimension(size.width, rowPos[components.length - 1]);
+		size = new Dimension(size.width, rowPos[components.length - 1] + 1);
 
 	}
 
