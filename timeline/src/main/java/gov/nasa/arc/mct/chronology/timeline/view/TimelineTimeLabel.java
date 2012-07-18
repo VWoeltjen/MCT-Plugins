@@ -27,7 +27,6 @@ public class TimelineTimeLabel extends JLabel {
 				character -= prefix.length();
 				if (character >= 0) {
 					selection = "" + UNIXTimeInstant.DATE_FORMAT_STRING.charAt(character);
-					System.out.println(selection);
 					updateHighlights();
 				}
 			}	

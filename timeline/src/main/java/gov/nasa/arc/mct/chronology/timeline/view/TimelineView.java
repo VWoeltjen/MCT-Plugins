@@ -527,6 +527,8 @@ public class TimelineView extends View {
 					v.getViewProperties().setProperty("PlotYAxisMaximumLocation", "MAXIMUM_AT_TOP");
 					v.getViewProperties().setProperty("PlotNonTimeAxisSubsequentMinSetting", "AUTO");
 					v.getViewProperties().setProperty("PlotNonTimeAxisSubsequentMaxSetting", "AUTO");
+					v.getViewProperties().setProperty("TimeSystem", "GMT");
+					v.getViewProperties().setProperty("TimeFormat", "DDD/HH:mm:ss");
 					v.getViewProperties().setProperty("NonTimeMin", "0.0");
 					v.getViewProperties().setProperty("NonTimeMax", "1.0");
 					v.getViewProperties().setProperty("TimePadding", "1.0");
