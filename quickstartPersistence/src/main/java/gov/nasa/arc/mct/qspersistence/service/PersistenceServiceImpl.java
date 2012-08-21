@@ -274,11 +274,14 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 	@Override
 	public void persist(Collection<AbstractComponent> componentsToPersist) {
 		for (AbstractComponent comp : componentsToPersist) {
+			int version = comp.getVersion() + 1;
+			
 			// TODO: Throw optimistic lock exception when versions mismatch?
 			AbstractComponent clone = comp.clone();
-			clone.getCapability(ComponentInitializer.class).setId(comp.getComponentId());
-			clone.getCapability(Updatable.class).setVersion(comp .getVersion() + 1);
-			comp .getCapability(Updatable.class).setVersion(clone.getVersion());
+			comp .getCapability(ComponentInitializer.class).componentSaved();
+			clone.getCapability(ComponentInitializer.class).setId(comp.getComponentId());			
+			clone.getCapability(Updatable.class).setVersion(version);
+			comp .getCapability(Updatable.class).setVersion(version);
 			List<String> children = new ArrayList<String>();
 			if (!comp.isLeaf()) {
 				for (AbstractComponent child : clone.getComponents()) {
@@ -360,11 +363,13 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 				AbstractComponent current = getComponentFromStore(id);
 				for (AbstractComponent cached : cache.get(id)) {
 					maybeStale.add(cached);
-					cached.getCapability(Updatable.class).setStaleByVersion(current.getVersion());
-					AbstractComponent delegate = cached.getWorkUnitDelegate();
-					if (delegate != null) {
-						delegate.getCapability(Updatable.class).setStaleByVersion(Integer.MAX_VALUE);
-						maybeStale.add(delegate);
+					if (current.getVersion() != cached.getVersion()) {
+						cached.getCapability(Updatable.class).setStaleByVersion(current.getVersion());
+						AbstractComponent delegate = cached.getWorkUnitDelegate();
+						if (delegate != null) {
+							delegate.getCapability(Updatable.class).setStaleByVersion(current.getVersion());
+							maybeStale.add(delegate);
+						}
 					}
 				}
 			}
