@@ -77,13 +77,12 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 	private AtomicBoolean initialized = new AtomicBoolean(false);
 	
 	public PersistenceServiceImpl() {
+		addUser("admin", "Admin");
+		addUser("jimbooster", "Users" );
 	}
 	
 	private void initialize() {
-		if (initialized.getAndSet(true)) return; //Only initialize once!
-		
-		addUser("admin", "Admin");
-		addUser("jimbooster", "Users" );
+		if (initialized.getAndSet(true)) return; //Only initialize once!		
 		
 		AbstractComponent systems     = addComponent("Systems", "admin", "admin", "gov.nasa.arc.mct.core.components.TelemetryDataTaxonomyComponent", Tag.BOOTSTRAP_ALL);
 		
@@ -92,7 +91,7 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 		AbstractComponent display     = addComponent("Display", "jimbooster", "jimbooster", "gov.nasa.arc.mct.components.collection.CollectionComponent", Tag.NONE );
 		AbstractComponent collection  = addComponent("Telemetry Collection", "jimbooster", "jimbooster", "gov.nasa.arc.mct.components.collection.CollectionComponent", Tag.NONE );
 		link(display, collection);
-			
+					
 		for (String user : getAllUsers()) {
 			AbstractComponent sandbox   = addComponent( "My Sandbox", user, user, "gov.nasa.arc.mct.core.components.MineTaxonomyComponent", Tag.BOOTSTRAP_CREATOR);
 			AbstractComponent dropbox   = addComponent( user + "'s drop box", user, user, "gov.nasa.arc.mct.core.components.TelemetryUserDropBoxComponent", Tag.NONE);
@@ -179,7 +178,7 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 		references.get(parentId).add(childId);
 	}
 	
-	private AbstractComponent addComponent(String displayName, String owner, String creator, String componentClass, Tag tag) {
+	private AbstractComponent addComponent(String displayName, String owner, String creator, String componentClass, Tag tag, Object... model) {
 		String componentId = "component_" + id++;
 		try {
 			AbstractComponent ac = PlatformAccess.getPlatform().getComponentRegistry().newInstance(componentClass);
@@ -190,6 +189,7 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 			ci.setOwner(owner);
 			ac.setDisplayName(displayName);
 			ac.getCapability(Updatable.class).setVersion(0);
+			if (model.length > 0) ModelFormatter.applyModel(ac, model);			
 			persistedComponents.put(componentId, ac);
 			switch (tag) {
 			case BOOTSTRAP_ALL:
@@ -247,7 +247,6 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 
 	@Override
 	public User getUser(String userId) {
-		initialize();
 		return users.get(userId);
 	}
 
@@ -323,7 +322,6 @@ public class PersistenceServiceImpl implements PersistenceProvider {
 
 	@Override
 	public Set<String> getAllUsers() {
-		initialize();
 		return users.keySet();
 	}
 
