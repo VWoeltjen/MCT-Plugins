@@ -47,9 +47,6 @@
       <file src = "@{qpkg}/lib"
             targetdir = "$INSTALL_PATH" 
             preselected = "true" />
-      <file src = "@{qpkg}/ext"
-            targetdir = "$INSTALL_PATH" 
-            preselected = "true" />
       <description>Libraries for MCT</description>
     </pack>
 

@@ -5,7 +5,7 @@
   </description>
 
   <property name = "tmp"  location = "${project.build.directory}/tmp.dir" />
-  <property name = "pkg"  location = "${tmp}/mct-quickstart-1.1.0"   />
+  <property name = "pkg"  location = "${project.packaging}/quickstart-packaging-${mct.platform.version}"   />
   <property name = "ins"  location = "${project.build.directory}/installer" />
   <property name = "src"   location = "./src"  />
 
@@ -18,13 +18,11 @@
   <property name = "docs"  location = "${ins}/docs" />
 
   <target name = "configure">
-  	<untar src = "${project.packaging}" dest = "${tmp}" compression = "gzip" /> 
     <mkdir dir  = "${qpkg}" />
     <copy  todir = "${qpkg}">
       <fileset dir = "${pkg}">
         <patternset id = "mct.lib">
           <include name = "lib/*.jar"    />
-          <include name = "ext/*.jar"    />
         </patternset>
       	<include name = "docs/*"         />
         <include name = "resources/**/*" />

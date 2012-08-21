@@ -190,7 +190,6 @@ public class RadialGraphView extends Display {
         	public void itemClicked(VisualItem item, MouseEvent e) {
         		super.itemClicked(item, e);
         		if (e.getClickCount()==2) {
-        			System.out.println("double click detected on"  + item);
         			if (item.get(RadialGraphView.manifestation) != null) {
         				
         			} else {
