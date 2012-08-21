@@ -8,6 +8,7 @@
     <appsubpath>MCT</appsubpath>
     <javaversion>1.6</javaversion>
     <uninstaller write = "no" />
+    <run-privileged />
   </info>
 
   <conditions>
