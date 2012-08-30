@@ -8,7 +8,7 @@
     <appsubpath>MCT</appsubpath>
     <javaversion>1.6</javaversion>
     <uninstaller write = "no" />
-    <run-privileged />
+    <run-privileged condition="izpack.windowsinstall.vista|izpack.windowsinstall.7" />
   </info>
 
   <conditions>
