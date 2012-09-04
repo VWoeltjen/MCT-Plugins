@@ -5,7 +5,7 @@
   <artifactId>quickstart-packaging</artifactId>
   <packaging>pom</packaging>
   <name>MCT Packaging for Evaluation</name>
-  <version>1.7b4</version>
+  <version>1.7.0</version>
   
   <properties>
     <platform.relativePath>../../../mct</platform.relativePath>
@@ -15,7 +15,7 @@
   	<artifactId>mct-superpom</artifactId>
   	<groupId>mct</groupId>
   	<version>2.0.1</version>
-  	<relativePath>../../../mct/superpom</relativePath>
+  	<relativePath>../../mct/superpom</relativePath>
   </parent>
   
   <build>
@@ -124,7 +124,7 @@
     <dependency>
   		<groupId>gov.nasa.arc.mct</groupId>
   		<artifactId>mct-platform</artifactId>
-  		<version>1.7b4</version>
+  		<version>1.7.0</version>
         <classifier>dist</classifier>
         <type>tar.gz</type>
   	</dependency>    
