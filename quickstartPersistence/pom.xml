@@ -4,7 +4,7 @@
 	<groupId>gov.nasa.arc.mct</groupId>
 	<artifactId>quickstartPersistence</artifactId>
 	<name>Quickstart Persistence Module</name>
-	<version>1.1.0</version>
+	<version>${mct.platform.version}</version>
 	<parent>
 		<artifactId>mct-superpom</artifactId>
 		<groupId>mct</groupId>
@@ -47,14 +47,8 @@
 		<dependency>
 			<groupId>gov.nasa.arc.mct</groupId>
   			<artifactId>mctcore</artifactId>
-  			<version>1.1.0</version>
+  			<version>${mct.platform.version}</version>
   			<scope>provided</scope>
 		</dependency>
-		<dependency>
-	  		<groupId>gov.nasa.arc.mct</groupId>
-	  		<artifactId>tests</artifactId>
-	  		<version>1.1.0</version>
-	  		<scope>test</scope>
-  		</dependency>
 	</dependencies>
 </project>

@@ -5,7 +5,7 @@
   </description>
 
   <property name = "tmp"  location = "${project.build.directory}/tmp.dir" />
-  <property name = "pkg"  location = "${project.packaging}/quickstart-packaging-1.7.0"   />
+  <property name = "pkg"  location = "${project.packaging}/quickstart-packaging-${mct.platform.version}"   />
   <property name = "ins"  location = "${project.build.directory}/installer" />
   <property name = "src"   location = "./src"  />
 

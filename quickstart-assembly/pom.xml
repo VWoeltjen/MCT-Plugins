@@ -5,10 +5,10 @@
   <artifactId>quickstart-packaging</artifactId>
   <packaging>pom</packaging>
   <name>MCT Packaging for Evaluation</name>
-  <version>1.7.0</version>
+  <version>${mct.platform.version}</version>
   
   <properties>
-    <platform.relativePath>../../../mct</platform.relativePath>
+    <platform.relativePath>../../mct</platform.relativePath>
   </properties>
   
   <parent>
@@ -124,7 +124,7 @@
     <dependency>
   		<groupId>gov.nasa.arc.mct</groupId>
   		<artifactId>mct-platform</artifactId>
-  		<version>1.7.0</version>
+  		<version>${mct.platform.version}</version>
         <classifier>dist</classifier>
         <type>tar.gz</type>
   	</dependency>    
@@ -132,12 +132,12 @@
     <dependency>
   		<groupId>gov.nasa.arc.mct</groupId>
   		<artifactId>earthView</artifactId>
-  		<version>1.1.0</version>
+  		<version>${mct.platform.version}</version>
   	</dependency>
   	<dependency>
   		<groupId>gov.nasa.arc.mct</groupId>
   		<artifactId>quickstartPersistence</artifactId>
-  		<version>1.1.0</version>
+  		<version>${mct.platform.version}</version>
   	</dependency>
   	<dependency>
   	    <groupId>org.codehaus.izpack</groupId>
@@ -147,17 +147,17 @@
   	<dependency>
   		<groupId>gov.nasa.arc.mct</groupId>
   		<artifactId>notebook</artifactId>
-  		<version>1.1.0</version>
+  		<version>${mct.platform.version}</version>
   	</dependency>
   	<dependency>
   		<groupId>gov.nasa.arc.mct</groupId>
   		<artifactId>timeline</artifactId>
-  		<version>1.1.0</version>
+  		<version>${mct.platform.version}</version>
   	</dependency>
   	<dependency>
   		<groupId>gov.nasa.arc.mct</groupId>
   		<artifactId>chronology</artifactId>
-  		<version>1.1.0</version>
+  		<version>${mct.platform.version}</version>
   	</dependency>
 
   </dependencies>

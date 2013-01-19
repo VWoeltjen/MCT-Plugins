@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>gov.nasa.arc.mct</groupId>
   <name>Earth View</name>
-  <version>1.1.0</version>
+  <version>${mct.platform.version}</version>
   <artifactId>earthView</artifactId>
   <packaging>jar</packaging>
   <description/>
@@ -29,7 +29,7 @@
   	<dependency>
   		<groupId>gov.nasa.arc.mct</groupId>
   		<artifactId>mctcore</artifactId>
-  		<version>1.1.0</version>
+  		<version>${mct.platform.version}</version>
   		<scope>provided</scope>
   	</dependency>
   	<dependency>
