@@ -58,7 +58,6 @@ public class ActivityComponentProvider extends AbstractComponentProvider {
 		return Collections.emptyList();
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Collection<MenuItemInfo> getMenuItemInfos() {
 		return Arrays.asList(				

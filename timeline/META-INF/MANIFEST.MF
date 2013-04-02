@@ -17,5 +17,7 @@ Import-Package: gov.nasa.arc.mct.api.feed;version="1.0.0",
  gov.nasa.arc.mct.chronology,
  gov.nasa.arc.mct.chronology.event,
  org.slf4j;version="1.5.0"
+Export-Package: gov.nasa.arc.mct.chronology.timeline.view;version="0.0.1",
+ gov.nasa.arc.mct.chronology.timeline.policy;version="0.0.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Service-Component: OSGI-INF/services.xml
