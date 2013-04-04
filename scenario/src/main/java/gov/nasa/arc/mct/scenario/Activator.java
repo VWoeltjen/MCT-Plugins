@@ -1,13 +1,7 @@
 package gov.nasa.arc.mct.scenario;
 
-import gov.nasa.arc.mct.scenario.component.SimpleLogService;
-import gov.nasa.arc.mct.scenario.component.SimpleLogServiceImpl;
-
-import java.util.Hashtable;
-
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.util.tracker.ServiceTracker;
 
 public class Activator implements BundleActivator {
 
