@@ -13,7 +13,6 @@ Import-Package: gov.nasa.arc.mct.components,
  org.osgi.service.component,
  org.slf4j;version="1.5.0",
  gov.nasa.arc.mct.chronology.timeline.view;version="0.0.1",
- gov.nasa.arc.mct.chronology.timeline.policy;version="0.0.1",
  gov.nasa.arc.mct.chronology,
  gov.nasa.arc.mct.chronology.event
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

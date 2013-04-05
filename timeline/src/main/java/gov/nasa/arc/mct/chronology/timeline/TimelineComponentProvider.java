@@ -2,7 +2,6 @@ package gov.nasa.arc.mct.chronology.timeline;
 
 import gov.nasa.arc.mct.chronology.timeline.component.TimelineComponent;
 import gov.nasa.arc.mct.chronology.timeline.policy.TimelineFilterViewPolicy;
-import gov.nasa.arc.mct.chronology.timeline.policy.TimelinePreferredViewPolicy;
 import gov.nasa.arc.mct.chronology.timeline.view.TimelineView;
 import gov.nasa.arc.mct.policy.PolicyInfo;
 import gov.nasa.arc.mct.services.component.AbstractComponentProvider;
@@ -26,16 +25,13 @@ public class TimelineComponentProvider extends AbstractComponentProvider {
 
     private static final List<ViewInfo> VIEW_INFOS = Arrays.asList(
     		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, ViewType.OBJECT),
-    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, ViewType.EMBEDDED),
-    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, ViewType.CENTER)
-
+    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.EMBEDDED, null, null, true, TimelineComponent.class),
+    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.CENTER, null, null, true, TimelineComponent.class)
     		);  
 	
     private static final Collection<PolicyInfo> POLICY_INFOS = Arrays.asList(
             new PolicyInfo(PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(),
-                    TimelineFilterViewPolicy.class),
-            new PolicyInfo(PolicyInfo.CategoryType.PREFERRED_VIEW.getKey(),
-            		TimelinePreferredViewPolicy.class)
+                    TimelineFilterViewPolicy.class)
     		);
     
 	@Override

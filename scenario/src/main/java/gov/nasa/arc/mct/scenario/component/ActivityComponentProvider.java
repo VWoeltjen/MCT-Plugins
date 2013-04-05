@@ -1,13 +1,9 @@
 package gov.nasa.arc.mct.scenario.component;
 
-import gov.nasa.arc.mct.chronology.timeline.policy.TimelineFilterViewPolicy;
-import gov.nasa.arc.mct.chronology.timeline.policy.TimelinePreferredViewPolicy;
 import gov.nasa.arc.mct.chronology.timeline.view.TimelineView;
 import gov.nasa.arc.mct.gui.MenuItemInfo;
 import gov.nasa.arc.mct.gui.MenuItemInfo.MenuItemType;
-import gov.nasa.arc.mct.policy.PolicyInfo;
 import gov.nasa.arc.mct.scenario.api.NewActivityAction;
-import gov.nasa.arc.mct.scenario.policy.FilterViewPolicy;
 import gov.nasa.arc.mct.services.component.AbstractComponentProvider;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 import gov.nasa.arc.mct.services.component.ViewInfo;
@@ -50,8 +46,8 @@ public class ActivityComponentProvider extends AbstractComponentProvider {
 		if (componentTypeId.equals(ActivityComponent.class.getName())) {
 			return Arrays.asList(
 		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, ViewType.OBJECT),
-		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, ViewType.EMBEDDED),
-		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, ViewType.CENTER)
+		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.EMBEDDED, null, null, true, ActivityComponent.class),
+		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.CENTER, null, null, true, ActivityComponent.class)
 					
 			);
 		}
@@ -75,43 +71,5 @@ public class ActivityComponentProvider extends AbstractComponentProvider {
 		);		
 				// add menu items to help -- this will show up as a help topic for the example plugin
 		
-	}
-
-	
-	@Override
-	public Collection<PolicyInfo> getPolicyInfos() {
-		/*
-		 * Here is an example of registering a policy to a platform provided
-		 * policy category. Platform-provided policy categories are defined
-		 * in PolicyInfo.CatetoryType, which is an enum.
-		 * A new category can also be added by passing in a unique String to
-		 * the category name in PolicyInfo constructor.
-		 */
-		return Arrays.asList(
-        new PolicyInfo(PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(),
-                TimelineFilterViewPolicy.class),
-        new PolicyInfo(PolicyInfo.CategoryType.PREFERRED_VIEW.getKey(),
-        		TimelinePreferredViewPolicy.class)
-				);
-		
-		/* 
-		 * External plugins can execute a policy category by accessing the
-		 * PolicyManager, which is available as an OSGi service.
-		 * 
-		 * To access the PolicyManager, a class PolicyManagerAccess should be created.
-		 * This class is used to inject an instance of the PolicyManager using declarative 
-		 * services (see OSGI-INF/component.xml for examples for ComponentRegistryAccess).
-		 *
-		 * The following code snippet shows how to execute a policy category:
-		 * 
-		 *   PolicyManager policyManager = PolicyManagerAccess.getPolicyManager();
-		 *   PolicyContext context = new PolicyContext();
-		 *   context.setProperty(String key, Object value);
-		 *   ...
-		 *   ... maybe more properties to be set
-		 *   ...
-		 *   ExecutionResult result = 
-		 *     policyManager.execute(String categoryKey, PolicyContext context); 
-		 */
-	}
+	}	
 }
