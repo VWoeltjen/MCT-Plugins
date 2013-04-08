@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0">
-	<scr:component name="gov.nasa.arc.mct.scenario.component.ActivityComponentProvider" immediate="true">
+	<scr:component name="gov.nasa.arc.mct.scenario.component.ScenarioPluginProvider" immediate="true">
 		<implementation
 			class="gov.nasa.arc.mct.scenario.component.ScenarioPluginProvider" />
 		<service>
