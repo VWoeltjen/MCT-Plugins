@@ -1,5 +1,11 @@
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.services.component.ComponentRegistry;
+import gov.nasa.arc.mct.services.component.CreateWizardUI;
+import gov.nasa.arc.mct.util.DataValidation;
+import gov.nasa.arc.mct.util.MCTIcons;
+
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -9,7 +15,6 @@ import java.awt.event.KeyEvent;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -17,13 +22,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.services.component.ComponentRegistry;
-import gov.nasa.arc.mct.services.component.CreateWizardUI;
-import gov.nasa.arc.mct.util.DataValidation;
-import gov.nasa.arc.mct.util.MCTIcons;
-
-public class ActivityWizardUI  extends CreateWizardUI {
+public class DecisionCreationWizardUI  extends CreateWizardUI {
 
 	private static final ResourceBundle bundle ;
 	
@@ -43,10 +42,9 @@ public class ActivityWizardUI  extends CreateWizardUI {
 	
 	private final JLabel message = new JLabel();
     private final JTextField name = new JTextField();
-    private JComboBox language = new JComboBox();
     private Class<? extends AbstractComponent> componentClass;
 	
-	public ActivityWizardUI() {
+	public DecisionCreationWizardUI() {
 		this.componentClass = ActivityComponent.class;
 	}
 	

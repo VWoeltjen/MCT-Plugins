@@ -2,7 +2,7 @@
 <root xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0">
 	<scr:component name="gov.nasa.arc.mct.scenario.component.ActivityComponentProvider" immediate="true">
 		<implementation
-			class="gov.nasa.arc.mct.scenario.component.ActivityComponentProvider" />
+			class="gov.nasa.arc.mct.scenario.component.ScenarioPluginProvider" />
 		<service>
 			<provide interface="gov.nasa.arc.mct.services.component.ComponentProvider" />
 		</service>

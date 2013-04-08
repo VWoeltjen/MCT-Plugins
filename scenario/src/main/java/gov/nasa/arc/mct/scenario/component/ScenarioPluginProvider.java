@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.ResourceBundle;
 
-public class ActivityComponentProvider extends AbstractComponentProvider {
+public class ScenarioPluginProvider extends AbstractComponentProvider {
 
 	// use a resource bundle for strings to enable localization in the future if required
 	private static ResourceBundle bundle = ResourceBundle.getBundle("Bundle"); 
@@ -24,14 +24,19 @@ public class ActivityComponentProvider extends AbstractComponentProvider {
 			bundle.getString("display_name_activity"),  
 			bundle.getString("description_activity"), 
 			ActivityComponent.class,
-			new ActivityWizardUI());
+			new ActivityCreationWizardUI());
+
+	private static final ComponentTypeInfo decisionComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_decision"),  
+			bundle.getString("description_decision"), 
+			DecisionComponent.class,
+			new DecisionCreationWizardUI());
 
 	
 	@Override
 	public Collection<ComponentTypeInfo> getComponentTypes() {
 		// return the component types provided
-		System.out.println("Getting component types");
-		return Arrays.asList(activityComponentType);
+		return Arrays.asList(activityComponentType, decisionComponentType);
 	}
 
 	@Override
