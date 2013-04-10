@@ -6,16 +6,16 @@ import gov.nasa.arc.mct.components.PropertyEditor;
 import java.util.List;
 
 
-public final class TextPropertyEditor implements PropertyEditor<Object> {
+public final class PowerPropertyEditor implements PropertyEditor<Object> {
 	ActivityComponent activityComponent = null;
 
-	public TextPropertyEditor(AbstractComponent component) {
+	public PowerPropertyEditor(AbstractComponent component) {
 		activityComponent = (ActivityComponent)component;
 	}
 
 	@Override
 	public String getAsText() {
-		double numericData = activityComponent.getModel().getData().getDuration();
+		double numericData = activityComponent.getModel().getData().getPower();
 		return String.valueOf(numericData);
 	}
 
@@ -34,7 +34,7 @@ public final class TextPropertyEditor implements PropertyEditor<Object> {
 		}
 		ActivityData businessModel = activityComponent.getModel().getData();
 		double d = Double.parseDouble(newValue); // verify() took care of a possible number format exception
-		businessModel.setDuration(d);
+		businessModel.setPower(d);
 	}
 
 	private String verify(String s) {

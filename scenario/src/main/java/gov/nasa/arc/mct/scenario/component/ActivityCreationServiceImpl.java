@@ -27,6 +27,8 @@ public class ActivityCreationServiceImpl implements ActivityCreationService {
 		ActivityComponent activity = 
 		                          registry.newInstance(ActivityComponent.class, parent);
 		activity.getModel().getData().setDuration(0.0);
+		activity.getModel().getData().setPower(0);
+		activity.getModel().getData().setComm(0);
 		activity.save();
 		
 		return activity;

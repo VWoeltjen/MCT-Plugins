@@ -75,7 +75,7 @@ public class ScenarioComponent extends AbstractComponent implements Chronology<U
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
 		PropertyDescriptor duration = new PropertyDescriptor("Duration: ", 
-				new TextPropertyEditor(this),  VisualControlDescriptor.TextField);
+				new DurationPropertyEditor(this),  VisualControlDescriptor.TextField);
 		duration.setFieldMutable(true);
 
 

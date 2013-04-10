@@ -4,6 +4,7 @@ import gov.nasa.arc.mct.chronology.timeline.view.TimelineView;
 import gov.nasa.arc.mct.gui.MenuItemInfo;
 import gov.nasa.arc.mct.gui.MenuItemInfo.MenuItemType;
 import gov.nasa.arc.mct.scenario.api.NewActivityAction;
+import gov.nasa.arc.mct.scenario.view.ActivityOverviewView;
 import gov.nasa.arc.mct.services.component.AbstractComponentProvider;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 import gov.nasa.arc.mct.services.component.ViewInfo;
@@ -50,9 +51,9 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		// by the MCT platform.
 		if (componentTypeId.equals(ActivityComponent.class.getName())) {
 			return Arrays.asList(
-		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, ViewType.OBJECT),
-		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.EMBEDDED, null, null, true, ActivityComponent.class),
-		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.CENTER, null, null, true, ActivityComponent.class)
+					new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.EMBEDDED, null, null, true, ActivityComponent.class),
+					new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.OBJECT, null, null, true, ActivityComponent.class),
+		    		new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.CENTER, null, null, true, ActivityComponent.class)
 					
 			);
 		}

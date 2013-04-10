@@ -9,6 +9,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ActivityData {
 
 	private double duration;
+	private double power;
+	private double comm; 
 
 	public double getDuration() {
 		return duration;
@@ -16,6 +18,22 @@ public class ActivityData {
 
 	public void setDuration(double duration) {
 		this.duration = duration;
+	}
+
+	public double getPower() {
+		return power;
+	}
+
+	public void setPower(double power) {
+		this.power = power;
+	}
+
+	public double getComm() {
+		return comm;
+	}
+
+	public void setComm(double comm) {
+		this.comm = comm;
 	}
 	
 }
