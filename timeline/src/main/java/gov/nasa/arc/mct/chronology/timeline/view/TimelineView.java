@@ -7,6 +7,7 @@ import gov.nasa.arc.mct.chronology.event.ChronologicalInstant;
 import gov.nasa.arc.mct.chronology.event.ChronologicalInterval;
 import gov.nasa.arc.mct.chronology.event.UNIXTimeInstant;
 import gov.nasa.arc.mct.chronology.reference.view.ReferenceView;
+import gov.nasa.arc.mct.chronology.timeline.component.TimelineComponent;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.FeedProvider;
 import gov.nasa.arc.mct.gui.View;
@@ -545,6 +546,8 @@ public class TimelineView extends View {
 					timelineArea = v;
 				}
 			}
+		} else if (!(ac instanceof TimelineComponent)){
+			timelineArea = ac.getViewInfos(ViewType.EMBEDDED).iterator().next().createView(ac);
 		}
 		
 		if (timelineArea != null) {
