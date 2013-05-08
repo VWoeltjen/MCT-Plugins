@@ -55,7 +55,6 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
         AbstractComponent component = null;
                 
         component = comp.newInstance(componentClass, targetComponent);
-		((ActivityComponent)component).getModel().getData().setDuration(0.0);
 		component.setDisplayName(displayName);
 		component.save();
         

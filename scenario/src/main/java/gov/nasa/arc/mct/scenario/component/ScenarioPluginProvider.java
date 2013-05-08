@@ -1,10 +1,11 @@
 package gov.nasa.arc.mct.scenario.component;
 
-import gov.nasa.arc.mct.chronology.timeline.view.TimelineView;
 import gov.nasa.arc.mct.gui.MenuItemInfo;
 import gov.nasa.arc.mct.gui.MenuItemInfo.MenuItemType;
 import gov.nasa.arc.mct.scenario.api.NewActivityAction;
+import gov.nasa.arc.mct.scenario.view.ActivityEmbeddedView;
 import gov.nasa.arc.mct.scenario.view.ActivityOverviewView;
+import gov.nasa.arc.mct.scenario.view.TimelineView;
 import gov.nasa.arc.mct.services.component.AbstractComponentProvider;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 import gov.nasa.arc.mct.services.component.ViewInfo;
@@ -33,11 +34,15 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			DecisionComponent.class,
 			new DecisionCreationWizardUI());
 
+	private static final ComponentTypeInfo timelineComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_timeline"),  
+			bundle.getString("description_timeline"), 
+			TimelineComponent.class);
 	
 	@Override
 	public Collection<ComponentTypeInfo> getComponentTypes() {
 		// return the component types provided
-		return Arrays.asList(activityComponentType, decisionComponentType);
+		return Arrays.asList(activityComponentType, timelineComponentType, decisionComponentType);
 	}
 
 	@Override
@@ -51,10 +56,16 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		// by the MCT platform.
 		if (componentTypeId.equals(ActivityComponent.class.getName())) {
 			return Arrays.asList(
-					new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.EMBEDDED, null, null, true, ActivityComponent.class),
+					new ViewInfo(ActivityEmbeddedView.class, ActivityEmbeddedView.VIEW_ROLE_NAME, ActivityEmbeddedView.class.getName(), ViewType.EMBEDDED, null, null, true, ActivityComponent.class),
 					new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.OBJECT, null, null, true, ActivityComponent.class),
 		    		new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.CENTER, null, null, true, ActivityComponent.class)
 					
+			);
+		} else if (componentTypeId.equals(TimelineComponent.class.getName())) {
+			return Arrays.asList(
+		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.CENTER, null, null, true, TimelineComponent.class),
+		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.OBJECT, null, null, true, TimelineComponent.class),
+		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.EMBEDDED, null, null, true, TimelineComponent.class)
 			);
 		}
 		return Collections.emptyList();

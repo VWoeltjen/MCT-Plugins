@@ -1,25 +1,16 @@
 package gov.nasa.arc.mct.scenario.component;
 
-import gov.nasa.arc.mct.chronology.Chronology;
-import gov.nasa.arc.mct.chronology.ChronologyDomain;
-import gov.nasa.arc.mct.chronology.event.ChronologicalEvent;
-import gov.nasa.arc.mct.chronology.event.ChronologicalInterval;
-import gov.nasa.arc.mct.chronology.event.UNIXTimeInstant;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
-import gov.nasa.arc.mct.scenario.view.ActivityDurationView;
 
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.swing.JComponent;
-
-public class ActivityComponent extends AbstractComponent implements Chronology<UNIXTimeInstant>{
+public class ActivityComponent extends AbstractComponent {
 	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	
 	public ActivityData getData() {
@@ -57,9 +48,6 @@ public class ActivityComponent extends AbstractComponent implements Chronology<U
 			
 			return capability.cast(persistence);
 		}
-		if (Chronology.class.isAssignableFrom(capability)) {
-			return capability.cast(this);
-		}
 		return null;
 	}
 	
@@ -77,9 +65,12 @@ public class ActivityComponent extends AbstractComponent implements Chronology<U
 		// Describe MyData's field "doubleData". 
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
-		PropertyDescriptor duration = new PropertyDescriptor("Duration", 
-				new DurationPropertyEditor(this),  VisualControlDescriptor.TextField);
-		duration.setFieldMutable(true);
+		PropertyDescriptor startTime = new PropertyDescriptor("Start Time", 
+				new StartTimePropertyEditor(this),  VisualControlDescriptor.TextField);
+		startTime.setFieldMutable(true);
+		PropertyDescriptor endTime = new PropertyDescriptor("End Time", 
+				new EndTimePropertyEditor(this),  VisualControlDescriptor.TextField);
+		endTime.setFieldMutable(true);
 		PropertyDescriptor power = new PropertyDescriptor("Power (W)", 
 				new PowerPropertyEditor(this),  VisualControlDescriptor.TextField);
 		power.setFieldMutable(true);
@@ -87,70 +78,14 @@ public class ActivityComponent extends AbstractComponent implements Chronology<U
 				new CommPropertyEditor(this),  VisualControlDescriptor.TextField);
 		comm.setFieldMutable(true);
 
-		fields.add(duration);
+		fields.add(startTime);
+		fields.add(endTime);
 		fields.add(power);
 		fields.add(comm);
 
 		return fields;
 	}
 
-	@Override
-	public ChronologyDomain<UNIXTimeInstant> getDomain() {
-		return UNIXTimeInstant.DOMAIN;
-	}
 
-	@Override
-	public List<ChronologicalEvent<UNIXTimeInstant>> getEvents() {
-		long start = System.currentTimeMillis();
-		long end = start + Math.round(getModel().getData().getDuration());
-		ActivityChronologicalEvent evnet = new ActivityChronologicalEvent(new UNIXTimeInstant(start), new UNIXTimeInstant(end), this);
-		List<ChronologicalEvent<UNIXTimeInstant>> list = new ArrayList<ChronologicalEvent<UNIXTimeInstant>>();
-		list.add(evnet);
-		return list;
-	}
-
-	@Override
-	public List<ChronologicalEvent<UNIXTimeInstant>> getEvents(
-			ChronologicalInterval<UNIXTimeInstant> interval) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isMutable() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean add(ChronologicalEvent<UNIXTimeInstant> event,
-			UNIXTimeInstant start) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean remove(ChronologicalEvent<UNIXTimeInstant> event) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
-	private class ActivityChronologicalEvent extends ChronologicalEvent<UNIXTimeInstant>{
-		private ActivityComponent ac;
-		public ActivityChronologicalEvent(UNIXTimeInstant start, UNIXTimeInstant end, ActivityComponent ac) {
-			super(start, end);
-			this.ac = ac;
-		}
-
-		@Override
-		public Object getEventInfo() {
-			return null;
-		}
-
-		@Override
-		public JComponent getRepresentation(Dimension preferredSize) {
-			return new ActivityDurationView(ac);
-		}
-	}
 
 }

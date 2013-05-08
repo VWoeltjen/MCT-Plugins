@@ -6,6 +6,7 @@ import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.ActivityCreationServiceImpl;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
 
+import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ActivityCreationServiceImpl implements ActivityCreationService {
@@ -26,9 +27,10 @@ public class ActivityCreationServiceImpl implements ActivityCreationService {
 		ComponentRegistry registry = ActivityCreationServiceImpl.registry.get();
 		ActivityComponent activity = 
 		                          registry.newInstance(ActivityComponent.class, parent);
-		activity.getModel().getData().setDuration(0.0);
-		activity.getModel().getData().setPower(0);
-		activity.getModel().getData().setComm(0);
+		activity.getModel().getData().setStartDate(Calendar.getInstance().getTime());
+		activity.getModel().getData().setStartDate(Calendar.getInstance().getTime());
+		activity.getModel().getData().setPower(Double.NaN);
+		activity.getModel().getData().setComm(Double.NaN);
 		activity.save();
 		
 		return activity;

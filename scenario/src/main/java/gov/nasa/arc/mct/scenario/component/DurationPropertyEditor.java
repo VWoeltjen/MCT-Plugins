@@ -15,8 +15,9 @@ public final class DurationPropertyEditor implements PropertyEditor<Object> {
 
 	@Override
 	public String getAsText() {
-		double numericData = activityComponent.getModel().getData().getDuration();
-		return String.valueOf(numericData);
+//		double numericData = activityComponent.getModel().getData().getDuration();
+//		return String.valueOf(numericData);
+		return null;
 	}
 
 	/**
@@ -28,15 +29,16 @@ public final class DurationPropertyEditor implements PropertyEditor<Object> {
 	 */
 	@Override
 	public void setAsText(String newValue) throws IllegalArgumentException {
-		String result = verify(newValue);
-		if (verify(newValue) != null) {
-			throw new IllegalArgumentException(result);
-		}
-		ActivityData businessModel = activityComponent.getModel().getData();
-		double d = Double.parseDouble(newValue); // verify() took care of a possible number format exception
-		businessModel.setDuration(d);
+//		String result = verify(newValue);
+//		if (verify(newValue) != null) {
+//			throw new IllegalArgumentException(result);
+//		}
+//		ActivityData businessModel = activityComponent.getModel().getData();
+//		double d = Double.parseDouble(newValue); // verify() took care of a possible number format exception
+//		businessModel.setDuration(d);
 	}
 
+	@SuppressWarnings("unused")
 	private String verify(String s) {
 		assert s != null;
 		if (s.isEmpty()) {
