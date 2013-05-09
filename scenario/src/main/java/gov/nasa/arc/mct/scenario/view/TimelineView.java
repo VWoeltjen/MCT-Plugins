@@ -197,14 +197,15 @@ public final class TimelineView extends View {
 		// Draw activity duration
 		int durationWidth = x2 - x1;
 		Rectangle rectangle = new Rectangle(x1, yStart + 15, durationWidth, 35);
-		widgets.add(new Widget(ac, rectangle));
+		Widget widget = new Widget(ac, rectangle);
+		widgets.add(widget);
 		int arcWidthAndHeight = TIME_UNIT_PIX/2;
 		g2.setColor(durationColor);
 		g2.fillRoundRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height, arcWidthAndHeight, arcWidthAndHeight);
 		g2.setStroke(SOLID_2PT_LINE_STROKE);
 		g2.setColor(LINE_COLOR);
 		g2.drawRoundRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height, arcWidthAndHeight, arcWidthAndHeight);
-		String name = ac.getDisplayName();
+		String name = getTruncatedString(g2, ac.getDisplayName(), widget);
 		int charsWidth = getFontMetrics(getFont()).charsWidth(name.toCharArray(), 0, name.length());
 		int charHeight = getFontMetrics(getFont()).getHeight();
 		g2.setColor(TEXT_COLOR);
@@ -274,6 +275,21 @@ public final class TimelineView extends View {
 		return color;		
 	}
 	
+	private static final String ELLIPSIS = "...";
+	private String getTruncatedString(Graphics2D g2, String str, Widget widget) {
+		int charsWidth = g2.getFontMetrics().charsWidth(str.toCharArray(), 0, str.length());
+		int totalTextWidth = widget.rectangle.width - 10;
+		
+		if (charsWidth <= totalTextWidth)
+			return str;
+		
+		int totalStrLength = totalTextWidth * str.length() / charsWidth;
+		return str.substring(0, totalStrLength - 3) + ELLIPSIS;
+		
+
+	}
+
+	
 	private final class Widget {
 		private ActivityComponent activity;
 		private Rectangle rectangle;
@@ -285,17 +301,19 @@ public final class TimelineView extends View {
 
     private void synchWidgetToManifInfo(Widget widget, Rectangle newRectangle, int cursorType) {
     	ActivityData data = widget.activity.getModel().getData();
-		long timediff = (widget.rectangle.width - newRectangle.width) * pixelMillis;
+		long durationDiff = (widget.rectangle.width - newRectangle.width) * pixelMillis;
     	if (cursorType == Cursor.W_RESIZE_CURSOR) {
-    		Date newStartDate = new Date(data.getStartTime().getTime() + timediff);
+    		Date newStartDate = new Date(data.getStartTime().getTime() + durationDiff);
 			data.setStartDate(newStartDate);
 		} else if (cursorType == Cursor.E_RESIZE_CURSOR) {
-    		data.setEndDate(new Date(data.getEndTime().getTime() + timediff));
+    		data.setEndDate(new Date(data.getEndTime().getTime() + durationDiff));
+		} else if (cursorType == Cursor.MOVE_CURSOR) {
+			assert durationDiff == 0;
+			long starttimeDiff = (widget.rectangle.x - newRectangle.x) * pixelMillis;
+			data.setStartDate(new Date(data.getStartTime().getTime() + starttimeDiff));
+			data.setEndDate(new Date(data.getEndTime().getTime() + starttimeDiff));
 		}
     	widget.activity.save();
-    	widgets.clear();
-    	activities.clear();
-    	timeseries.clear();
     }
 
 	private final class EditorListener extends MouseAdapter {
@@ -317,9 +335,22 @@ public final class TimelineView extends View {
 					newRectangle.width = targetWidget.rectangle.width + (clickPoint.x - e.getPoint().x);  
 					synchWidgetToManifInfo(targetWidget, newRectangle, Cursor.W_RESIZE_CURSOR);
 				} else if (cursorType == Cursor.E_RESIZE_CURSOR) {
+					Rectangle newRectangle = new Rectangle();
+					newRectangle.x = targetWidget.rectangle.x;
+					newRectangle.width = targetWidget.rectangle.width + (clickPoint.x - e.getPoint().x);  
+					synchWidgetToManifInfo(targetWidget, newRectangle, Cursor.E_RESIZE_CURSOR);
+				} else if (cursorType == Cursor.MOVE_CURSOR) {
+					Rectangle newRectangle = new Rectangle();
+					int pixmove = clickPoint.x - e.getPoint().x;
+					newRectangle.x = targetWidget.rectangle.x + pixmove;
+					newRectangle.width = targetWidget.rectangle.width;  
+					synchWidgetToManifInfo(targetWidget, newRectangle, Cursor.MOVE_CURSOR);					
 				}
 				globalStartTime = globalEndTime = null;
 				clickPoint = e.getPoint();
+		    	widgets.clear();
+		    	activities.clear();
+		    	timeseries.clear();
 				repaint();
 			}
 		}
@@ -333,21 +364,25 @@ public final class TimelineView extends View {
 		public void mouseMoved(MouseEvent e) {
 			if (widgets == null) return;
 			int x = e.getPoint().x;
+			int y = e.getPoint().y;
 			for (Widget widget : widgets) {
-				if (x == widget.rectangle.x) {
-					setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
-					targetWidget = widget;
-					return;
-				}
-				if (x == (widget.rectangle.x + widget.rectangle.width)) {
-					setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
-					targetWidget = widget;
-					return;
-				}
-				if (widget.rectangle.contains(e.getPoint())) {
-					setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-					targetWidget = widget;
-					return;
+				int ymax = widget.rectangle.y + widget.rectangle.height;
+				if (y >= widget.rectangle.y && y <= ymax) {					
+					if (x == widget.rectangle.x) {
+						setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
+						targetWidget = widget;
+						return;
+					}
+					if (x == (widget.rectangle.x + widget.rectangle.width)) {
+						setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
+						targetWidget = widget;
+						return;
+					}
+					if (widget.rectangle.contains(e.getPoint())) {
+						setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+						targetWidget = widget;
+						return;
+					}
 				}
 			}
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
