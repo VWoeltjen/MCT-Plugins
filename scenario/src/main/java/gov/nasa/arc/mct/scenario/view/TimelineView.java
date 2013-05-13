@@ -10,6 +10,7 @@ import gov.nasa.arc.mct.services.component.ViewInfo;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -27,7 +28,7 @@ import java.util.TreeMap;
 public final class TimelineView extends View {
 	private static final Color TIME_SCALE_COLOR = new Color(44, 170, 208, 155);
 	private static final Color[] LINE_COLORS = new Color[] {
-		new Color(203, 217, 77, 100), new Color(242, 163, 16, 100)
+		new Color(203, 217, 77), new Color(242, 163, 16)
 	};
 	private Color durationColor = new Color(200,200,200, 100);
 	private static final Color LINE_COLOR = new Color(100, 100, 100);	
@@ -40,6 +41,7 @@ public final class TimelineView extends View {
 	private Date globalStartTime = null, globalEndTime = null;
 	private int timeScaleIconWidth = 20;
 	private int timeScaleHeight = 25;
+	private int margin = 30;
 	private int xStart, xEnd;
 	private long pixelMillis;
 	private List<ActivityComponent> activities = null;
@@ -146,13 +148,17 @@ public final class TimelineView extends View {
 		renderHints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		g2.setRenderingHints(renderHints);
 		
-		xStart = timeScaleIconWidth;
-		xEnd = getWidth() - timeScaleIconWidth;
+		xStart = timeScaleIconWidth + margin;
+		xEnd = getWidth() - timeScaleIconWidth - margin;
 		
 		paintTimeScale(g2);
 		initActivities();
 		
-		int yStart = 0;
+		g2.drawString("START: " + globalStartTime.toString(), 0, getFontMetrics(getFont()).getHeight());
+		String endtimeString = "END: " + globalEndTime.toString();
+		g2.drawString(endtimeString, getWidth() - getFontMetrics(getFont()).charsWidth(endtimeString.toCharArray(), 0, endtimeString.length()), getFontMetrics(getFont()).getHeight());
+		
+		int yStart = 15;
 		for (ActivityComponent ac : activities) {
 			if (topActivities.iterator().next() != ac && topActivities.contains(ac)) {
 				yStart += 15;
@@ -163,7 +169,9 @@ public final class TimelineView extends View {
 			yStart += 50;			
 		}
 		
-		paintTrend(g2, "W", getHeight() - (timeScaleHeight + 15));
+
+		paintTrend(g2, "Power (W)", getHeight() - (timeScaleHeight + 15), timeseries.get(0));
+		paintTrend(g2, "Comm (Kb/s)", getHeight() - (timeScaleHeight + 75), timeseries.get(1));
 	}
 	
 	private void drawActivityDivider(Graphics2D g2, int yStart) {
@@ -176,8 +184,8 @@ public final class TimelineView extends View {
 		int y1 = getHeight() - timeScaleHeight, y2 = getHeight();
 		g2.setColor(TIME_SCALE_COLOR);
 		g2.setStroke(SOLID_2PT_LINE_STROKE);
-		g2.drawPolygon(new int[]{0, xStart, xStart}, new int[]{y2 - timeScaleHeight / 2, y1, y2}, 3);
-		g2.drawPolygon(new int[]{getWidth(), xEnd, xEnd}, new int[]{y2 - timeScaleHeight / 2, y1, y2}, 3);
+		g2.drawPolygon(new int[]{margin, xStart, xStart}, new int[]{y2 - timeScaleHeight / 2, y1, y2}, 3);
+		g2.drawPolygon(new int[]{getWidth() - margin, xEnd, xEnd}, new int[]{y2 - timeScaleHeight / 2, y1, y2}, 3);
 		g2.setStroke(SOLID_1PT_LINE_STROKE);
 		int intervals = (xEnd - xStart) / 5;
 		for (int i = 0; i <= intervals; i++)
@@ -212,45 +220,58 @@ public final class TimelineView extends View {
 		g2.drawString(name, x1 + durationWidth/2 - charsWidth/2, yStart + 15 + 14 + charHeight/2);						
 	}
 	
-	private void paintTrend(Graphics2D g2, String legend, int yAxisBottom) {
+	private void paintTrend(Graphics2D g2, String legend, int yAxisBottom, TreeMap<Date, Double> dataset) {
 		g2.setStroke(SOLID_2PT_LINE_STROKE);
 		g2.setColor(LINE_COLOR);
 		// Draw power in trend
-		int yAxisLength = 100;
+		int yAxisLength = 50;
 		int yAxisTop = yAxisBottom - yAxisLength;
 		// Draw unit
 		int charsWidth = getFontMetrics(getFont()).charsWidth(legend.toCharArray(), 0, legend.length());
 		int charHeight = getFontMetrics(getFont()).getHeight();
-		g2.drawString(legend, xStart - timeScaleIconWidth - charsWidth, yAxisTop + yAxisLength/2 + charHeight/2);
+//		g2.drawString(legend, xEnd - charsWidth, yAxisTop + yAxisLength/2 + charHeight/2);
+		g2.setColor(TEXT_COLOR);
+		g2.drawString(legend, xEnd - charsWidth - 5, yAxisTop + yAxisLength);
 		// Draw Y axis
 		g2.drawLine(xStart, yAxisTop, xStart, yAxisTop + yAxisLength);
 		g2.drawLine(xStart - 5, yAxisTop, xStart + 5, yAxisTop);
 		g2.drawLine(xStart - 5, yAxisTop + yAxisLength/2, xStart + 5, yAxisTop + yAxisLength/2);
 		g2.drawLine(xStart - 5, yAxisTop + yAxisLength, xStart + 5, yAxisTop + yAxisLength);
-//		// Draw X axis
+		// Get min and max in dataset
+		double minValue = Double.MAX_VALUE, maxValue = Double.MIN_VALUE;		
+		for (double v : dataset.values()) {
+			if (v < minValue)
+				minValue = v;
+			if (v > maxValue)
+				maxValue = v;
+		}
+		String maxValueString = Double.toString(maxValue);
+		g2.drawString(maxValueString, xStart - 10 - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length()), yAxisTop + charHeight/2);
+		String minValueString = Double.toString(minValue);
+		g2.drawString(minValueString, xStart - 10 - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length()), yAxisBottom + charHeight/2);
+		
+		//		// Draw X axis
 //		g2.drawLine(xStart, yAxisTop + yAxisLength/2, xEnd, yAxisTop + yAxisLength/2);
 		
 		// Plot line in steps
-		for (TreeMap<Date, Double> dataset : timeseries) {
-			if (dataset.isEmpty()) continue;
-			g2.setColor(getNextPlotLineColor());
-			Iterator<Date> iterator = dataset.keySet().iterator();
-			Date date = iterator.next();
-			int x1 = translateDateToX(date), x2;
-			int y1 = translateValueToY(dataset.get(date), 0, 15, yAxisBottom, yAxisLength), y2;		
-			while(iterator.hasNext()) {
-				date = iterator.next();
-				x2 = translateDateToX(date);
-				y2 = translateValueToY(dataset.get(date), 0, 15, yAxisBottom, yAxisLength);
-				
-				// Plot line in steps
-				g2.drawLine(x1, y1, x2, y1);
-				g2.drawLine(x2, y1, x2, y2);
-				
-				x1 = x2;
-				y1 = y2;
-			}			
-		}
+		if (dataset.isEmpty()) return;
+		g2.setColor(getNextPlotLineColor());
+		Iterator<Date> iterator = dataset.keySet().iterator();
+		Date date = iterator.next();
+		int x1 = translateDateToX(date), x2;
+		int y1 = translateValueToY(dataset.get(date), minValue, maxValue, yAxisBottom, yAxisLength), y2;		
+		while(iterator.hasNext()) {
+			date = iterator.next();
+			x2 = translateDateToX(date);
+			y2 = translateValueToY(dataset.get(date), minValue, maxValue, yAxisBottom, yAxisLength);
+			
+			// Plot line in steps
+			g2.drawLine(x1, y1, x2, y1);
+			g2.drawLine(x2, y1, x2, y2);
+			
+			x1 = x2;
+			y1 = y2;
+		}			
 	}
 	
 	private int translateDateToX(Date date) {
