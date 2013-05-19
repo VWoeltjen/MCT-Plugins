@@ -4,16 +4,15 @@ import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.ActivityData;
-import gov.nasa.arc.mct.scenario.component.TimelineComponent;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
@@ -46,8 +45,10 @@ public final class TimelineView extends View {
 	private long pixelMillis;
 	private List<ActivityComponent> activities = null;
 	private List<Widget> widgets;
-	private List<ActivityComponent> topActivities = null;
 	private List<TreeMap<Date, Double>> timeseries = new ArrayList<TreeMap<Date,Double>>();
+	private List<List<ActivityWrapper>> activityMap;
+	private int currentTickerX = -1;
+	private boolean showVeriticalTickLine = false;
 
 	public TimelineView(AbstractComponent ac, ViewInfo vi) {
 		super(ac, vi);
@@ -56,13 +57,22 @@ public final class TimelineView extends View {
 		addMouseMotionListener(listener);
 	}
 	
+	private boolean activitiesInitialized() {
+		return activities != null && !activities.isEmpty();
+		
+	}
 	private void initActivities() {
+		if (activitiesInitialized())
+			return;
 		activities = new ArrayList<ActivityComponent>();
 		widgets = new ArrayList<TimelineView.Widget>();
-		topActivities = new ArrayList<ActivityComponent>();
 		addAllActivitiesRecursively(getManifestedComponent());
-		addTopLevelActivities(getManifestedComponent());
-		
+		ActivityWrapper root = new ActivityWrapper(null);
+		replicateActivityTree(getManifestedComponent(), root);
+		assignLevel(root);
+		activityMap = new ArrayList<List<ActivityWrapper>>();
+		populateActivityMap(root);
+					
 		TreeMap<Date, Double> powerChanges = new TreeMap<Date, Double>();
 		TreeMap<Date, Double> commBandwidthChanges = new TreeMap<Date, Double>();
 		for (ActivityComponent activityComponent : activities) {
@@ -130,13 +140,73 @@ public final class TimelineView extends View {
 		}
 	}
 	
-	private void addTopLevelActivities(AbstractComponent ac) {
-		assert ac instanceof TimelineComponent;
+	private void replicateActivityTree(AbstractComponent ac, ActivityWrapper node) {
 		for (AbstractComponent c : ac.getComponents()) {
 			if (c instanceof ActivityComponent) {
-				topActivities.add((ActivityComponent) c);				
+				ActivityWrapper wrapper = new ActivityWrapper((ActivityComponent) c);
+				node.children.add(wrapper);
+				replicateActivityTree(c, wrapper);
+			}			
+		}
+	}
+	
+	private void populateActivityMap(ActivityWrapper node) {
+		if (node.activityComponent == null) {
+			for (ActivityWrapper top : node.children) {
+				List<ActivityWrapper> list = new ArrayList<TimelineView.ActivityWrapper>(), result = new ArrayList<TimelineView.ActivityWrapper>();
+				list.add(top);				
+				flatten(list, result);
+				activityMap.add(result);
 			}
+		}
+		
+	}
+	
+	private void flatten(List<ActivityWrapper> working, List<ActivityWrapper> result) {
+		if (working.isEmpty())
+			return;
+		result.addAll(working);
+		List<ActivityWrapper> workingCopy = new ArrayList<TimelineView.ActivityWrapper>();
+		for (ActivityWrapper node : working) {
+			workingCopy.add(node);
+		}
+		working.clear();
+		for (ActivityWrapper node : workingCopy) {
+			working.addAll(node.children);			
 		}		
+		flatten(working, result);
+		
+	}
+	
+	@SuppressWarnings("unused")
+	private void printActivityMap() {
+		for (int level = 0; level < activityMap.size(); level++) {
+			System.out.print("Group " + level + ": ");
+			for (ActivityWrapper wrapper : activityMap.get(level)) {
+				System.out.print(wrapper.activityComponent.getDisplayName() + "[" + wrapper.level + "] " );
+			}
+			System.out.println();
+		}
+	}
+	
+	private void assignLevel(ActivityWrapper node) {
+		for (ActivityWrapper child : node.children) {
+			assignLevel(child);
+		}		
+		if (node.children.isEmpty())
+			node.level = 0;
+		else {
+			int maxLevel = 0;
+			for (ActivityWrapper child : node.children) {
+				if (child.level > maxLevel)
+					maxLevel = child.level;
+			}
+			node.level = maxLevel + 1;
+			// re-adjust level
+			for (ActivityWrapper child : node.children) {
+				child.level = node.level - 1;
+			}
+		}
 	}
 	
 	@Override
@@ -150,6 +220,8 @@ public final class TimelineView extends View {
 		
 		xStart = timeScaleIconWidth + margin;
 		xEnd = getWidth() - timeScaleIconWidth - margin;
+		if (currentTickerX == -1)
+			currentTickerX = xStart;
 		
 		paintTimeScale(g2);
 		initActivities();
@@ -159,19 +231,24 @@ public final class TimelineView extends View {
 		g2.drawString(endtimeString, getWidth() - getFontMetrics(getFont()).charsWidth(endtimeString.toCharArray(), 0, endtimeString.length()), getFontMetrics(getFont()).getHeight());
 		
 		int yStart = 15;
-		for (ActivityComponent ac : activities) {
-			if (topActivities.iterator().next() != ac && topActivities.contains(ac)) {
-				yStart += 15;
-				drawActivityDivider(g2, yStart);
+		for (List<ActivityWrapper> list : activityMap) {
+			int level = list.get(0).level;
+			for (ActivityWrapper aw : list) {
+				if (level != aw.level) {
+					yStart += 50;
+					level = aw.level;
+				}
+				paintActivity(g2, aw.activityComponent, yStart);				
 			}
-			
-			paintActivity(g2, ac, yStart);			
-			yStart += 50;			
+			yStart += 65;
+			drawActivityDivider(g2, yStart);
 		}
 		
-
-		paintTrend(g2, "Power (W)", getHeight() - (timeScaleHeight + 15), timeseries.get(0));
-		paintTrend(g2, "Comm (Kb/s)", getHeight() - (timeScaleHeight + 75), timeseries.get(1));
+		paintTrend(g2, "Power (W)", getHeight() - (2*timeScaleHeight + 15), timeseries.get(0));
+		paintTrend(g2, "Comm (Kb/s)", getHeight() - (2*timeScaleHeight + 75), timeseries.get(1));
+		
+		if (showVeriticalTickLine && currentTickerX >= xStart)
+			paintVeriticalTickLine(g2);
 	}
 	
 	private void drawActivityDivider(Graphics2D g2, int yStart) {
@@ -181,7 +258,7 @@ public final class TimelineView extends View {
 	}
 	
 	private void paintTimeScale(Graphics2D g2) {
-		int y1 = getHeight() - timeScaleHeight, y2 = getHeight();
+		int y1 = getHeight() - 2*timeScaleHeight, y2 = getHeight() - timeScaleHeight;
 		g2.setColor(TIME_SCALE_COLOR);
 		g2.setStroke(SOLID_2PT_LINE_STROKE);
 		g2.drawPolygon(new int[]{margin, xStart, xStart}, new int[]{y2 - timeScaleHeight / 2, y1, y2}, 3);
@@ -189,7 +266,27 @@ public final class TimelineView extends View {
 		g2.setStroke(SOLID_1PT_LINE_STROKE);
 		int intervals = (xEnd - xStart) / 5;
 		for (int i = 0; i <= intervals; i++)
-			g2.drawLine(xStart + i*5, y1, xStart + i*5, y2);		
+			g2.drawLine(xStart + i*5, y1, xStart + i*5, y2);
+		paintCurrentTicker(g2);
+	}
+	
+	private void paintCurrentTicker(Graphics2D g2) {
+		Polygon polygon = getCurrentTicketPolygon();
+		g2.fillPolygon(polygon);		
+	}
+	
+	private void paintVeriticalTickLine(Graphics2D g2) {
+		g2.setColor(TIME_SCALE_COLOR);
+		g2.drawLine(currentTickerX, getHeight() - timeScaleHeight, currentTickerX, 0);
+	}
+	
+	private Polygon getCurrentTicketPolygon() {
+		Polygon polygon = new Polygon(new int[]{currentTickerX - 6, currentTickerX, currentTickerX + 6, currentTickerX + 6, currentTickerX - 6}, 
+									  new int[]{getHeight() - timeScaleHeight/2, getHeight() - timeScaleHeight, getHeight() - timeScaleHeight/2, getHeight(), getHeight()}, 5);
+		return polygon;
+	}
+	private boolean tickerMarkPressed(Point p) {
+		return getCurrentTicketPolygon().contains(p);
 	}
 	
 	private void paintActivity(Graphics2D g2, ActivityComponent ac, int yStart) {
@@ -229,7 +326,6 @@ public final class TimelineView extends View {
 		// Draw unit
 		int charsWidth = getFontMetrics(getFont()).charsWidth(legend.toCharArray(), 0, legend.length());
 		int charHeight = getFontMetrics(getFont()).getHeight();
-//		g2.drawString(legend, xEnd - charsWidth, yAxisTop + yAxisLength/2 + charHeight/2);
 		g2.setColor(TEXT_COLOR);
 		g2.drawString(legend, xEnd - charsWidth - 5, yAxisTop + yAxisLength);
 		// Draw Y axis
@@ -249,10 +345,7 @@ public final class TimelineView extends View {
 		g2.drawString(maxValueString, xStart - 10 - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length()), yAxisTop + charHeight/2);
 		String minValueString = Double.toString(minValue);
 		g2.drawString(minValueString, xStart - 10 - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length()), yAxisBottom + charHeight/2);
-		
-		//		// Draw X axis
-//		g2.drawLine(xStart, yAxisTop + yAxisLength/2, xEnd, yAxisTop + yAxisLength/2);
-		
+				
 		// Plot line in steps
 		if (dataset.isEmpty()) return;
 		g2.setColor(getNextPlotLineColor());
@@ -344,6 +437,11 @@ public final class TimelineView extends View {
 		@Override
 		public void mousePressed(MouseEvent arg0) {
 			clickPoint = arg0.getPoint();
+			
+			if (tickerMarkPressed(clickPoint)) {
+				showVeriticalTickLine = true;		
+				repaint();
+			}
 		}
 		
 		@Override
@@ -372,13 +470,22 @@ public final class TimelineView extends View {
 		    	widgets.clear();
 		    	activities.clear();
 		    	timeseries.clear();
+		    	activityMap.clear();
 				repaint();
+			}
+			if (showVeriticalTickLine) {
+				if (e.getPoint().x >= xStart && e.getPoint().x <= xEnd) {
+					currentTickerX = e.getPoint().x;
+					repaint();
+				}
 			}
 		}
 		
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			clickPoint = null;
+			showVeriticalTickLine = false;
+			repaint();
 		}
 		
 		@Override
@@ -408,6 +515,18 @@ public final class TimelineView extends View {
 			}
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			targetWidget = null;
+		}
+	}
+
+	private final class ActivityWrapper {
+		private ActivityComponent activityComponent;
+		private int level;
+		private List<ActivityWrapper> children;
+		
+		public ActivityWrapper(ActivityComponent activityComponent) {
+			this.activityComponent = activityComponent;
+			children = new ArrayList<TimelineView.ActivityWrapper>();
+			level = 0;
 		}
 	}
 }
