@@ -231,6 +231,7 @@ public final class TimelineView extends View {
 		g2.drawString(endtimeString, getWidth() - getFontMetrics(getFont()).charsWidth(endtimeString.toCharArray(), 0, endtimeString.length()), getFontMetrics(getFont()).getHeight());
 		
 		int yStart = 15;
+		widgets.clear();
 		for (List<ActivityWrapper> list : activityMap) {
 			int level = list.get(0).level;
 			for (ActivityWrapper aw : list) {
@@ -278,6 +279,41 @@ public final class TimelineView extends View {
 	private void paintVeriticalTickLine(Graphics2D g2) {
 		g2.setColor(TIME_SCALE_COLOR);
 		g2.drawLine(currentTickerX, getHeight() - timeScaleHeight, currentTickerX, 0);
+		int charHeight = getFontMetrics(getFont()).getHeight();
+		double sumOfPower = 0, sumOfComm = 0;
+		for (Widget w : widgets) {
+			if (w.rectangle.contains(new Point(currentTickerX, w.rectangle.y + w.rectangle.height/2))) {
+				g2.setColor(TIME_SCALE_COLOR);
+				double power = w.activity.getModel().getData().getPower();
+				double comm = w.activity.getModel().getData().getComm();
+				sumOfPower += power;
+				sumOfComm += comm;
+				String text = "Power=" + Double.toString(power) + "W; Comm=" + Double.toString(comm) + "Kb/s";
+				int charsWidth = getFontMetrics(getFont()).charsWidth(text.toCharArray(), 0, text.length());
+				g2.fillRect(currentTickerX, w.rectangle.y + w.rectangle.height/2 - charHeight/2, charsWidth + 6, charHeight + 6);
+				g2.setColor(Color.white);
+				g2.drawString(text, currentTickerX + 3, w.rectangle.y + w.rectangle.height/2 + charHeight/2);				
+			}
+		}
+		g2.setColor(TIME_SCALE_COLOR);
+		int yAxisBottom = getHeight() - (2*timeScaleHeight + 15);
+		int yAxisLength = 50;
+		int yAxisTop = yAxisBottom - yAxisLength;
+		String text = "Power=" + Double.toString(sumOfPower) + "W";
+		int charsWidth = getFontMetrics(getFont()).charsWidth(text.toCharArray(), 0, text.length());
+		g2.fillRect(currentTickerX, yAxisTop + yAxisLength/2 - charHeight/2, charsWidth + 6, charHeight + 6);		
+		g2.setColor(Color.white);
+		g2.drawString(text, currentTickerX + 3, yAxisTop + yAxisLength/2 + charHeight/2);				
+
+		g2.setColor(TIME_SCALE_COLOR);
+		yAxisBottom = getHeight() - (2*timeScaleHeight + 75);		
+		yAxisTop = yAxisBottom - yAxisLength;		
+		text = "Comm=" + Double.toString(sumOfComm) + "Kb/s";
+		charsWidth = getFontMetrics(getFont()).charsWidth(text.toCharArray(), 0, text.length());
+		g2.fillRect(currentTickerX, yAxisTop + yAxisLength/2 - charHeight/2, charsWidth + 6, charHeight + 6);		
+		g2.setColor(Color.white);
+		g2.drawString(text, currentTickerX + 3, yAxisTop + yAxisLength/2 + charHeight/2);				
+
 	}
 	
 	private Polygon getCurrentTicketPolygon() {
