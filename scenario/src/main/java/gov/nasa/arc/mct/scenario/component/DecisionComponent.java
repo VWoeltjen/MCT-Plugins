@@ -1,10 +1,5 @@
 package gov.nasa.arc.mct.scenario.component;
 
-import gov.nasa.arc.mct.chronology.Chronology;
-import gov.nasa.arc.mct.chronology.ChronologyDomain;
-import gov.nasa.arc.mct.chronology.event.ChronologicalEvent;
-import gov.nasa.arc.mct.chronology.event.ChronologicalInterval;
-import gov.nasa.arc.mct.chronology.event.UNIXTimeInstant;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
@@ -12,14 +7,13 @@ import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class DecisionComponent extends AbstractComponent implements Chronology<UNIXTimeInstant>{
-	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
+public class DecisionComponent extends AbstractComponent {
+	private final AtomicReference<DecisionModelRole> model = new AtomicReference<DecisionModelRole>(new DecisionModelRole());
 	
-	public ActivityData getData() {
+	public DecisionData getData() {
 		return getModel().getData();
 	}
 	
@@ -33,34 +27,31 @@ public class DecisionComponent extends AbstractComponent implements Chronology<U
 			return capability.cast(this);
 		}
 		if (ModelStatePersistence.class.isAssignableFrom(capability)) {
-		    JAXBModelStatePersistence<ActivityModelRole> persistence = new JAXBModelStatePersistence<ActivityModelRole>() {
+		    JAXBModelStatePersistence<DecisionModelRole> persistence = new JAXBModelStatePersistence<DecisionModelRole>() {
 
 				@Override
-				protected ActivityModelRole getStateToPersist() {
+				protected DecisionModelRole getStateToPersist() {
 					return model.get();
 				}
 
 				@Override
-				protected void setPersistentState(ActivityModelRole modelState) {
+				protected void setPersistentState(DecisionModelRole modelState) {
 					model.set(modelState);
 				}
 
 				@Override
-				protected Class<ActivityModelRole> getJAXBClass() {
-					return ActivityModelRole.class;
+				protected Class<DecisionModelRole> getJAXBClass() {
+					return DecisionModelRole.class;
 				}
 		        
 			};
 			
 			return capability.cast(persistence);
 		}
-		if (Chronology.class.isAssignableFrom(capability)) {
-			return capability.cast(this);
-		}
 		return null;
 	}
 	
-	public ActivityModelRole getModel() {
+	public DecisionModelRole getModel() {
 		return model.get();
 	}
 
@@ -74,51 +65,17 @@ public class DecisionComponent extends AbstractComponent implements Chronology<U
 		// Describe MyData's field "doubleData". 
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
-		PropertyDescriptor duration = new PropertyDescriptor("Duration: ", 
-				new DurationPropertyEditor(this),  VisualControlDescriptor.TextField);
-		duration.setFieldMutable(true);
+		PropertyDescriptor startTime = new PropertyDescriptor("Start Time", 
+				new DecisionStartTimePropertyEditor(this),  VisualControlDescriptor.TextField);
+		startTime.setFieldMutable(true);
+		PropertyDescriptor endTime = new PropertyDescriptor("End Time", 
+				new DecisionEndTimePropertyEditor(this),  VisualControlDescriptor.TextField);
+		endTime.setFieldMutable(true);
 
-
-		fields.add(duration);
+		fields.add(startTime);
+		fields.add(endTime);
 
 		return fields;
-	}
-
-	@Override
-	public ChronologyDomain<UNIXTimeInstant> getDomain() {
-		return UNIXTimeInstant.DOMAIN;
-	}
-
-	@Override
-	public List<ChronologicalEvent<UNIXTimeInstant>> getEvents() {
-		// TODO Auto-generated method stub
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<ChronologicalEvent<UNIXTimeInstant>> getEvents(
-			ChronologicalInterval<UNIXTimeInstant> interval) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isMutable() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean add(ChronologicalEvent<UNIXTimeInstant> event,
-			UNIXTimeInstant start) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean remove(ChronologicalEvent<UNIXTimeInstant> event) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 }

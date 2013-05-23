@@ -4,6 +4,8 @@ import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.ActivityData;
+import gov.nasa.arc.mct.scenario.component.DecisionComponent;
+import gov.nasa.arc.mct.scenario.component.DecisionData;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import java.awt.BasicStroke;
@@ -17,6 +19,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -25,11 +28,13 @@ import java.util.TreeMap;
 
 @SuppressWarnings("serial")
 public final class TimelineView extends View {
+	private static String DATE_FORMAT = "yyyy/D HH:mm";
+	private static SimpleDateFormat FORMATTER = new SimpleDateFormat(DATE_FORMAT);
 	private static final Color TIME_SCALE_COLOR = new Color(44, 170, 208, 155);
 	private static final Color[] LINE_COLORS = new Color[] {
 		new Color(203, 217, 77), new Color(242, 163, 16)
 	};
-	private Color durationColor = new Color(200,200,200, 100);
+	private Color DURATION_COLOR = new Color(200,200,200, 100);
 	private static final Color LINE_COLOR = new Color(100, 100, 100);	
 	private static final Color TEXT_COLOR = Color.DARK_GRAY;
 
@@ -37,6 +42,7 @@ public final class TimelineView extends View {
 	private static final int TIME_UNIT_PIX = 35;
 	private final BasicStroke SOLID_2PT_LINE_STROKE = new BasicStroke(2f);
 	private final BasicStroke SOLID_1PT_LINE_STROKE = new BasicStroke(1f);
+	private final BasicStroke DASHED_LINE_STROKE = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, new float[] {2.0f}, 0.0f);
 	private Date globalStartTime = null, globalEndTime = null;
 	private int timeScaleIconWidth = 20;
 	private int timeScaleHeight = 25;
@@ -44,9 +50,11 @@ public final class TimelineView extends View {
 	private int xStart, xEnd;
 	private long pixelMillis;
 	private List<ActivityComponent> activities = null;
-	private List<Widget> widgets;
+	private List<ActivityWidget> activityWidgets;
+	private List<DecisionWidget> decisionWidgets;
 	private List<TreeMap<Date, Double>> timeseries = new ArrayList<TreeMap<Date,Double>>();
 	private List<List<ActivityWrapper>> activityMap;
+	private List<DecisionWrapper> decisionMap;
 	private int currentTickerX = -1;
 	private boolean showVeriticalTickLine = false;
 
@@ -57,6 +65,15 @@ public final class TimelineView extends View {
 		addMouseMotionListener(listener);
 	}
 	
+	private void cleanup() {
+		globalStartTime = globalEndTime = null;
+    	activityWidgets.clear();
+    	decisionWidgets.clear();
+    	activities.clear();
+    	timeseries.clear();
+    	activityMap.clear();
+	}
+	
 	private boolean activitiesInitialized() {
 		return activities != null && !activities.isEmpty();
 		
@@ -65,13 +82,16 @@ public final class TimelineView extends View {
 		if (activitiesInitialized())
 			return;
 		activities = new ArrayList<ActivityComponent>();
-		widgets = new ArrayList<TimelineView.Widget>();
-		addAllActivitiesRecursively(getManifestedComponent());
+		decisionMap = new ArrayList<DecisionWrapper>();
+		activityWidgets = new ArrayList<TimelineView.ActivityWidget>();
+		decisionWidgets = new ArrayList<TimelineView.DecisionWidget>();
+		addAllActivitiesAndDecisionsRecursively(getManifestedComponent());
 		ActivityWrapper root = new ActivityWrapper(null);
 		replicateActivityTree(getManifestedComponent(), root);
 		assignLevel(root);
 		activityMap = new ArrayList<List<ActivityWrapper>>();
 		populateActivityMap(root);
+		assignLevelsForDecisions();
 					
 		TreeMap<Date, Double> powerChanges = new TreeMap<Date, Double>();
 		TreeMap<Date, Double> commBandwidthChanges = new TreeMap<Date, Double>();
@@ -131,12 +151,15 @@ public final class TimelineView extends View {
 
 	}
 
-	private void addAllActivitiesRecursively(AbstractComponent ac) {
+	private void addAllActivitiesAndDecisionsRecursively(AbstractComponent ac) {
 		for (AbstractComponent c : ac.getComponents()) {
 			if (c instanceof ActivityComponent) {
 				activities.add((ActivityComponent) c);				
-			}
-			addAllActivitiesRecursively(c);
+			} else if (c instanceof DecisionComponent)
+				if (ac instanceof ActivityComponent)
+					decisionMap.add(new DecisionWrapper((DecisionComponent) c, (ActivityComponent) ac));
+			
+			addAllActivitiesAndDecisionsRecursively(c);
 		}
 	}
 	
@@ -178,6 +201,16 @@ public final class TimelineView extends View {
 		
 	}
 	
+	private List<DecisionWrapper> getDecisions(int group, int level) {
+		List<DecisionWrapper> d = new ArrayList<TimelineView.DecisionWrapper>();
+		for (DecisionWrapper dw : decisionMap) {
+			if (dw.group == group && dw.level == level) {
+				d.add(dw);
+			}
+		}
+		return d;
+	}
+	
 	@SuppressWarnings("unused")
 	private void printActivityMap() {
 		for (int level = 0; level < activityMap.size(); level++) {
@@ -209,6 +242,24 @@ public final class TimelineView extends View {
 		}
 	}
 	
+	private void assignLevelsForDecisions() {
+		for (DecisionWrapper dw : decisionMap) {
+			assignDecisionLevel(dw);
+		}
+	}
+	
+	private void assignDecisionLevel(DecisionWrapper dw) {
+		for (int group = 0; group < activityMap.size(); group++) {
+			List<ActivityWrapper> list = activityMap.get(group);
+			for (ActivityWrapper aw : list) {
+				if (dw.parentActivity == aw.activityComponent) {
+					dw.group = group;
+					dw.level = aw.level - 1;
+				}				
+			}
+		}
+	}
+	
 	@Override
 	protected void paintComponent(Graphics g) {		
 		Graphics2D g2 = (Graphics2D) g;
@@ -226,20 +277,24 @@ public final class TimelineView extends View {
 		paintTimeScale(g2);
 		initActivities();
 		
-		g2.drawString("START: " + globalStartTime.toString(), 0, getFontMetrics(getFont()).getHeight());
-		String endtimeString = "END: " + globalEndTime.toString();
+		g2.drawString("START: " + FORMATTER.format(globalStartTime), 0, getFontMetrics(getFont()).getHeight());
+		String endtimeString = "END: " + FORMATTER.format(globalEndTime);
 		g2.drawString(endtimeString, getWidth() - getFontMetrics(getFont()).charsWidth(endtimeString.toCharArray(), 0, endtimeString.length()), getFontMetrics(getFont()).getHeight());
 		
 		int yStart = 15;
-		widgets.clear();
-		for (List<ActivityWrapper> list : activityMap) {
+		activityWidgets.clear();
+		for (int group = 0; group < activityMap.size(); group++) {
+			List<ActivityWrapper> list = activityMap.get(group);
 			int level = list.get(0).level;
 			for (ActivityWrapper aw : list) {
 				if (level != aw.level) {
+					for (DecisionWrapper dw : getDecisions(group, level)) {
+						paintDecision(g2, dw, yStart);
+					}
 					yStart += 50;
 					level = aw.level;
 				}
-				paintActivity(g2, aw.activityComponent, yStart);				
+				paintActivity(g2, aw.activityComponent, yStart);			
 			}
 			yStart += 65;
 			drawActivityDivider(g2, yStart);
@@ -281,7 +336,7 @@ public final class TimelineView extends View {
 		g2.drawLine(currentTickerX, getHeight() - timeScaleHeight, currentTickerX, 0);
 		int charHeight = getFontMetrics(getFont()).getHeight();
 		double sumOfPower = 0, sumOfComm = 0;
-		for (Widget w : widgets) {
+		for (ActivityWidget w : activityWidgets) {
 			if (w.rectangle.contains(new Point(currentTickerX, w.rectangle.y + w.rectangle.height/2))) {
 				g2.setColor(TIME_SCALE_COLOR);
 				double power = w.activity.getModel().getData().getPower();
@@ -314,6 +369,16 @@ public final class TimelineView extends View {
 		g2.setColor(Color.white);
 		g2.drawString(text, currentTickerX + 3, yAxisTop + yAxisLength/2 + charHeight/2);				
 
+		g2.setColor(TIME_SCALE_COLOR);
+		yAxisBottom = getHeight() - timeScaleHeight;
+		yAxisTop = yAxisBottom - timeScaleHeight;
+		yAxisLength = timeScaleHeight;
+		long timeDiff = (currentTickerX - xStart) * (globalEndTime.getTime() - globalStartTime.getTime()) / (xEnd - xStart);
+		text = FORMATTER.format(new Date(globalStartTime.getTime() + timeDiff)); 
+		charsWidth = getFontMetrics(getFont()).charsWidth(text.toCharArray(), 0, text.length());
+		g2.fillRect(currentTickerX, yAxisTop + yAxisLength/2 - charHeight/2, charsWidth + 6, charHeight + 6);		
+		g2.setColor(Color.white);
+		g2.drawString(text, currentTickerX + 3, yAxisTop + yAxisLength/2 + charHeight/2);				
 	}
 	
 	private Polygon getCurrentTicketPolygon() {
@@ -323,6 +388,22 @@ public final class TimelineView extends View {
 	}
 	private boolean tickerMarkPressed(Point p) {
 		return getCurrentTicketPolygon().contains(p);
+	}
+	
+	private void paintDecision(Graphics2D g2, DecisionWrapper dw, int yStart) {
+		int x1 = translateDateToX(dw.decisionComponent.getModel().getData().getStartTime());
+		int x2 = translateDateToX(dw.decisionComponent.getModel().getData().getEndTime());
+		int y1 = yStart + 5;
+		int y2 = y1 + 10;
+		g2.setColor(LINE_COLOR);
+		Polygon p1 = new Polygon(new int[]{x1 - 6, x1, x1 + 6}, new int[]{y1, y2, y1}, 3);
+		Polygon p2 = new Polygon(new int[]{x2 - 6, x2, x2 + 6}, new int[]{y1, y2, y1}, 3);
+		g2.fillPolygon(p1);
+		g2.fillPolygon(p2);
+		g2.setStroke(DASHED_LINE_STROKE);
+		g2.drawLine(x1, y2, x2, y2);
+		decisionWidgets.add(new DecisionWidget(dw.decisionComponent, p1, DecisionMode.START));
+		decisionWidgets.add(new DecisionWidget(dw.decisionComponent, p2, DecisionMode.END));
 	}
 	
 	private void paintActivity(Graphics2D g2, ActivityComponent ac, int yStart) {
@@ -338,10 +419,10 @@ public final class TimelineView extends View {
 		// Draw activity duration
 		int durationWidth = x2 - x1;
 		Rectangle rectangle = new Rectangle(x1, yStart + 15, durationWidth, 35);
-		Widget widget = new Widget(ac, rectangle);
-		widgets.add(widget);
+		ActivityWidget widget = new ActivityWidget(ac, rectangle);
+		activityWidgets.add(widget);
 		int arcWidthAndHeight = TIME_UNIT_PIX/2;
-		g2.setColor(durationColor);
+		g2.setColor(DURATION_COLOR);
 		g2.fillRoundRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height, arcWidthAndHeight, arcWidthAndHeight);
 		g2.setStroke(SOLID_2PT_LINE_STROKE);
 		g2.setColor(LINE_COLOR);
@@ -426,7 +507,7 @@ public final class TimelineView extends View {
 	}
 	
 	private static final String ELLIPSIS = "...";
-	private String getTruncatedString(Graphics2D g2, String str, Widget widget) {
+	private String getTruncatedString(Graphics2D g2, String str, ActivityWidget widget) {
 		int charsWidth = g2.getFontMetrics().charsWidth(str.toCharArray(), 0, str.length());
 		int totalTextWidth = widget.rectangle.width - 10;
 		
@@ -438,18 +519,30 @@ public final class TimelineView extends View {
 		
 
 	}
-
 	
-	private final class Widget {
+	private final class ActivityWidget {
 		private ActivityComponent activity;
 		private Rectangle rectangle;
-		public Widget(ActivityComponent ac, Rectangle r) {
+		public ActivityWidget(ActivityComponent ac, Rectangle r) {
 			activity = ac;
 			rectangle = r;
 		}
 	}
+	
+	private final class DecisionWidget {
+		private DecisionComponent decision;
+		private Polygon polygon;
+		private DecisionMode mode;
+		public DecisionWidget(DecisionComponent dc, Polygon p, DecisionMode m) {
+			decision = dc;
+			polygon = p;
+			mode = m;
+		}
+	}
+	
+	private enum DecisionMode {START, END};
 
-    private void synchWidgetToManifInfo(Widget widget, Rectangle newRectangle, int cursorType) {
+    private void synchActivityWidgetToManifInfo(ActivityWidget widget, Rectangle newRectangle, int cursorType) {
     	ActivityData data = widget.activity.getModel().getData();
 		long durationDiff = (widget.rectangle.width - newRectangle.width) * pixelMillis;
     	if (cursorType == Cursor.W_RESIZE_CURSOR) {
@@ -466,8 +559,22 @@ public final class TimelineView extends View {
     	widget.activity.save();
     }
 
+    private void synchDecisionWidgetToManifInfo(DecisionWidget widget, int moveDistance) {
+    	DecisionData data = widget.decision.getModel().getData();
+		long durationDiff = moveDistance * pixelMillis;
+		if (widget.mode == DecisionMode.START) {
+			Date newDate = new Date(data.getStartTime().getTime() + durationDiff);
+			data.setStartDate(newDate);
+		} else {
+			Date newDate = new Date(data.getEndTime().getTime() + durationDiff);
+			data.setEndDate(newDate);
+		}
+    	widget.decision.save();
+    }
+
 	private final class EditorListener extends MouseAdapter {
-		private Widget targetWidget = null;
+		private ActivityWidget targetActivityWidget = null;
+		private DecisionWidget targetDecisionWidget = null;
 		private Point clickPoint = null;
 		
 		@Override
@@ -483,31 +590,34 @@ public final class TimelineView extends View {
 		@Override
 		public void mouseDragged(MouseEvent e) {			
 			int cursorType = getCursor().getType();
-			if (targetWidget != null) {
+			if (targetActivityWidget != null) {
 				if (cursorType == Cursor.W_RESIZE_CURSOR) {
 					Rectangle newRectangle = new Rectangle();
 					newRectangle.x = e.getPoint().x;
-					newRectangle.width = targetWidget.rectangle.width + (clickPoint.x - e.getPoint().x);  
-					synchWidgetToManifInfo(targetWidget, newRectangle, Cursor.W_RESIZE_CURSOR);
+					newRectangle.width = targetActivityWidget.rectangle.width + (clickPoint.x - e.getPoint().x);  
+					synchActivityWidgetToManifInfo(targetActivityWidget, newRectangle, Cursor.W_RESIZE_CURSOR);
 				} else if (cursorType == Cursor.E_RESIZE_CURSOR) {
 					Rectangle newRectangle = new Rectangle();
-					newRectangle.x = targetWidget.rectangle.x;
-					newRectangle.width = targetWidget.rectangle.width + (clickPoint.x - e.getPoint().x);  
-					synchWidgetToManifInfo(targetWidget, newRectangle, Cursor.E_RESIZE_CURSOR);
+					newRectangle.x = targetActivityWidget.rectangle.x;
+					newRectangle.width = targetActivityWidget.rectangle.width + (clickPoint.x - e.getPoint().x);  
+					synchActivityWidgetToManifInfo(targetActivityWidget, newRectangle, Cursor.E_RESIZE_CURSOR);
 				} else if (cursorType == Cursor.MOVE_CURSOR) {
 					Rectangle newRectangle = new Rectangle();
 					int pixmove = clickPoint.x - e.getPoint().x;
-					newRectangle.x = targetWidget.rectangle.x + pixmove;
-					newRectangle.width = targetWidget.rectangle.width;  
-					synchWidgetToManifInfo(targetWidget, newRectangle, Cursor.MOVE_CURSOR);					
-				}
-				globalStartTime = globalEndTime = null;
+					newRectangle.x = targetActivityWidget.rectangle.x + pixmove;
+					newRectangle.width = targetActivityWidget.rectangle.width;  
+					synchActivityWidgetToManifInfo(targetActivityWidget, newRectangle, Cursor.MOVE_CURSOR);					
+				}				
 				clickPoint = e.getPoint();
-		    	widgets.clear();
-		    	activities.clear();
-		    	timeseries.clear();
-		    	activityMap.clear();
+				cleanup();
 				repaint();
+			} else if (targetDecisionWidget != null) {
+				if (cursorType == Cursor.MOVE_CURSOR) {					
+					synchDecisionWidgetToManifInfo(targetDecisionWidget, e.getPoint().x - clickPoint.x);
+					clickPoint = e.getPoint();
+					cleanup();
+					repaint();
+				}
 			}
 			if (showVeriticalTickLine) {
 				if (e.getPoint().x >= xStart && e.getPoint().x <= xEnd) {
@@ -526,31 +636,38 @@ public final class TimelineView extends View {
 		
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			if (widgets == null) return;
+			if (activityWidgets == null) return;
 			int x = e.getPoint().x;
 			int y = e.getPoint().y;
-			for (Widget widget : widgets) {
+			for (ActivityWidget widget : activityWidgets) {
 				int ymax = widget.rectangle.y + widget.rectangle.height;
 				if (y >= widget.rectangle.y && y <= ymax) {					
 					if (x == widget.rectangle.x) {
 						setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
-						targetWidget = widget;
+						targetActivityWidget = widget;
 						return;
 					}
 					if (x == (widget.rectangle.x + widget.rectangle.width)) {
 						setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
-						targetWidget = widget;
+						targetActivityWidget = widget;
 						return;
 					}
 					if (widget.rectangle.contains(e.getPoint())) {
 						setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-						targetWidget = widget;
+						targetActivityWidget = widget;
 						return;
 					}
 				}
 			}
+			for (DecisionWidget dw : decisionWidgets) {
+				if (dw.polygon.contains(e.getPoint())) {
+					setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+					targetDecisionWidget = dw;
+					return;
+				}
+			}
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-			targetWidget = null;
+			targetActivityWidget = null;
 		}
 	}
 
@@ -563,6 +680,17 @@ public final class TimelineView extends View {
 			this.activityComponent = activityComponent;
 			children = new ArrayList<TimelineView.ActivityWrapper>();
 			level = 0;
+		}
+	}
+	
+	private final class DecisionWrapper {
+		private DecisionComponent decisionComponent;
+		private ActivityComponent parentActivity;
+		private int group, level;
+		public DecisionWrapper(DecisionComponent c, ActivityComponent parentActivity) {
+			decisionComponent = c;
+			this.parentActivity = parentActivity;
+			group = level = -1;
 		}
 	}
 }

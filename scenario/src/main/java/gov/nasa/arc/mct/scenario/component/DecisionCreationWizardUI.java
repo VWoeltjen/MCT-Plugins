@@ -45,7 +45,7 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
     private Class<? extends AbstractComponent> componentClass;
 	
 	public DecisionCreationWizardUI() {
-		this.componentClass = ActivityComponent.class;
+		this.componentClass = DecisionComponent.class;
 	}
 	
 	@Override

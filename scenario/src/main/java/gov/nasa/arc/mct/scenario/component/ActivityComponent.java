@@ -66,10 +66,10 @@ public class ActivityComponent extends AbstractComponent {
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
 		PropertyDescriptor startTime = new PropertyDescriptor("Start Time", 
-				new StartTimePropertyEditor(this),  VisualControlDescriptor.TextField);
+				new ActivityStartTimePropertyEditor(this),  VisualControlDescriptor.TextField);
 		startTime.setFieldMutable(true);
 		PropertyDescriptor endTime = new PropertyDescriptor("End Time", 
-				new EndTimePropertyEditor(this),  VisualControlDescriptor.TextField);
+				new ActivityEndTimePropertyEditor(this),  VisualControlDescriptor.TextField);
 		endTime.setFieldMutable(true);
 		PropertyDescriptor power = new PropertyDescriptor("Power (W)", 
 				new PowerPropertyEditor(this),  VisualControlDescriptor.TextField);

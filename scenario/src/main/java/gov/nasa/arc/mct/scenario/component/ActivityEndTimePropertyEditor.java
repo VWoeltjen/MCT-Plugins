@@ -10,12 +10,12 @@ import java.util.Date;
 import java.util.List;
 
 
-public final class EndTimePropertyEditor implements PropertyEditor<Object> {
+public final class ActivityEndTimePropertyEditor implements PropertyEditor<Object> {
 	private ActivityComponent activityComponent = null;
 	private static String DATE_FORMAT = "yyyy/D HH:mm";
 	private static SimpleDateFormat FORMATTER = new SimpleDateFormat(DATE_FORMAT);
 
-	public EndTimePropertyEditor(AbstractComponent component) {
+	public ActivityEndTimePropertyEditor(AbstractComponent component) {
 		activityComponent = (ActivityComponent)component;
 	}
 
