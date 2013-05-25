@@ -6,6 +6,7 @@ import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.ActivityData;
 import gov.nasa.arc.mct.scenario.component.DecisionComponent;
 import gov.nasa.arc.mct.scenario.component.DecisionData;
+import gov.nasa.arc.mct.scenario.component.TimelineComponent;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import java.awt.BasicStroke;
@@ -34,6 +35,7 @@ public final class TimelineView extends View {
 	private static final Color[] LINE_COLORS = new Color[] {
 		new Color(203, 217, 77), new Color(242, 163, 16)
 	};
+	private Color DECISION_COLOR = new Color(185,59,143, 100);
 	private Color DURATION_COLOR = new Color(200,200,200, 100);
 	private static final Color LINE_COLOR = new Color(100, 100, 100);	
 	private static final Color TEXT_COLOR = Color.DARK_GRAY;
@@ -395,7 +397,7 @@ public final class TimelineView extends View {
 		int x2 = translateDateToX(dw.decisionComponent.getModel().getData().getEndTime());
 		int y1 = yStart + 5;
 		int y2 = y1 + 10;
-		g2.setColor(LINE_COLOR);
+		g2.setColor(DECISION_COLOR);
 		Polygon p1 = new Polygon(new int[]{x1 - 6, x1, x1 + 6}, new int[]{y1, y2, y1}, 3);
 		Polygon p2 = new Polygon(new int[]{x2 - 6, x2, x2 + 6}, new int[]{y1, y2, y1}, 3);
 		g2.fillPolygon(p1);
@@ -507,6 +509,7 @@ public final class TimelineView extends View {
 	}
 	
 	private static final String ELLIPSIS = "...";
+	private static final String EM_STRING = "";
 	private String getTruncatedString(Graphics2D g2, String str, ActivityWidget widget) {
 		int charsWidth = g2.getFontMetrics().charsWidth(str.toCharArray(), 0, str.length());
 		int totalTextWidth = widget.rectangle.width - 10;
@@ -515,9 +518,10 @@ public final class TimelineView extends View {
 			return str;
 		
 		int totalStrLength = totalTextWidth * str.length() / charsWidth;
-		return str.substring(0, totalStrLength - 3) + ELLIPSIS;
-		
-
+		if (totalStrLength > 3) 
+			return str.substring(0, totalStrLength - 3) + ELLIPSIS;
+		else
+			return EM_STRING;
 	}
 	
 	private final class ActivityWidget {
@@ -542,40 +546,12 @@ public final class TimelineView extends View {
 	
 	private enum DecisionMode {START, END};
 
-    private void synchActivityWidgetToManifInfo(ActivityWidget widget, Rectangle newRectangle, int cursorType) {
-    	ActivityData data = widget.activity.getModel().getData();
-		long durationDiff = (widget.rectangle.width - newRectangle.width) * pixelMillis;
-    	if (cursorType == Cursor.W_RESIZE_CURSOR) {
-    		Date newStartDate = new Date(data.getStartTime().getTime() + durationDiff);
-			data.setStartDate(newStartDate);
-		} else if (cursorType == Cursor.E_RESIZE_CURSOR) {
-    		data.setEndDate(new Date(data.getEndTime().getTime() + durationDiff));
-		} else if (cursorType == Cursor.MOVE_CURSOR) {
-			assert durationDiff == 0;
-			long starttimeDiff = (widget.rectangle.x - newRectangle.x) * pixelMillis;
-			data.setStartDate(new Date(data.getStartTime().getTime() + starttimeDiff));
-			data.setEndDate(new Date(data.getEndTime().getTime() + starttimeDiff));
-		}
-    	widget.activity.save();
-    }
-
-    private void synchDecisionWidgetToManifInfo(DecisionWidget widget, int moveDistance) {
-    	DecisionData data = widget.decision.getModel().getData();
-		long durationDiff = moveDistance * pixelMillis;
-		if (widget.mode == DecisionMode.START) {
-			Date newDate = new Date(data.getStartTime().getTime() + durationDiff);
-			data.setStartDate(newDate);
-		} else {
-			Date newDate = new Date(data.getEndTime().getTime() + durationDiff);
-			data.setEndDate(newDate);
-		}
-    	widget.decision.save();
-    }
-
 	private final class EditorListener extends MouseAdapter {
 		private ActivityWidget targetActivityWidget = null;
 		private DecisionWidget targetDecisionWidget = null;
 		private Point clickPoint = null;
+		private boolean invalidateActivitySelection = false;
+		private boolean invalidateDecisionSelection = false;
 		
 		@Override
 		public void mousePressed(MouseEvent arg0) {
@@ -590,6 +566,8 @@ public final class TimelineView extends View {
 		@Override
 		public void mouseDragged(MouseEvent e) {			
 			int cursorType = getCursor().getType();
+			updateTargetActivityWidget();
+			updateTargetDecisionWidget();
 			if (targetActivityWidget != null) {
 				if (cursorType == Cursor.W_RESIZE_CURSOR) {
 					Rectangle newRectangle = new Rectangle();
@@ -599,24 +577,20 @@ public final class TimelineView extends View {
 				} else if (cursorType == Cursor.E_RESIZE_CURSOR) {
 					Rectangle newRectangle = new Rectangle();
 					newRectangle.x = targetActivityWidget.rectangle.x;
-					newRectangle.width = targetActivityWidget.rectangle.width + (clickPoint.x - e.getPoint().x);  
+					newRectangle.width = targetActivityWidget.rectangle.width + (clickPoint.x - e.getPoint().x);
 					synchActivityWidgetToManifInfo(targetActivityWidget, newRectangle, Cursor.E_RESIZE_CURSOR);
 				} else if (cursorType == Cursor.MOVE_CURSOR) {
 					Rectangle newRectangle = new Rectangle();
 					int pixmove = clickPoint.x - e.getPoint().x;
 					newRectangle.x = targetActivityWidget.rectangle.x + pixmove;
 					newRectangle.width = targetActivityWidget.rectangle.width;  
-					synchActivityWidgetToManifInfo(targetActivityWidget, newRectangle, Cursor.MOVE_CURSOR);					
+					synchActivityWidgetToManifInfo(targetActivityWidget, newRectangle, Cursor.MOVE_CURSOR);
 				}				
 				clickPoint = e.getPoint();
-				cleanup();
-				repaint();
 			} else if (targetDecisionWidget != null) {
 				if (cursorType == Cursor.MOVE_CURSOR) {					
 					synchDecisionWidgetToManifInfo(targetDecisionWidget, e.getPoint().x - clickPoint.x);
 					clickPoint = e.getPoint();
-					cleanup();
-					repaint();
 				}
 			}
 			if (showVeriticalTickLine) {
@@ -669,6 +643,77 @@ public final class TimelineView extends View {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			targetActivityWidget = null;
 		}
+		
+		private void updateTargetActivityWidget() {
+			if (!invalidateActivitySelection || targetActivityWidget == null) return;
+			for (ActivityWidget aw : activityWidgets) {
+				if (targetActivityWidget.activity == aw.activity) {
+					targetActivityWidget = aw;
+					invalidateActivitySelection = false;
+					return;
+				}				
+			}
+		}
+
+		private void updateTargetDecisionWidget() {
+			if (!invalidateDecisionSelection || targetDecisionWidget == null) return;
+			for (DecisionWidget dw : decisionWidgets) {
+				if (targetDecisionWidget.decision == dw.decision && targetDecisionWidget.mode == dw.mode) {
+					targetDecisionWidget = dw;
+					invalidateDecisionSelection = false;
+					return;
+				}				
+			}
+		}
+
+	    private void synchActivityWidgetToManifInfo(ActivityWidget widget, Rectangle newRectangle, int cursorType) {
+	    	ActivityData data = widget.activity.getModel().getData();
+			long durationDiff = (widget.rectangle.width - newRectangle.width) * pixelMillis;
+	    	if (cursorType == Cursor.W_RESIZE_CURSOR) {
+	    		Date newStartDate = new Date(data.getStartTime().getTime() + durationDiff);
+				if (newStartDate.after(data.getEndTime()))
+					return;
+				data.setStartDate(newStartDate);
+			} else if (cursorType == Cursor.E_RESIZE_CURSOR) {
+	    		Date newEndDate = new Date(data.getEndTime().getTime() + durationDiff);
+	    		if (newEndDate.before(data.getStartTime()))
+	    			return;
+	    		data.setEndDate(newEndDate);
+			} else if (cursorType == Cursor.MOVE_CURSOR) {
+				assert durationDiff == 0;
+				long starttimeDiff = (widget.rectangle.x - newRectangle.x) * pixelMillis;
+				data.setStartDate(new Date(data.getStartTime().getTime() + starttimeDiff));
+				data.setEndDate(new Date(data.getEndTime().getTime() + starttimeDiff));
+			}
+	    	widget.activity.save();
+	    	((TimelineComponent) getManifestedComponent()).addToModifiedObjects(widget.activity);
+	    	
+			cleanup();
+			repaint();
+			invalidateActivitySelection = true;
+	    }
+	    
+	    private void synchDecisionWidgetToManifInfo(DecisionWidget widget, int moveDistance) {
+	    	DecisionData data = widget.decision.getModel().getData();
+			long durationDiff = moveDistance * pixelMillis;
+			if (widget.mode == DecisionMode.START) {
+				Date newStartDate = new Date(data.getStartTime().getTime() + durationDiff);
+				if (newStartDate.after(data.getEndTime()))
+					return;
+				data.setStartDate(newStartDate);
+			} else {
+				Date newEndDate = new Date(data.getEndTime().getTime() + durationDiff);
+				if (newEndDate.before(data.getStartTime()))
+					return;
+				data.setEndDate(newEndDate);
+			}
+	    	widget.decision.save();
+	    	((TimelineComponent) getManifestedComponent()).addToModifiedObjects(widget.decision);
+	    	invalidateDecisionSelection = true;
+	    	
+			cleanup();
+			repaint();
+	    }
 	}
 
 	private final class ActivityWrapper {
