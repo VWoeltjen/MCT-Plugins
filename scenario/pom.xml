@@ -31,18 +31,6 @@
   		<version>${mct.platform.version}</version>
   		<scope>provided</scope>
   	</dependency>
-  	<dependency>
-  		<groupId>gov.nasa.arc.mct</groupId>
-  		<artifactId>chronology</artifactId>
-  		<version>${mct.platform.version}</version>
-  		<scope>provided</scope>
-  	</dependency>
-  	  	<dependency>
-  		<groupId>gov.nasa.arc.mct</groupId>
-  		<artifactId>timeline</artifactId>
-  		<version>${mct.platform.version}</version>
-  		<scope>provided</scope>
-  	</dependency>
   </dependencies>
   <parent>
   	<artifactId>mct-superpom</artifactId>

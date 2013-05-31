@@ -282,8 +282,12 @@ public final class TimelineView extends View {
 		g2.drawString("START: " + FORMATTER.format(globalStartTime), 0, getFontMetrics(getFont()).getHeight());
 		String endtimeString = "END: " + FORMATTER.format(globalEndTime);
 		g2.drawString(endtimeString, getWidth() - getFontMetrics(getFont()).charsWidth(endtimeString.toCharArray(), 0, endtimeString.length()), getFontMetrics(getFont()).getHeight());
+		long hoursDiff = (globalEndTime.getTime() - globalStartTime.getTime()) / (60 * 60 * 1000) % 24;
+		long minDiff = (globalEndTime.getTime() - globalStartTime.getTime()) / (60 * 1000) % 60;
+		String totalDurationText = "Total Duration: " + String.format("%2s", Long.toString(hoursDiff)).replace(' ', '0') + ":" +  String.format("%2s", Long.toString(minDiff)).replace(' ', '0');
+		g2.drawString(totalDurationText, getWidth() - getFontMetrics(getFont()).charsWidth(totalDurationText.toCharArray(), 0, totalDurationText.length()), getFontMetrics(getFont()).getHeight() * 2);
 		
-		int yStart = 15;
+		int yStart = 20;
 		activityWidgets.clear();
 		for (int group = 0; group < activityMap.size(); group++) {
 			List<ActivityWrapper> list = activityMap.get(group);

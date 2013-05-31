@@ -1,10 +1,5 @@
 package gov.nasa.arc.mct.scenario.component;
 
-import gov.nasa.arc.mct.chronology.Chronology;
-import gov.nasa.arc.mct.chronology.ChronologyDomain;
-import gov.nasa.arc.mct.chronology.event.ChronologicalEvent;
-import gov.nasa.arc.mct.chronology.event.ChronologicalInterval;
-import gov.nasa.arc.mct.chronology.event.UNIXTimeInstant;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
@@ -12,11 +7,10 @@ import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ScenarioComponent extends AbstractComponent implements Chronology<UNIXTimeInstant>{
+public class ScenarioComponent extends AbstractComponent {
 	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	
 	public ActivityData getData() {
@@ -54,9 +48,6 @@ public class ScenarioComponent extends AbstractComponent implements Chronology<U
 			
 			return capability.cast(persistence);
 		}
-		if (Chronology.class.isAssignableFrom(capability)) {
-			return capability.cast(this);
-		}
 		return null;
 	}
 	
@@ -84,41 +75,5 @@ public class ScenarioComponent extends AbstractComponent implements Chronology<U
 		return fields;
 	}
 
-	@Override
-	public ChronologyDomain<UNIXTimeInstant> getDomain() {
-		return UNIXTimeInstant.DOMAIN;
-	}
-
-	@Override
-	public List<ChronologicalEvent<UNIXTimeInstant>> getEvents() {
-		// TODO Auto-generated method stub
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<ChronologicalEvent<UNIXTimeInstant>> getEvents(
-			ChronologicalInterval<UNIXTimeInstant> interval) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isMutable() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean add(ChronologicalEvent<UNIXTimeInstant> event,
-			UNIXTimeInstant start) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean remove(ChronologicalEvent<UNIXTimeInstant> event) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 }
