@@ -12,6 +12,7 @@ import gov.nasa.arc.mct.services.component.ViewInfo;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -30,7 +31,9 @@ import java.util.TreeMap;
 @SuppressWarnings("serial")
 public final class TimelineView extends View {
 	private static String DATE_FORMAT = "yyyy/D HH:mm";
+	private static String X_LEGEND_FORMAT = "HH:mm";
 	private static SimpleDateFormat FORMATTER = new SimpleDateFormat(DATE_FORMAT);
+	private static SimpleDateFormat LEGEND_FORMATTER = new SimpleDateFormat(X_LEGEND_FORMAT);
 	private static final Color TIME_SCALE_COLOR = new Color(44, 170, 208, 155);
 	private static final Color[] LINE_COLORS = new Color[] {
 		new Color(203, 217, 77), new Color(242, 163, 16)
@@ -275,9 +278,10 @@ public final class TimelineView extends View {
 		xEnd = getWidth() - timeScaleIconWidth - margin;
 		if (currentTickerX == -1)
 			currentTickerX = xStart;
+				
+		initActivities();
 		
 		paintTimeScale(g2);
-		initActivities();
 		
 		g2.drawString("START: " + FORMATTER.format(globalStartTime), 0, getFontMetrics(getFont()).getHeight());
 		String endtimeString = "END: " + FORMATTER.format(globalEndTime);
@@ -329,7 +333,20 @@ public final class TimelineView extends View {
 		int intervals = (xEnd - xStart) / 5;
 		for (int i = 0; i <= intervals; i++)
 			g2.drawLine(xStart + i*5, y1, xStart + i*5, y2);
+		int interval = 75;
+		intervals = (xEnd - xStart) / interval;
+		long timeInterval = interval * (globalEndTime.getTime() - globalStartTime.getTime()) / (xEnd - xStart);
+		Font defaultFont = getFont();
+		Font legendFont = defaultFont.deriveFont(8f);
+		setFont(legendFont);
+		for (int i = 0; i <= intervals; i++) {
+			Date d = new Date(globalStartTime.getTime() + i * timeInterval);
+			String text = LEGEND_FORMATTER.format(d);
+			int charsWidth = getFontMetrics(legendFont).charsWidth(text.toCharArray(), 0, text.length());			
+			g2.drawString(text, xStart + i * interval - charsWidth/2, y1 - 3);
+		}	
 		paintCurrentTicker(g2);
+		setFont(defaultFont);
 	}
 	
 	private void paintCurrentTicker(Graphics2D g2) {
@@ -471,19 +488,31 @@ public final class TimelineView extends View {
 				
 		// Plot line in steps
 		if (dataset.isEmpty()) return;
-		g2.setColor(getNextPlotLineColor());
+		Color lineColor = getNextPlotLineColor();
+		g2.setColor(lineColor);
 		Iterator<Date> iterator = dataset.keySet().iterator();
+		double lastValue = Double.NaN;
 		Date date = iterator.next();
 		int x1 = translateDateToX(date), x2;
 		int y1 = translateValueToY(dataset.get(date), minValue, maxValue, yAxisBottom, yAxisLength), y2;		
 		while(iterator.hasNext()) {
+			double currentValue = dataset.get(date);
 			date = iterator.next();
 			x2 = translateDateToX(date);
 			y2 = translateValueToY(dataset.get(date), minValue, maxValue, yAxisBottom, yAxisLength);
 			
 			// Plot line in steps
+			g2.setColor(lineColor);
 			g2.drawLine(x1, y1, x2, y1);
 			g2.drawLine(x2, y1, x2, y2);
+			
+			// Print data value
+			if (currentValue != lastValue) {
+				String text = Double.toString(currentValue);
+				g2.setColor(TEXT_COLOR);
+				g2.drawString(text, x1 + 3, (currentValue > lastValue ? y1 - 3 : y1 + charHeight));
+				lastValue = currentValue;
+			}
 			
 			x1 = x2;
 			y1 = y2;
