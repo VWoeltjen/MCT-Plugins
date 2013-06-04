@@ -114,6 +114,10 @@ public final class TimelineView extends View {
 					globalEndTime = endTime;
 			}
 			
+			// Check if activity is properly configured
+			if (data.getStartTime() == null || data.getEndTime() == null)
+				return;
+						
 			// Record power value in dataset
 			if (powerChanges.containsKey(data.getStartTime()))
 				powerChanges.put(data.getStartTime(), data.getPower() + powerChanges.get(data.getStartTime()));
@@ -137,6 +141,10 @@ public final class TimelineView extends View {
 				commBandwidthChanges.put(data.getEndTime(), (-1) * data.getComm());
 
 		}
+		// This is the case of an empty timeline.
+		if (globalStartTime == null || globalEndTime == null)
+			return;
+
 		pixelMillis = (globalEndTime.getTime() - globalStartTime.getTime()) / (xEnd - xStart);
 
 		double currentValue = 0;
@@ -230,8 +238,10 @@ public final class TimelineView extends View {
 	private void assignLevel(ActivityWrapper node) {
 		for (ActivityWrapper child : node.children) {
 			assignLevel(child);
-		}		
-		if (node.children.isEmpty())
+		}	
+		if (node.activityComponent == null)
+			return;
+		else if (node.children.isEmpty())
 			node.level = 0;
 		else {
 			int maxLevel = 0;
@@ -260,6 +270,7 @@ public final class TimelineView extends View {
 				if (dw.parentActivity == aw.activityComponent) {
 					dw.group = group;
 					dw.level = aw.level - 1;
+					return;
 				}				
 			}
 		}
@@ -280,15 +291,15 @@ public final class TimelineView extends View {
 			currentTickerX = xStart;
 				
 		initActivities();
+		if (globalStartTime == null || globalEndTime == null || ((globalEndTime.getTime() - globalStartTime.getTime()) == 0))
+			return;
 		
 		paintTimeScale(g2);
 		
 		g2.drawString("START: " + FORMATTER.format(globalStartTime), 0, getFontMetrics(getFont()).getHeight());
 		String endtimeString = "END: " + FORMATTER.format(globalEndTime);
 		g2.drawString(endtimeString, getWidth() - getFontMetrics(getFont()).charsWidth(endtimeString.toCharArray(), 0, endtimeString.length()), getFontMetrics(getFont()).getHeight());
-		long hoursDiff = (globalEndTime.getTime() - globalStartTime.getTime()) / (60 * 60 * 1000) % 24;
-		long minDiff = (globalEndTime.getTime() - globalStartTime.getTime()) / (60 * 1000) % 60;
-		String totalDurationText = "Total Duration: " + String.format("%2s", Long.toString(hoursDiff)).replace(' ', '0') + ":" +  String.format("%2s", Long.toString(minDiff)).replace(' ', '0');
+		String totalDurationText = "Total Duration: " + getFormattedDurationText(globalStartTime, globalEndTime);
 		g2.drawString(totalDurationText, getWidth() - getFontMetrics(getFont()).charsWidth(totalDurationText.toCharArray(), 0, totalDurationText.length()), getFontMetrics(getFont()).getHeight() * 2);
 		
 		int yStart = 20;
@@ -306,12 +317,16 @@ public final class TimelineView extends View {
 				}
 				paintActivity(g2, aw.activityComponent, yStart);			
 			}
+			// Draw decisions for the bottom level of this group
+			for (DecisionWrapper dw : getDecisions(group, level)) {
+				paintDecision(g2, dw, yStart);
+			}
 			yStart += 65;
 			drawActivityDivider(g2, yStart);
 		}
 		
-		paintTrend(g2, "Power (W)", getHeight() - (2*timeScaleHeight + 15), timeseries.get(0));
-		paintTrend(g2, "Comm (Kb/s)", getHeight() - (2*timeScaleHeight + 75), timeseries.get(1));
+		paintTrend(g2, "Power (W)", getHeight() - (2*timeScaleHeight + 20), timeseries.get(0));
+		paintTrend(g2, "Comm (Kb/s)", getHeight() - (2*timeScaleHeight + 80), timeseries.get(1));
 		
 		if (showVeriticalTickLine && currentTickerX >= xStart)
 			paintVeriticalTickLine(g2);
@@ -435,6 +450,8 @@ public final class TimelineView extends View {
 			return;
 		
 		long timeDiff = globalEndTime.getTime() - globalStartTime.getTime();
+		if (timeDiff == 0)
+			return;
 		int xd = xEnd - xStart;
 		int x1 = xStart + (int) ((data.getStartTime().getTime() - globalStartTime.getTime()) * xd / timeDiff);
 		int x2 = xStart + (int) ((data.getEndTime().getTime() - globalStartTime.getTime()) * xd / timeDiff);
@@ -450,11 +467,11 @@ public final class TimelineView extends View {
 		g2.setStroke(SOLID_2PT_LINE_STROKE);
 		g2.setColor(LINE_COLOR);
 		g2.drawRoundRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height, arcWidthAndHeight, arcWidthAndHeight);
-		String name = getTruncatedString(g2, ac.getDisplayName(), widget);
-		int charsWidth = getFontMetrics(getFont()).charsWidth(name.toCharArray(), 0, name.length());
+		String title = getTruncatedString(g2, ac.getDisplayName() + " " + getFormattedDurationText(data.getStartTime(), data.getEndTime()), widget);
+		int charsWidth = getFontMetrics(getFont()).charsWidth(title.toCharArray(), 0, title.length());
 		int charHeight = getFontMetrics(getFont()).getHeight();
 		g2.setColor(TEXT_COLOR);
-		g2.drawString(name, x1 + durationWidth/2 - charsWidth/2, yStart + 15 + 14 + charHeight/2);						
+		g2.drawString(title, x1 + durationWidth/2 - charsWidth/2, yStart + 15 + 14 + charHeight/2);						
 	}
 	
 	private void paintTrend(Graphics2D g2, String legend, int yAxisBottom, TreeMap<Date, Double> dataset) {
@@ -532,6 +549,13 @@ public final class TimelineView extends View {
 		int y = yAxisBottom - (int) ((v - minValue) * yAxisLength / diff);
 //		System.out.println("v = " + v + " y = " + y);
 		return y;
+	}
+	
+	private String getFormattedDurationText(Date startTime, Date endTime) {
+		long hoursDiff = (endTime.getTime() - startTime.getTime()) / (60 * 60 * 1000) % 24;
+		long minDiff = (endTime.getTime() - startTime.getTime()) / (60 * 1000) % 60;
+		return String.format("%2s", Long.toString(hoursDiff)).replace(' ', '0') + ":" +  String.format("%2s", Long.toString(minDiff)).replace(' ', '0');
+
 	}
 	
 	private static int LINE_COUNTER = 0;

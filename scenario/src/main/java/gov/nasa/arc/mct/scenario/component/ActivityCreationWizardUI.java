@@ -12,6 +12,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
@@ -56,6 +58,13 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
                 
         component = comp.newInstance(componentClass, targetComponent);
 		component.setDisplayName(displayName);
+		ActivityComponent activityComponent = (ActivityComponent) component;
+		ActivityData data = activityComponent.getData();
+		Date currentTime = Calendar.getInstance().getTime();
+		data.setStartDate(currentTime);
+		data.setEndDate(currentTime);
+		data.setPower(0);
+		data.setComm(0);
 		component.save();
         
         return component;

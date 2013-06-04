@@ -12,6 +12,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
@@ -56,6 +58,11 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
                 
         component = comp.newInstance(componentClass, targetComponent);
 		component.setDisplayName(displayName);
+		DecisionComponent decisionComponent = (DecisionComponent) component;
+		DecisionData data = decisionComponent.getData();
+		Date currentTime = Calendar.getInstance().getTime();
+		data.setStartDate(currentTime);
+		data.setEndDate(currentTime);
 		component.save();
         
         return component;
@@ -64,7 +71,7 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
 	@Override
 	public JComponent getUI(final JButton create) {
 		JLabel prompt = new JLabel(bundle.getString("TEXT_FIELD_LABEL")); //NOI18N
-		name.setText(bundle.getString("DEFAULT_OBJECT_NAME")); //NOI18N
+		name.setText("Decision"); //NOI18N
 		prompt.setLabelFor(name);
 		name.selectAll();
 		name.setColumns(COL_SIZE);
