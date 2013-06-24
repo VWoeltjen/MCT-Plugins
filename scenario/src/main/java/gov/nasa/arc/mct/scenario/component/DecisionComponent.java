@@ -7,10 +7,11 @@ import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class DecisionComponent extends AbstractComponent {
+public class DecisionComponent extends AbstractComponent implements DurationCapability {
 	private final AtomicReference<DecisionModelRole> model = new AtomicReference<DecisionModelRole>(new DecisionModelRole());
 	
 	public DecisionData getData() {
@@ -23,7 +24,7 @@ public class DecisionComponent extends AbstractComponent {
 	
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
-		if (DecisionComponent.class.isAssignableFrom(capability)) {
+		if (capability.isAssignableFrom(getClass())) {
 			return capability.cast(this);
 		}
 		if (ModelStatePersistence.class.isAssignableFrom(capability)) {
@@ -78,4 +79,28 @@ public class DecisionComponent extends AbstractComponent {
 		return fields;
 	}
 
+	@Override
+	public long getStart() {
+		// TODO May need to change data storage so it has more useful start/end times
+		//      mod is just a hack to keep stuff in a reasonable range
+		return getData().getStartTime().getTime() % (24L * 60 * 60 * 1000);
+	}
+
+	@Override
+	public long getEnd() {
+		// TODO May need to change data storage so it has more useful start/end times
+		//      mod is just a hack to keep stuff in a reasonable range
+		return getData().getEndTime().getTime() % (24L * 60 * 60 * 1000);
+	}
+
+	@Override
+	public void setStart(long start) {
+		getData().setStartDate(new Date(start));
+	}
+
+	@Override
+	public void setEnd(long end) {
+		getData().setEndDate(new Date(end));
+	}
+	
 }

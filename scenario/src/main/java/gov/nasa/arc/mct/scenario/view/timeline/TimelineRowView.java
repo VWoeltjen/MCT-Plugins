@@ -25,7 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class TimelineRowView extends View {
-	private static final int TIMELINE_ROW_HEIGHT = 60;
+	private static final int TIMELINE_ROW_HEIGHT = 40;
 	private static final long serialVersionUID = -5039383350178424964L;
 	private DurationCapability durationProvider;
 	private List<JComponent> rows = new ArrayList<JComponent>();
