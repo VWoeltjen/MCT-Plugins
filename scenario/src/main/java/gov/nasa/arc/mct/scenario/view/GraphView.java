@@ -28,8 +28,12 @@ import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.Collection;
@@ -45,12 +49,13 @@ public class GraphView extends View {
 	public static final ViewInfo VIEW_INFO = 
 			new ViewInfo(GraphView.class, GraphView.VIEW_ROLE_NAME, ViewType.EMBEDDED);
 	
+	private static final Stroke GRAPH_STROKE = new BasicStroke(2f);
 	private static final int GRAPH_HEIGHT = 60;
+	private static final int GRAPH_PAD    = 16;
 	private DurationCapability durationProvider;
 	
 	public GraphView(AbstractComponent ac, ViewInfo vi) {
 		super(ac, vi);
-		
 		durationProvider = ac.getCapability(DurationCapability.class);
 		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -76,9 +81,10 @@ public class GraphView extends View {
 		
 		public CostGraph(CostFunctionCapability cost) {
 			super();
+			setOpaque(false);
 			this.cost = cost;
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-			add(Box.createVerticalStrut(GRAPH_HEIGHT));
+			add(Box.createVerticalStrut(GRAPH_HEIGHT + GRAPH_PAD * 2));
 			updateGraph();
 			addComponentListener(new ComponentAdapter() {
 				@Override
@@ -92,9 +98,17 @@ public class GraphView extends View {
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			g.setColor(Color.RED); // TODO: Get from CostFunction ? 
+			if (g instanceof Graphics2D) {
+				((Graphics2D) g).setStroke(GRAPH_STROKE);
+				RenderingHints renderHints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
+						RenderingHints.VALUE_ANTIALIAS_ON);
+				renderHints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+				((Graphics2D) g).setRenderingHints(renderHints);
+			}
 			
 			if (x.length > 1 && x.length == y.length) {
 				for (int i = 0; i < x.length - 1; i++) {
+
 					g.drawLine(x[i], y[i], x[i+1], y[i]);
 					g.drawLine(x[i+1], y[i], x[i+1], y[i+1]);
 				}
@@ -106,9 +120,8 @@ public class GraphView extends View {
 		}
 		
 		private int toY(double data, double minData, double maxData) {
-			return GRAPH_HEIGHT - (int) (((data - minData) / (maxData - minData)) * (GRAPH_HEIGHT-1)) - 1;
+			return GRAPH_PAD + GRAPH_HEIGHT - (int) (((data - minData) / (maxData - minData)) * (GRAPH_HEIGHT-1)) - 1;
 		}
-
 		
 		private void updateGraph() {
 			Collection<Long> changeTimes = cost.getChangeTimes();
