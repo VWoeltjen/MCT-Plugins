@@ -7,6 +7,7 @@ import gov.nasa.arc.mct.scenario.view.ActivityView;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -30,6 +31,8 @@ public class TimelineRowView extends View {
 	private DurationCapability durationProvider;
 	private List<JComponent> rows = new ArrayList<JComponent>();
 	private JPanel upperPanel = new JPanel();
+	private Color backgroundColor = Color.WHITE;
+	
 	
 	public TimelineRowView(AbstractComponent ac, ViewInfo vi) {
 		super(ac,vi);
@@ -38,12 +41,15 @@ public class TimelineRowView extends View {
 		durationProvider = ac.getCapability(DurationCapability.class);
 		if (durationProvider == null) { // fallback to a default
 			// TODO: Log, potentially throw exception
-			new DurationInfoStub(0,30L*60*1000);
+			durationProvider = new DurationInfoStub(0,30L*60*1000);
 		}
 				
 		setLayout(new BorderLayout());
 		add(upperPanel, BorderLayout.NORTH);
 		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.Y_AXIS));
+		upperPanel.setOpaque(false);
+		
+		setBackground(backgroundColor);
 		
 		// Add all children
 		for (AbstractComponent child : ac.getComponents()) {
@@ -65,7 +71,9 @@ public class TimelineRowView extends View {
 	private void addViewToRow(DurationCapability dc, AbstractComponent ac, int row) {
 		while (row >= rows.size()) {
 			rows.add(new JPanel(new TimelineRowLayout()));
-			add(rows.get(rows.size() - 1));
+			rows.get(rows.size() - 1).setBackground(Color.BLUE);
+			rows.get(rows.size() - 1).setOpaque(false);
+			upperPanel.add(rows.get(rows.size() - 1));
 		}
 		rows.get(row).add(ActivityView.VIEW_INFO.createView(ac), dc);
 	}
