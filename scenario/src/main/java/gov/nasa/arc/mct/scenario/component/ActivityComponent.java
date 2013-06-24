@@ -7,10 +7,11 @@ import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ActivityComponent extends AbstractComponent {
+public class ActivityComponent extends AbstractComponent implements DurationCapability {
 	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	
 	public ActivityData getData() {
@@ -23,10 +24,10 @@ public class ActivityComponent extends AbstractComponent {
 	
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
-		if (ActivityComponent.class.isAssignableFrom(capability)) {
+		if (capability.isAssignableFrom(getClass())) {
 			return capability.cast(this);
 		}
-		if (ModelStatePersistence.class.isAssignableFrom(capability)) {
+		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
 		    JAXBModelStatePersistence<ActivityModelRole> persistence = new JAXBModelStatePersistence<ActivityModelRole>() {
 
 				@Override
@@ -84,6 +85,30 @@ public class ActivityComponent extends AbstractComponent {
 		fields.add(comm);
 
 		return fields;
+	}
+
+	@Override
+	public long getStart() {
+		// TODO May need to change data storage so it has more useful start/end times
+		//      mod is just a hack to keep stuff in a reasonable range
+		return getData().getStartTime().getTime() % (24L * 60 * 60 * 1000);
+	}
+
+	@Override
+	public long getEnd() {
+		// TODO May need to change data storage so it has more useful start/end times
+		//      mod is just a hack to keep stuff in a reasonable range
+		return getData().getEndTime().getTime() % (24L * 60 * 60 * 1000);
+	}
+
+	@Override
+	public void setStart(long start) {
+		getData().setStartDate(new Date(start));
+	}
+
+	@Override
+	public void setEnd(long end) {
+		getData().setEndDate(new Date(end));
 	}
 
 
