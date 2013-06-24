@@ -2,6 +2,7 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.scenario.view.ActivityEmbeddedView;
 import gov.nasa.arc.mct.scenario.view.ActivityOverviewView;
+import gov.nasa.arc.mct.scenario.view.GraphView;
 import gov.nasa.arc.mct.scenario.view.TimelineView;
 import gov.nasa.arc.mct.scenario.view.timeline.TimelineRowView;
 import gov.nasa.arc.mct.services.component.AbstractComponentProvider;
@@ -55,6 +56,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			return Arrays.asList(
 					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.CENTER),
 					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.OBJECT),
+					new ViewInfo(GraphView.class, "Cost Graph", ViewType.OBJECT),
+					new ViewInfo(GraphView.class, "Cost Graph", ViewType.CENTER),
 					new ViewInfo(ActivityEmbeddedView.class, ActivityEmbeddedView.VIEW_ROLE_NAME, ActivityEmbeddedView.class.getName(), ViewType.EMBEDDED, null, null, true, ActivityComponent.class),
 					new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.OBJECT, null, null, true, ActivityComponent.class),
 		    		new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.CENTER, null, null, true, ActivityComponent.class)

@@ -1,17 +1,18 @@
 package gov.nasa.arc.mct.scenario.component;
 
-import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ActivityComponent extends AbstractComponent implements DurationCapability {
+public class ActivityComponent extends CostFunctionComponent implements DurationCapability {
 	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	
 	public ActivityData getData() {
@@ -52,6 +53,11 @@ public class ActivityComponent extends AbstractComponent implements DurationCapa
 		return null;
 	}
 	
+	@Override
+	protected List<CostFunctionCapability> getInternalCostFunctions() {
+		return Arrays.<CostFunctionCapability>asList(new CostFunctionStub(true), new CostFunctionStub(false));
+	}
+
 	public ActivityModelRole getModel() {
 		return model.get();
 	}
@@ -111,6 +117,40 @@ public class ActivityComponent extends AbstractComponent implements DurationCapa
 		getData().setEndDate(new Date(end));
 	}
 
+	
+	private class CostFunctionStub implements CostFunctionCapability {
+		private boolean isComm; //Otherwise, is power
+		
+		public CostFunctionStub(boolean isComm) {
+			super();
+			this.isComm = isComm;
+		}
+
+		@Override
+		public String getName() {
+			return isComm ? "Comm" : "Power";
+		}
+
+		@Override
+		public String getUnits() {
+			return isComm ? "KB/s" : "Watts";
+		}
+
+		@Override
+		public double getValue(long time) {
+			if (time < getStart() || time > getEnd()) {
+				return 0;
+			} else {
+				return isComm ? getData().getComm() : getData().getPower();
+			}
+		}
+
+		@Override
+		public Collection<Long> getChangeTimes() {
+			return Arrays.asList(getStart(), getEnd());
+		}
+		
+	}
 
 
 }
