@@ -21,10 +21,6 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view;
 
-import java.awt.Component;
-import java.awt.LayoutManager;
-import java.awt.Point;
-
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
@@ -40,6 +36,9 @@ import javax.swing.JComponent;
  * which should be included for all such views (note that TimelineLocalControls will   
  * suppress its own visibility and derive settings when nested within another 
  * TimelineLocalControls instance.)
+ * 
+ * TODO: Should also implement 'timeline overlay listener'
+ * 
  * @author vwoeltje
  *
  */

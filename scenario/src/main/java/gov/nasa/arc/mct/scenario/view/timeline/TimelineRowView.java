@@ -22,6 +22,7 @@
 package gov.nasa.arc.mct.scenario.view.timeline;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 import gov.nasa.arc.mct.scenario.view.ActivityView;
@@ -34,6 +35,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager2;
+import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -96,7 +98,11 @@ public class TimelineRowView extends AbstractTimelineView {
 			upperPanel.add(rows.get(rows.size() - 1));
 			upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
 		}
-		rows.get(row).add(ActivityView.VIEW_INFO.createView(ac), dc);
+		View activityView = ActivityView.VIEW_INFO.createView(ac);
+		MouseAdapter controller = new TimelineDurationController(dc, this);
+		rows.get(row).add(activityView, dc);
+		activityView.addMouseListener(controller);
+		activityView.addMouseMotionListener(controller);
 	}
 	
 	public static void main(String[] args) {
