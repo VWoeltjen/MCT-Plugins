@@ -49,6 +49,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		super(new BorderLayout());
 		this.masterDuration = masterDuration;
 		
+		setOpaque(false);
 		add(upperPanel, BorderLayout.NORTH);
 		add(contentPane, BorderLayout.CENTER);
 		add(lowerPanel, BorderLayout.SOUTH);

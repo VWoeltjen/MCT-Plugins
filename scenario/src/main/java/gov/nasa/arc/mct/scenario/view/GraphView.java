@@ -55,7 +55,9 @@ public class GraphView extends AbstractTimelineView {
 	public GraphView(AbstractComponent ac, ViewInfo vi) {
 		super(ac, vi);
 		
+		setOpaque(false);
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+		getContentPane().setOpaque(false);
 		for (CostFunctionCapability cost : ac.getCapabilities(CostFunctionCapability.class)) {
 			getContentPane().add(new CostGraph(cost));
 		}

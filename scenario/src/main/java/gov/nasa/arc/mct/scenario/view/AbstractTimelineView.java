@@ -50,22 +50,23 @@ public abstract class AbstractTimelineView extends View {
 	
 	public AbstractTimelineView(AbstractComponent ac, ViewInfo vi) {
 		super(ac,vi);
-		TimelineLocalControls controls = 
-				new TimelineLocalControls(ac.getCapability(DurationCapability.class));
 		
-		// Derive all duration info from controls
-		timelineContainer = controls;
-		
-		super.add(controls);
+		DurationCapability dc = ac.getCapability(DurationCapability.class) ;
+		if (dc != null) {
+			timelineContainer = new TimelineLocalControls(dc);
+			add(timelineContainer);
+		}
 	}
 	
 	public double getPixelScale() {
-		return (getWidth() - getLeftPadding() - getRightPadding()) / 
-				(double) (timelineContainer.getEnd() - timelineContainer.getStart());
+		return timelineContainer != null ?
+				(getWidth() - getLeftPadding() - getRightPadding()) / 
+				(double) (timelineContainer.getEnd() - timelineContainer.getStart()) : 
+				1.0;
 	}
 	
 	public long getTimeOffset() {
-		return timelineContainer.getStart();
+		return timelineContainer != null ? timelineContainer.getStart() : 0;
 	}
 	
 	public int getLeftPadding() {
@@ -78,8 +79,6 @@ public abstract class AbstractTimelineView extends View {
 	
 
 	protected JComponent getContentPane() {
-		return timelineContainer.getContentPane(); 
+		return timelineContainer != null ? timelineContainer.getContentPane() : this; 
 	}
-	
-
 }

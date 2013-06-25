@@ -25,6 +25,7 @@ import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 import gov.nasa.arc.mct.scenario.view.ActivityView;
+import gov.nasa.arc.mct.scenario.view.GraphView;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import java.awt.BorderLayout;
@@ -69,9 +70,11 @@ public class TimelineRowView extends AbstractTimelineView {
 		getContentPane().setBackground(backgroundColor);
 		
 		// Add all children
-		for (AbstractComponent child : getManifestedComponent().getComponents()) {
+		for (AbstractComponent child : ac.getComponents()) {
 			addActivities(child, 0, new HashSet<String>());
 		}
+		
+		upperPanel.add(GraphView.VIEW_INFO.createView(ac));
 	}
 
 	private void addActivities(AbstractComponent ac, int depth, Set<String> ids) {
@@ -135,8 +138,8 @@ public class TimelineRowView extends AbstractTimelineView {
 			for (Component child : parent.getComponents()) {
 				DurationCapability duration = durationInfo.get(child);
 				if (duration != null) {
-					int x = (int) (getPixelScale() * (duration.getStart() - getTimeOffset()));
-					int width = (int) (getPixelScale() * (duration.getEnd() - duration.getStart()));
+					int x = getLeftPadding() + (int) (getPixelScale() * (duration.getStart() - getTimeOffset()));
+					int width = (int) (getPixelScale() * (duration.getEnd() - duration.getStart())) + 1;
 					child.setBounds(x, 0, width, TIMELINE_ROW_HEIGHT);					
 				}
 			}

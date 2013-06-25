@@ -138,7 +138,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public double getValue(long time) {
-			if (time < getStart() || time > getEnd()) {
+			if (time < getStart() || time >= getEnd()) {
 				return 0;
 			} else {
 				return isComm ? getData().getComm() : getData().getPower();
