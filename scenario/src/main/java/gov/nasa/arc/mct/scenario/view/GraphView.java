@@ -25,6 +25,7 @@ import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
+import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 
@@ -34,15 +35,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.util.Collection;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
-public class GraphView extends View {
+public class GraphView extends AbstractTimelineView {
 	private static final long serialVersionUID = -2300291952094003401L;
 
 	public static final String VIEW_ROLE_NAME = "Cost Graph";
@@ -52,25 +51,16 @@ public class GraphView extends View {
 	private static final Stroke GRAPH_STROKE = new BasicStroke(2f);
 	private static final int GRAPH_HEIGHT = 60;
 	private static final int GRAPH_PAD    = 16;
-	private DurationCapability durationProvider;
 	
 	public GraphView(AbstractComponent ac, ViewInfo vi) {
 		super(ac, vi);
-		durationProvider = ac.getCapability(DurationCapability.class);
 		
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		for (CostFunctionCapability cost : ac.getCapabilities(CostFunctionCapability.class)) {
-			add(new CostGraph(cost));
+			getContentPane().add(new CostGraph(cost));
 		}
 	}
 	
-	public double getPixelScale() {
-		return getWidth() / (double) (durationProvider.getEnd() - durationProvider.getStart());
-	}
-	
-	public long getTimeOffset() {
-		return durationProvider.getStart();
-	}
 	
 	private class CostGraph extends JPanel {
 		private static final long serialVersionUID = 2939539607481881113L;
@@ -78,6 +68,9 @@ public class GraphView extends View {
 
 		private int x[] = {};
 		private int y[] = {};
+		private double dataPoints[] = {};
+
+		private int cachedWidth = 0;
 		
 		public CostGraph(CostFunctionCapability cost) {
 			super();
@@ -86,17 +79,17 @@ public class GraphView extends View {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			add(Box.createVerticalStrut(GRAPH_HEIGHT + GRAPH_PAD * 2));
 			updateGraph();
-			addComponentListener(new ComponentAdapter() {
-				@Override
-				public void componentResized(ComponentEvent e) {
-					updateGraph();
-					repaint();
-				}
-			});
 		}
 		
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
+			
+			// Update graph data for new width
+			if (getWidth() != cachedWidth) {
+				updateGraph();
+				cachedWidth = getWidth();
+			}
+			
 			g.setColor(Color.RED); // TODO: Get from CostFunction ? 
 			if (g instanceof Graphics2D) {
 				((Graphics2D) g).setStroke(GRAPH_STROKE);
@@ -106,17 +99,28 @@ public class GraphView extends View {
 				((Graphics2D) g).setRenderingHints(renderHints);
 			}
 			
+			int charHeight = getFontMetrics(getFont()).getHeight();
 			if (x.length > 1 && x.length == y.length) {
 				for (int i = 0; i < x.length - 1; i++) {
-
 					g.drawLine(x[i], y[i], x[i+1], y[i]);
 					g.drawLine(x[i+1], y[i], x[i+1], y[i+1]);
+					
+					double maxValue = Math.max(dataPoints[i], dataPoints[i+1]);
+					double minValue = Math.min(dataPoints[i], dataPoints[i+1]);
+					if (maxValue != minValue) {
+						int maxY = Math.min(y[i], y[i+1]);
+						int minY = Math.max(y[i], y[i+1]);
+						String maxValueString = Double.toString(maxValue);
+						g.drawString(maxValueString, x[i+1] - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length())/2, maxY - charHeight / 4);
+						String minValueString = Double.toString(minValue);
+						g.drawString(minValueString, x[i+1] - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length())/2, minY + charHeight);
+					}
 				}
 			}
 		}
 		
 		private int toX(long t) {
-			return (int) (getPixelScale() * (t - getTimeOffset()));
+			return (int) (getPixelScale() * (t - getTimeOffset())) + getLeftPadding();
 		}
 		
 		private int toY(double data, double minData, double maxData) {
@@ -139,9 +143,11 @@ public class GraphView extends View {
 				}				
 				x = new int[i];
 				y = new int[i];
+				dataPoints = new double[i];
 				for (int j = 0 ; j < i ; j++) {
 					x[j] = toX(time[j]);
 					y[j] = toY(data[j], minData, maxData);
+					dataPoints[j] = data[j];
 				}
 			}
 		}		

@@ -22,8 +22,8 @@
 package gov.nasa.arc.mct.scenario.view.timeline;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
+import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 import gov.nasa.arc.mct.scenario.view.ActivityView;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
@@ -40,16 +40,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class TimelineRowView extends View {
+public class TimelineRowView extends AbstractTimelineView {
 	private static final int TIMELINE_ROW_HEIGHT = 40;
+	private static final int TIMELINE_ROW_SPACING = 8;
 	private static final long serialVersionUID = -5039383350178424964L;
-	private DurationCapability durationProvider;
+
 	private List<JComponent> rows = new ArrayList<JComponent>();
 	private JPanel upperPanel = new JPanel();
 	private Color backgroundColor = Color.WHITE;
@@ -58,26 +60,20 @@ public class TimelineRowView extends View {
 	public TimelineRowView(AbstractComponent ac, ViewInfo vi) {
 		super(ac,vi);
 		
-		// Get the 'top-level' duration for the container
-		durationProvider = ac.getCapability(DurationCapability.class);
-		if (durationProvider == null) { // fallback to a default
-			// TODO: Log, potentially throw exception
-			durationProvider = new DurationInfoStub(0,30L*60*1000);
-		}
-				
-		setLayout(new BorderLayout());
-		add(upperPanel, BorderLayout.NORTH);
+		getContentPane().setLayout(new BorderLayout());
+		getContentPane().add(upperPanel, BorderLayout.NORTH);
 		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.Y_AXIS));
 		upperPanel.setOpaque(false);
+		upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
 		
-		setBackground(backgroundColor);
+		getContentPane().setBackground(backgroundColor);
 		
 		// Add all children
-		for (AbstractComponent child : ac.getComponents()) {
+		for (AbstractComponent child : getManifestedComponent().getComponents()) {
 			addActivities(child, 0, new HashSet<String>());
 		}
 	}
-	
+
 	private void addActivities(AbstractComponent ac, int depth, Set<String> ids) {
 		DurationCapability dc = ac.getCapability(DurationCapability.class);
 		if (dc != null && !ids.contains(ac.getComponentId())) {
@@ -95,6 +91,7 @@ public class TimelineRowView extends View {
 			rows.get(rows.size() - 1).setBackground(Color.BLUE);
 			rows.get(rows.size() - 1).setOpaque(false);
 			upperPanel.add(rows.get(rows.size() - 1));
+			upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
 		}
 		rows.get(row).add(ActivityView.VIEW_INFO.createView(ac), dc);
 	}
@@ -110,13 +107,6 @@ public class TimelineRowView extends View {
 		frame.setVisible(true);
 	}
 	
-	public double getPixelScale() {
-		return getWidth() / (double) (durationProvider.getEnd() - durationProvider.getStart());
-	}
-	
-	public long getTimeOffset() {
-		return durationProvider.getStart();
-	}
 
 	private class TimelineRowLayout implements LayoutManager2 {
 		private Map<Component, DurationCapability> durationInfo = new HashMap<Component, DurationCapability>();
@@ -183,6 +173,7 @@ public class TimelineRowView extends View {
 		}
 		
 	}
+
 }
 
 class DurationInfoStub implements DurationCapability {
