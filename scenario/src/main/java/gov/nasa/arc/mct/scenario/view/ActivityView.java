@@ -3,6 +3,8 @@ package gov.nasa.arc.mct.scenario.view;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.DecisionComponent;
+import gov.nasa.arc.mct.scenario.component.DurationCapability;
+import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 
@@ -11,6 +13,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.util.Date;
 
 public class ActivityView extends View {
 	private static final long serialVersionUID = -3208388859058655187L;
@@ -22,12 +25,14 @@ public class ActivityView extends View {
 	private Color lineColor = new Color(100, 100, 100);
 	private Color durationColor = new Color(200,200,200, 100);
 	private ActivityBackgroundShape bg = ActivityBackgroundShape.ACTIVITY;
+	private DurationCapability durationCapability = null;
 	
 	public ActivityView(AbstractComponent ac, ViewInfo vi) {
 		super(ac,vi);
 		if (DecisionComponent.class.isAssignableFrom(ac.getClass())) {
 			bg = ActivityBackgroundShape.DECISION;			
 		}
+		durationCapability = ac.getCapability(DurationCapability.class);
 		setOpaque(false);
 	}
 	
@@ -43,12 +48,14 @@ public class ActivityView extends View {
 			// Draw activity duration			
 			bg.paint(g2, getWidth(), getHeight(), lineColor, durationColor);
 			
-			String name = getManifestedComponent().getDisplayName();
-			int charsWidth = getFontMetrics(getFont()).charsWidth(name.toCharArray(), 0, name.length());
-			int charHeight = getFontMetrics(getFont()).getHeight();
-			int baseline   = getFontMetrics(getFont()).getAscent();
-			g2.setColor(textColor);
-			g2.drawString(name, getWidth() / 2 - charsWidth / 2, baseline + getHeight() / 2 - charHeight / 2);
+			String name = getManifestedComponent().getDisplayName();			
+			String duration = (durationCapability != null) ?
+				TimelineLocalControls.DURATION_FORMAT.format(new Date(durationCapability.getEnd() - durationCapability.getStart())) : 
+					"";
+			
+			bg.paintLabels(g2, name, duration, getWidth(), getHeight(), getForeground());
+
+			
 		}
 	}
 	
@@ -62,6 +69,17 @@ public class ActivityView extends View {
 				g.setStroke(SOLID_2PT_LINE_STROKE);
 				g.setColor(fg);
 				g.drawRoundRect(1, 1, w-2, h-2, h / 3, h / 3);	
+			}
+
+			@Override
+			public void paintLabels(Graphics2D g, String name, String duration,
+					int w, int h, Color fg) {
+				int charHeight = g.getFontMetrics(g.getFont()).getHeight();
+				int baseline   = g.getFontMetrics(g.getFont()).getAscent();
+				g.setColor(fg);
+				g.drawString(name, 4, baseline + h / 2 - charHeight / 2);
+				int charsWidth = g.getFontMetrics(g.getFont()).charsWidth(duration.toCharArray(), 0, duration.length());
+				g.drawString(duration, w - charsWidth - 4, baseline + h/2 - charHeight/2);
 			}
 			
 		},
@@ -77,10 +95,21 @@ public class ActivityView extends View {
 				g.setColor(fg);
 				g.drawPolygon(x,y,7);
 			}
+
+			@Override
+			public void paintLabels(Graphics2D g, String name, String duration,
+					int w, int h, Color fg) {
+				int charHeight = g.getFontMetrics(g.getFont()).getHeight();
+				int baseline   = g.getFontMetrics(g.getFont()).getAscent();
+				int charsWidth = g.getFontMetrics(g.getFont()).charsWidth(name.toCharArray(), 0, name.length());
+
+				g.setColor(fg);
+				g.drawString(name, w/2 - charsWidth/2, baseline + h / 2 - charHeight / 2);
+			}
 			
 		};
 		
 		public abstract void paint(Graphics2D g, int w, int h, Color fg, Color bg);
-		
+		public abstract void paintLabels(Graphics2D g, String name, String duration, int w, int h, Color fg);
 	}
 }

@@ -25,6 +25,9 @@ import gov.nasa.arc.mct.scenario.component.DurationCapability;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -36,6 +39,11 @@ import javax.swing.event.AncestorListener;
 public class TimelineLocalControls extends JPanel implements DurationCapability {
 	public static final int LEFT_MARGIN = 80;
 	public static final int RIGHT_MARGIN = 12;
+	
+	public static final DateFormat DURATION_FORMAT = new SimpleDateFormat("HH:mm");
+	static {
+		DURATION_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
+	}
 	
 	private static final long serialVersionUID = 5844637696012429283L;
 	
