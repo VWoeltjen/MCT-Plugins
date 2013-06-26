@@ -136,7 +136,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		boolean isTopLevelControl = parent == null;
 		upperPanel.setVisible(isTopLevelControl);
 		lowerPanel.setVisible(isTopLevelControl);
-		overlay.setVisible(isTopLevelControl);
+		overlay.setVisible(false);
 	}
 
 	public JComponent getContentPane() {
@@ -150,6 +150,8 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		midPanel.setOpaque(false);
 		midPanel.add(overlay);
 		midPanel.add(contentPane);
+		
+		overlay.setVisible(false);
 		
 		return midPanel;
 	}
@@ -347,6 +349,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		@Override
 		public void mousePressed(MouseEvent e) {
 			isActive = true;
+			setVisible(true);
 			x = e.getX();
 			repaint();
 		}
@@ -354,6 +357,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			isActive = false;
+			setVisible(false);
 			repaint();
 		}
 
