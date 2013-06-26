@@ -59,7 +59,7 @@ public abstract class AbstractTimelineView extends View {
 	
 	public double getPixelScale() {
 		return timelineContainer != null ?
-				(getWidth() - getLeftPadding() - getRightPadding()) / 
+				(double) (getWidth() - getLeftPadding() - getRightPadding()) / 
 				(double) (timelineContainer.getEnd() - timelineContainer.getStart()) : 
 				1.0;
 	}

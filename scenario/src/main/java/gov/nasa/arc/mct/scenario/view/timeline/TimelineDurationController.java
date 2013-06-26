@@ -107,6 +107,7 @@ public class TimelineDurationController extends MouseAdapter {
 			activeHandle.mouseDragged(tDiff);
 
 			parentView.revalidate();
+			parentView.repaint();
 			Object src = e.getSource();
 			if (src instanceof Component) {
 				((Component) src).invalidate();

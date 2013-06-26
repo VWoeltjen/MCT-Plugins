@@ -73,7 +73,6 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 		private String name;
 		private String units;
 		private List<CostFunctionCapability> costs = new ArrayList<CostFunctionCapability>();
-		private Collection<Long> changeTimes = new TreeSet<Long>();
 		
 		public AggregateCostFunction(String name, String units) {
 			super();
@@ -83,7 +82,6 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 
 		void add(CostFunctionCapability cost) {
 			costs.add(cost);
-			changeTimes.addAll(cost.getChangeTimes());
 		}
 		
 		@Override
@@ -108,6 +106,10 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 
 		@Override
 		public Collection<Long> getChangeTimes() {
+			Collection<Long> changeTimes = new TreeSet<Long>();
+			for (CostFunctionCapability c : costs) {
+				changeTimes.addAll(c.getChangeTimes());
+			}
 			return changeTimes;
 		}
 		

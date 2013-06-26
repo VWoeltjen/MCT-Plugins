@@ -28,6 +28,7 @@ import gov.nasa.arc.mct.services.component.ViewType;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -62,8 +63,9 @@ public class GraphView extends AbstractTimelineView {
 			getContentPane().add(new CostGraph(cost));
 		}
 	}
-	
-	
+
+
+
 	private class CostGraph extends JPanel {
 		private static final long serialVersionUID = 2939539607481881113L;
 		private CostFunctionCapability cost;
@@ -89,10 +91,10 @@ public class GraphView extends AbstractTimelineView {
 			super.paintComponent(g);
 			
 			// Update graph data for new width
-			if (getWidth() != cachedWidth) {
+			//if (getWidth() != cachedWidth) {
 				updateGraph();
 				cachedWidth = getWidth();
-			}
+			//}
 			
 			g.setColor(Color.RED); // TODO: Get from CostFunction ? 
 			if (g instanceof Graphics2D) {
@@ -134,7 +136,7 @@ public class GraphView extends AbstractTimelineView {
 		}
 		
 		private int toX(long t) {
-			return (int) (getPixelScale() * (t - getTimeOffset())) + getLeftPadding();
+			return (int) (getPixelScale() * (double) (t - getTimeOffset())) + getLeftPadding();
 		}
 		
 		private int toY(double data, double minData, double maxData) {
