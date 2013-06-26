@@ -23,18 +23,20 @@ package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
+import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls.CostOverlay;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -72,7 +74,7 @@ public class GraphView extends AbstractTimelineView {
 
 
 
-	private class CostGraph extends JPanel {
+	private class CostGraph extends JPanel implements CostOverlay {
 		private static final long serialVersionUID = 2939539607481881113L;
 		private CostFunctionCapability cost;
 
@@ -187,7 +189,16 @@ public class GraphView extends AbstractTimelineView {
 					dataPoints[j] = data[j];
 				}
 			}
-		}		
+		}
+		
+		@Override
+		public List<CostFunctionCapability> getCostFunctions() {
+			return Arrays.asList(cost);
+		}
 	}
+
+
+
+	
 		
 }

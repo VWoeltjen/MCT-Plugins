@@ -2,9 +2,12 @@ package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
+import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
+import gov.nasa.arc.mct.scenario.component.CostFunctionComponent;
 import gov.nasa.arc.mct.scenario.component.DecisionComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
+import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls.CostOverlay;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 
@@ -14,8 +17,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.util.Date;
+import java.util.List;
 
-public class ActivityView extends View {
+public class ActivityView extends View implements CostOverlay {
 	private static final long serialVersionUID = -3208388859058655187L;
 	public static final String VIEW_ROLE_NAME = "Activity";
 	public static final ViewInfo VIEW_INFO = 
@@ -111,5 +115,15 @@ public class ActivityView extends View {
 		
 		public abstract void paint(Graphics2D g, int w, int h, Color fg, Color bg);
 		public abstract void paintLabels(Graphics2D g, String name, String duration, int w, int h, Color fg);
+	}
+
+	@Override
+	public List<CostFunctionCapability> getCostFunctions() {
+		AbstractComponent comp = getManifestedComponent();
+		if (comp instanceof CostFunctionComponent) {
+			// TODO: Maybe InternalCostFunction should be capability?
+			return ((CostFunctionComponent) comp).getInternalCostFunctions();
+		}
+		return getManifestedComponent().getCapabilities(CostFunctionCapability.class);
 	}
 }

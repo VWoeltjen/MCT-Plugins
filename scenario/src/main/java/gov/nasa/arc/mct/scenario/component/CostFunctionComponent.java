@@ -32,7 +32,7 @@ import java.util.TreeSet;
 import gov.nasa.arc.mct.components.AbstractComponent;
 
 public abstract class CostFunctionComponent extends AbstractComponent {
-	protected List<CostFunctionCapability> getInternalCostFunctions() {
+	public List<CostFunctionCapability> getInternalCostFunctions() {
 		return Collections.emptyList();
 	}
 	

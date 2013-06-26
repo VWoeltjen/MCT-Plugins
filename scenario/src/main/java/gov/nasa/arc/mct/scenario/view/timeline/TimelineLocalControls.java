@@ -21,11 +21,13 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view.timeline;
 
+import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -36,8 +38,10 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -94,7 +98,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 	private TimelineOverlay overlay = new TimelineOverlay();
 	
 	private static final Color EDGE_COLOR = new Color(228, 240, 255);
-	private static final Color OVERLAY_COLOR = EDGE_COLOR.darker();
+	private static final Color OVERLAY_COLOR = new Color(0,128,255,180);
 	private static final Color OVERLAY_TEXT_COLOR = Color.WHITE;
 	
 	private JSlider zoomControl;
@@ -346,11 +350,25 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		private boolean isActive = false;
 		private int x = 0;
 		
+		private List<Component> costComponents = new ArrayList<Component>();
+		
+		private void findCostComponentsIn(Container container) {
+			if (container instanceof CostOverlay) {
+				costComponents.add(container);
+			}
+			for (Component c : container.getComponents()) {
+				if (c instanceof Container) {
+					findCostComponentsIn((Container) c);
+				}
+			}
+		}
+		
 		@Override
 		public void mousePressed(MouseEvent e) {
 			isActive = true;
 			setVisible(true);
 			x = e.getX();
+			findCostComponentsIn(contentPane);
 			repaint();
 		}
 
@@ -358,6 +376,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		public void mouseReleased(MouseEvent e) {
 			isActive = false;
 			setVisible(false);
+			costComponents.clear();
 			repaint();
 		}
 
@@ -373,10 +392,51 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 			repaint();
 		}
 
+		private int getXRelativeToContentPane(Component c) {
+			if (c == contentPane || c == null) {
+				return 0;
+			} else {
+				return getXRelativeToContentPane(c.getParent()) + c.getX();
+			}
+		}
+		
+		private int getYRelativeToContentPane(Component c) {
+			if (c == contentPane || c == null) {
+				return 0;
+			} else {
+				return getYRelativeToContentPane(c.getParent()) + c.getY();
+			}
+		}
+		
 		public void paintComponent(Graphics g) {
 			if (isActive) {
 				g.setColor(OVERLAY_COLOR);
 				g.fillRect(x + getLeftPadding(),0,1,getHeight());
+				long time = (long) (x / getPixelScale()) + getTimeOffset();
+				FontMetrics metrics = g.getFontMetrics(g.getFont());
+				for (Component c : costComponents) {
+					if (c instanceof CostOverlay) {
+						int compX = getXRelativeToContentPane(c);
+						if (compX <= x+getLeftPadding() && compX + c.getWidth() >= x+getLeftPadding()) {
+							List<CostFunctionCapability> costs = ((CostOverlay) c).getCostFunctions();
+							String costString = "";
+							for (CostFunctionCapability cost : costs) {
+								costString += cost.getValue(time) + "" + cost.getUnits() + " ";
+							}
+							if (!costString.isEmpty()) {
+								int leftX = x + getLeftPadding();
+								int centerY = getYRelativeToContentPane(c) + c.getHeight() / 2;
+								int width = metrics.stringWidth(costString);
+								int height = metrics.getHeight() * 3 / 2;
+								g.setColor(OVERLAY_COLOR);
+								
+								g.fillRect(leftX, centerY - height/2, width + 4, height);
+								g.setColor(OVERLAY_TEXT_COLOR);								
+								g.drawString(costString, leftX + 2, centerY + metrics.getAscent() / 2 - 1);
+							}
+						}
+					}
+				}
 			}			
 		}
 
@@ -426,4 +486,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		
 	}
 	
+	
+	public static interface CostOverlay {
+		public List<CostFunctionCapability> getCostFunctions();
+	}
+
 }

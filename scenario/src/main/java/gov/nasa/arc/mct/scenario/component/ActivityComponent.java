@@ -70,7 +70,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	}
 	
 	@Override
-	protected List<CostFunctionCapability> getInternalCostFunctions() {
+	public List<CostFunctionCapability> getInternalCostFunctions() {
 		return Arrays.<CostFunctionCapability>asList(new CostFunctionStub(true), new CostFunctionStub(false));
 	}
 
