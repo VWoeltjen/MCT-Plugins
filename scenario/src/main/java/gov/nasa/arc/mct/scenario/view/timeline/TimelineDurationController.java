@@ -74,7 +74,7 @@ public class TimelineDurationController extends MouseAdapter {
 		Object src = e.getSource();
 		if (src instanceof Component) {
 			Component comp = (Component) src;
-			initialX = e.getX();
+			initialX = e.getXOnScreen();
 			initialStart = durationCapability.getStart();
 			initialEnd = durationCapability.getEnd();
 			activeHandle = handles.get(comp.getCursor().getType());
@@ -100,12 +100,17 @@ public class TimelineDurationController extends MouseAdapter {
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		if (activeHandle != null) {
-			int xDiff = e.getX() - initialX;
+			int xDiff = e.getXOnScreen() - initialX;
 			long tDiff = (long) (xDiff / parentView.getPixelScale());
 			activeHandle.mouseDragged(tDiff);
-			parentView.invalidate();
-			parentView.validate();
-			parentView.repaint();
+
+			parentView.revalidate();
+			Object src = e.getSource();
+			if (src instanceof Component) {
+				((Component) src).invalidate();
+				((Component) src).validate();
+				((Component) src).repaint();
+			}
 		}
 	}
 
