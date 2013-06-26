@@ -31,6 +31,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -45,6 +48,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.OverlayLayout;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
@@ -81,12 +85,17 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 	private static final long serialVersionUID = 5844637696012429283L;
 	
 	private DurationCapability masterDuration;
-	private JComponent upperPanel; 
+	private JComponent upperPanel;
+	private JComponent middlePanel;
 	private JComponent contentPane = new JPanel(new GridLayout(1,1));
 	private JComponent lowerPanel;
 	private TimelineLocalControls parent = null;
 	
+	private TimelineOverlay overlay = new TimelineOverlay();
+	
 	private static final Color EDGE_COLOR = new Color(228, 240, 255);
+	private static final Color OVERLAY_COLOR = EDGE_COLOR.darker();
+	private static final Color OVERLAY_TEXT_COLOR = Color.WHITE;
 	
 	private JSlider zoomControl;
 	private JLabel durationLabel;
@@ -99,7 +108,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		
 		setOpaque(false);
 		add(upperPanel = makeUpperPanel(), BorderLayout.NORTH);
-		add(contentPane, BorderLayout.CENTER);
+		add(middlePanel = makeMiddlePanel(), BorderLayout.CENTER);
 		add(lowerPanel = makeLowerPanel(), BorderLayout.SOUTH);
 		updateLabels();
 		
@@ -127,6 +136,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		boolean isTopLevelControl = parent == null;
 		upperPanel.setVisible(isTopLevelControl);
 		lowerPanel.setVisible(isTopLevelControl);
+		overlay.setVisible(isTopLevelControl);
 	}
 
 	public JComponent getContentPane() {
@@ -134,7 +144,15 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 	}
 	
 	
-	
+	private JComponent makeMiddlePanel() {	
+		JPanel midPanel = new JPanel();// new JPanel(new GridLayout(1,1));//springLayout);
+		midPanel.setLayout(new OverlayLayout(midPanel));
+		midPanel.setOpaque(false);
+		midPanel.add(overlay);
+		midPanel.add(contentPane);
+		
+		return midPanel;
+	}
 	
 	private JComponent makeUpperPanel() {
 		JPanel upperPanel = new JPanel(new BorderLayout());
@@ -162,6 +180,8 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		
 		timeLabel = new JLabel("Hours");
 		JPanel tickPanel = new TickMarkPanel();
+		tickPanel.addMouseListener(overlay);
+		tickPanel.addMouseMotionListener(overlay);
 		JButton leftButton = new JButton(new PanIcon(-1));
 		leftButton.setOpaque(false);
         leftButton.setContentAreaFilled(false);
@@ -317,6 +337,56 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 				tickSizeIndex--;
 			}
 		}		
+	}
+	
+	private class TimelineOverlay extends JComponent implements MouseListener, MouseMotionListener {
+		private static final long serialVersionUID = -2681962764332227548L;
+		private boolean isActive = false;
+		private int x = 0;
+		
+		@Override
+		public void mousePressed(MouseEvent e) {
+			isActive = true;
+			x = e.getX();
+			repaint();
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			isActive = false;
+			repaint();
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			x = e.getX();
+			repaint();
+		}
+
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			x = e.getX();
+			repaint();
+		}
+
+		public void paintComponent(Graphics g) {
+			if (isActive) {
+				g.setColor(OVERLAY_COLOR);
+				g.fillRect(x + getLeftPadding(),0,1,getHeight());
+			}			
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+		}
 	}
 	
 	private class PanIcon implements Icon {
