@@ -59,21 +59,20 @@ public abstract class AbstractTimelineView extends View {
 	
 	public double getPixelScale() {
 		return timelineContainer != null ?
-				(double) (getWidth() - getLeftPadding() - getRightPadding()) / 
-				(double) (timelineContainer.getEnd() - timelineContainer.getStart()) : 
+				timelineContainer.getPixelScale() : 
 				1.0;
 	}
 	
 	public long getTimeOffset() {
-		return timelineContainer != null ? timelineContainer.getStart() : 0;
+		return timelineContainer != null ? timelineContainer.getTimeOffset() : 0;
 	}
 	
 	public int getLeftPadding() {
-		return TimelineLocalControls.LEFT_MARGIN;
+		return timelineContainer.getLeftPadding();
 	}
 	
 	public int getRightPadding() {
-		return TimelineLocalControls.RIGHT_MARGIN;
+		return timelineContainer.getRightPadding();
 	}
 	
 
