@@ -146,7 +146,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public String getName() {
-			return isComm ? "Comm" : "Power";
+			return isComm ? "Comms" : "Power";
 		}
 
 		@Override

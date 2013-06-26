@@ -29,6 +29,7 @@ import gov.nasa.arc.mct.services.component.ViewType;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -126,13 +127,19 @@ public class GraphView extends AbstractTimelineView {
 			
 			// Draw tick marks
 			g.setColor(getForeground());
-			g.drawLine(getLeftPadding()-1, GRAPH_PAD, getLeftPadding()-1, GRAPH_PAD + GRAPH_HEIGHT);
+			g.drawLine(getLeftPadding()-1, GRAPH_PAD, getLeftPadding()-1, GRAPH_PAD + GRAPH_HEIGHT - 1);
+			g.drawLine(getLeftPadding()+5, GRAPH_PAD, getLeftPadding()-1, GRAPH_PAD);
+			g.drawLine(getLeftPadding()+5, GRAPH_PAD + GRAPH_HEIGHT - 1, getLeftPadding()-1, GRAPH_PAD+ GRAPH_HEIGHT - 1);
 			String maxValueString = Double.toString(maxData);
 			g.drawString(maxValueString, getLeftPadding() - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length()) - 8, GRAPH_PAD + charHeight/2);
 			String minValueString = Double.toString(minData);
 			g.drawString(minValueString, getLeftPadding() - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length()) - 8, GRAPH_PAD + GRAPH_HEIGHT + charHeight/2);
 			
-			
+			String name = cost.getName();
+			String units = cost.getUnits();
+			g.setFont(getFont().deriveFont(Font.BOLD));
+			g.drawString(units, getLeftPadding() - getFontMetrics(getFont()).charsWidth(units.toCharArray(), 0, units.length()) - 8, GRAPH_PAD + GRAPH_HEIGHT /2 + charHeight / 2);
+			g.drawString(name, getWidth() - getRightPadding() - getFontMetrics(getFont()).charsWidth(name.toCharArray(), 0, name.length()), GRAPH_PAD + GRAPH_HEIGHT - 2);
 		}
 		
 		private int toX(long t) {
