@@ -24,14 +24,18 @@ package gov.nasa.arc.mct.scenario.view.timeline;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.TimeZone;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -48,19 +52,24 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 	private static final long serialVersionUID = 5844637696012429283L;
 	
 	private DurationCapability masterDuration;
-	private JComponent upperPanel = makeUpperPanel(); 
+	private JComponent upperPanel; 
 	private JComponent contentPane = new JPanel(new GridLayout(1,1));
-	private JComponent lowerPanel = makeLowerPanel();
+	private JComponent lowerPanel;
 	private TimelineLocalControls parent = null;
+	
+	private static final Color EDGE_COLOR = new Color(228, 240, 255);
+	
+	private JSlider zoomControl;
+	private JLabel durationLabel;
 	
 	public TimelineLocalControls(DurationCapability masterDuration) {
 		super(new BorderLayout());
 		this.masterDuration = masterDuration;
 		
 		setOpaque(false);
-		add(upperPanel, BorderLayout.NORTH);
+		add(upperPanel = makeUpperPanel(), BorderLayout.NORTH);
 		add(contentPane, BorderLayout.CENTER);
-		add(lowerPanel, BorderLayout.SOUTH);
+		add(lowerPanel = makeLowerPanel(), BorderLayout.SOUTH);
 		
 		this.addAncestorListener(new AncestorListener() {
 			@Override
@@ -93,7 +102,22 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 	}
 	
 	private JComponent makeUpperPanel() {
-		return new JLabel("upper");
+		JPanel upperPanel = new JPanel(new BorderLayout());
+		
+		durationLabel = new JLabel();
+		zoomControl = new JSlider();
+		zoomControl.setOpaque(false);
+		
+		upperPanel.add(durationLabel, BorderLayout.WEST);
+		upperPanel.add(zoomControl, BorderLayout.EAST);
+		upperPanel.setBackground(EDGE_COLOR);
+		upperPanel.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createRaisedBevelBorder(),				
+				BorderFactory.createEmptyBorder(4, 4, 4, 4))); //TODO: Move to constant
+		
+		durationLabel.setText("Total Duration: " + DURATION_FORMAT.format(new Date(masterDuration.getEnd() - masterDuration.getStart())));
+		
+		return upperPanel;
 	}
 	
 	private JComponent makeLowerPanel() {
