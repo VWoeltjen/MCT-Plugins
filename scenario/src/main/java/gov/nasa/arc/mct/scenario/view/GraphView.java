@@ -53,6 +53,11 @@ public class GraphView extends AbstractTimelineView {
 	
 	private static final Color DEFAULT_FOREGROUND_COLOR = Color.BLACK;
 	
+	private static final Color GRAPH_PALETTE[] = {
+		new Color(203, 217, 77), new Color(242, 163, 16), 
+		new Color(77, 217, 203), new Color(16, 163, 242)
+	};
+	
 	public GraphView(AbstractComponent ac, ViewInfo vi) {
 		super(ac, vi);
 		
@@ -97,7 +102,13 @@ public class GraphView extends AbstractTimelineView {
 				cachedWidth = getWidth();
 			//}
 			
-			g.setColor(Color.RED); // TODO: Get from CostFunction ? 
+			// Choose color for data line
+			// Note that hash ensures that the same cost always gets the same color,
+			// but does not ensure color uniqueness. Should be OK since graphs are not overlaid
+			int colorIndex = Math.abs(cost.getName().hashCode()) % GRAPH_PALETTE.length;
+			g.setColor(GRAPH_PALETTE[colorIndex]); // TODO: Get from CostFunction ? 
+			
+			// Draw smoothly, if possible
 			if (g instanceof Graphics2D) {
 				((Graphics2D) g).setStroke(GRAPH_STROKE);
 				RenderingHints renderHints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
@@ -106,6 +117,7 @@ public class GraphView extends AbstractTimelineView {
 				((Graphics2D) g).setRenderingHints(renderHints);
 			}
 			
+			// Draw the data line. Note that points have been computed in a separate method
 			int charHeight = getFontMetrics(getFont()).getHeight();
 			if (x.length > 1 && x.length == y.length) {
 				for (int i = 0; i < x.length - 1; i++) {
