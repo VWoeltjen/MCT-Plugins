@@ -31,6 +31,8 @@ import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.SwingUtilities;
+
 public class TimelineDurationController extends MouseAdapter {
 	private DurationCapability durationCapability; 
 	private AbstractTimelineView parentView;
@@ -111,6 +113,9 @@ public class TimelineDurationController extends MouseAdapter {
 				((Component) src).validate();
 				((Component) src).repaint();
 			}
+			
+			 
+			parentView.getManifestedComponent().save();
 		}
 	}
 

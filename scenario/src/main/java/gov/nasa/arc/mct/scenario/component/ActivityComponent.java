@@ -1,5 +1,6 @@
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
@@ -9,7 +10,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ActivityComponent extends CostFunctionComponent implements DurationCapability {
@@ -23,6 +26,19 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		return this.getDisplayName();
 	}
 	
+	@Override
+	public Set<AbstractComponent> getAllModifiedObjects() {
+		// TODO: What about cycles?
+		Set<AbstractComponent> modified = new HashSet<AbstractComponent>();
+		for (AbstractComponent child : getComponents()) {
+			if (child.isDirty()) {
+				modified.add(child);
+			}
+			modified.addAll(child.getAllModifiedObjects());
+		}
+		return modified;
+	}
+
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
 		if (capability.isAssignableFrom(getClass())) {
@@ -110,11 +126,13 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	@Override
 	public void setStart(long start) {
 		getData().setStartDate(new Date(start));
+		save();
 	}
 
 	@Override
 	public void setEnd(long end) {
 		getData().setEndDate(new Date(end));
+		save();
 	}
 
 	
