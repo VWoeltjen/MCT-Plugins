@@ -34,7 +34,7 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
 public class TimelineLocalControls extends JPanel implements DurationCapability {
-	public static final int LEFT_MARGIN = 32;
+	public static final int LEFT_MARGIN = 80;
 	public static final int RIGHT_MARGIN = 12;
 	
 	private static final long serialVersionUID = 5844637696012429283L;

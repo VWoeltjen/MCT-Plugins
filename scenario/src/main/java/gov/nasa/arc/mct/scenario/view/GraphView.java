@@ -22,10 +22,7 @@
 package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
-import gov.nasa.arc.mct.scenario.component.DurationCapability;
-import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 
@@ -52,9 +49,12 @@ public class GraphView extends AbstractTimelineView {
 	private static final int GRAPH_HEIGHT = 60;
 	private static final int GRAPH_PAD    = 16;
 	
+	private static final Color DEFAULT_FOREGROUND_COLOR = Color.BLACK;
+	
 	public GraphView(AbstractComponent ac, ViewInfo vi) {
 		super(ac, vi);
 		
+		setForeground(DEFAULT_FOREGROUND_COLOR);
 		setOpaque(false);
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		getContentPane().setOpaque(false);
@@ -71,7 +71,9 @@ public class GraphView extends AbstractTimelineView {
 		private int x[] = {};
 		private int y[] = {};
 		private double dataPoints[] = {};
-
+		private double minData;
+		private double maxData;
+		
 		private int cachedWidth = 0;
 		
 		public CostGraph(CostFunctionCapability cost) {
@@ -119,6 +121,16 @@ public class GraphView extends AbstractTimelineView {
 					}
 				}
 			}
+			
+			// Draw tick marks
+			g.setColor(getForeground());
+			g.drawLine(getLeftPadding()-1, GRAPH_PAD, getLeftPadding()-1, GRAPH_PAD + GRAPH_HEIGHT);
+			String maxValueString = Double.toString(maxData);
+			g.drawString(maxValueString, getLeftPadding() - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length()) - 8, GRAPH_PAD + charHeight/2);
+			String minValueString = Double.toString(minData);
+			g.drawString(minValueString, getLeftPadding() - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length()) - 8, GRAPH_PAD + GRAPH_HEIGHT + charHeight/2);
+			
+			
 		}
 		
 		private int toX(long t) {
@@ -142,7 +154,9 @@ public class GraphView extends AbstractTimelineView {
 					if (data[i] > maxData) maxData = data[i];
 					if (data[i] < minData) minData = data[i];
 					time[i++] = t;
-				}				
+				}
+				this.minData = minData;
+				this.maxData = maxData;
 				x = new int[i];
 				y = new int[i];
 				dataPoints = new double[i];
