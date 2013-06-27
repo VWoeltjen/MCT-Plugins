@@ -32,7 +32,15 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 	}
 	@Override
 	public Set<AbstractComponent> getAllModifiedObjects() {
-		return modifiedObjects;
+		// TODO: What about cycles?
+		Set<AbstractComponent> modified = new HashSet<AbstractComponent>();
+		for (AbstractComponent child : getComponents()) {
+			if (child.isDirty()) {
+				modified.add(child);
+			}
+			modified.addAll(child.getAllModifiedObjects());
+		}
+		return modified;
 	}
 	
 	@Override

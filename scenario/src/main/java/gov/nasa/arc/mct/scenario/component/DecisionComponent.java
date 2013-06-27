@@ -81,16 +81,12 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 
 	@Override
 	public long getStart() {
-		// TODO May need to change data storage so it has more useful start/end times
-		//      mod is just a hack to keep stuff in a reasonable range
-		return getData().getStartTime().getTime() % (24L * 60 * 60 * 1000);
+		return getData().getStartTime().getTime();
 	}
 
 	@Override
 	public long getEnd() {
-		// TODO May need to change data storage so it has more useful start/end times
-		//      mod is just a hack to keep stuff in a reasonable range
-		return getData().getEndTime().getTime() % (24L * 60 * 60 * 1000);
+		return getData().getEndTime().getTime();
 	}
 
 	@Override

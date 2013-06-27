@@ -88,7 +88,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		};
 	private static final Map<Long, String> NAMED_TICK_SIZES = new HashMap<Long, String>();
 	
-	public static final DateFormat DURATION_FORMAT = new SimpleDateFormat("HH:mm");
+	public static final DateFormat DURATION_FORMAT = new SimpleDateFormat("ddd HH:mm");
 	static {
 		DURATION_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
 		for (int i = 1; i < TICK_DIVISIONS.length; i++) {
