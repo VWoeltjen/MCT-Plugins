@@ -256,13 +256,13 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	@Override
 	public long getStart() {
 		return parent != null ? parent.getStart() : 
-			centerTime - (long) ((masterDuration.getEnd() - masterDuration.getStart()) / getZoom()) / 2;//masterDuration.getStart();
+			centerTime - (long) (((double) (masterDuration.getEnd() - masterDuration.getStart()) / getZoom()) / 2.0);//masterDuration.getStart();
 	}
 
 	@Override
 	public long getEnd() {
 		return parent != null ? parent.getStart() :
-			centerTime + (long) ((masterDuration.getEnd() - masterDuration.getStart()) / getZoom()) / 2;//masterDuration.getStart();
+			centerTime + (long) (((double) (masterDuration.getEnd() - masterDuration.getStart()) / getZoom()) / 2.0);//masterDuration.getStart();
 	}
 
 	@Override
@@ -278,7 +278,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	public double getPixelScale() {
 		return parent != null ?
 				parent.getPixelScale() :
-				getZoom() * 
+				//getZoom() * Already factored into getEnd() - getStart() below 
 				(double) (getWidth() - getLeftPadding() - getRightPadding()) / 
 				(double) (getEnd() - getStart());
 	}
@@ -353,7 +353,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 				
 				long tickStart = (startTime - startTime % tickInterval) + tickInterval;				
 				for (long tick = tickStart; tick < endTime; tick += tickInterval) {
-					int x = (int) ((tick - getTimeOffset()) * getPixelScale());
+					int x = (int) ((tick - startTime) * getPixelScale());
 					g.drawLine(x, tickBottom - tickHeight, x, tickBottom);
 					
 					// Label largest tick marks only
@@ -529,6 +529,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
+		updateLabels();
 		revalidate();
 		repaint();
 		contentPane.revalidate();
