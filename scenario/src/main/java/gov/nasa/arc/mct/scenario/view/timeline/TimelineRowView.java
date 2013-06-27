@@ -34,6 +34,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.LayoutManager2;
 import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
@@ -56,7 +57,8 @@ public class TimelineRowView extends AbstractTimelineView {
 	private static final int TIMELINE_ROW_SPACING = 8;
 	private static final long serialVersionUID = -5039383350178424964L;
 
-	private List<JComponent> rows = new ArrayList<JComponent>();
+	
+	private List<TimelineBlock> blocks = new ArrayList<TimelineBlock>();
 	private JPanel upperPanel = new JPanel();
 	private Color backgroundColor = Color.WHITE;
 	
@@ -74,7 +76,7 @@ public class TimelineRowView extends AbstractTimelineView {
 		
 		// Add all children
 		for (AbstractComponent child : ac.getComponents()) {
-			addActivities(child, 0, new HashSet<String>());
+			addTopLevelActivity(child);//addActivities(child, 0, new HashSet<String>());
 		}
 		
 		upperPanel.add(GraphView.VIEW_INFO.createView(ac));
@@ -87,35 +89,68 @@ public class TimelineRowView extends AbstractTimelineView {
 		super.stateChanged(e);
 		revalidate();
 		repaint();
-		for (JComponent row : rows) {
-			row.revalidate();
-			row.repaint();
+		for (TimelineBlock block : blocks) {
+			block.revalidate();
+			block.repaint();
+			for (JComponent row : block.rows) {
+				row.revalidate();
+				row.repaint();
+			}
 		}
 	}
 
 
+	private void addTopLevelActivity(AbstractComponent ac) {
+		DurationCapability dc = ac.getCapability(DurationCapability.class);
+		if (dc != null) {
+			TimelineBlock block = null;
+			for (TimelineBlock b : blocks) {
+				if (b.maximumTime <= dc.getStart() || b.minimumTime >= dc.getEnd()) {
+					block = b;
+					break;
+				}
+			}
+			if (block == null) {
+				block = new TimelineBlock();
+				block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+				block.setOpaque(false);				
+				block.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
+				block.setAlignmentX(0.5f);
+				upperPanel.add(block);
+				upperPanel.add(new TimelineSeparator());
+				blocks.add(block);
+			}			
+			if (dc.getStart() < block.minimumTime) {
+				block.minimumTime = dc.getStart();
+			}
+			if (dc.getEnd() > block.maximumTime) {
+				block.maximumTime = dc.getEnd();
+			}
+			addActivities(ac, 0, new HashSet<String>(), block);
+		}		
+	}
 
-	private void addActivities(AbstractComponent ac, int depth, Set<String> ids) {
+	private void addActivities(AbstractComponent ac, int depth, Set<String> ids, TimelineBlock block) {
 		DurationCapability dc = ac.getCapability(DurationCapability.class);
 		if (dc != null && !ids.contains(ac.getComponentId())) {
-			addViewToRow(dc, ac, depth);
+			addViewToRow(dc, ac, block, depth);
 			ids.add(ac.getComponentId()); // Prevent infinite loops in case of cycle
 			for (AbstractComponent child : ac.getComponents()) {
-				addActivities(child, depth + 1, ids);
+				addActivities(child, depth + 1, ids, block);
 			}			
 		}
 	}
 	
-	private void addViewToRow(DurationCapability dc, AbstractComponent ac, int row) {
-		while (row >= rows.size()) {
-			rows.add(new JPanel(new TimelineRowLayout()));
-			rows.get(rows.size() - 1).setOpaque(false);
-			upperPanel.add(rows.get(rows.size() - 1));
-			upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
+	private void addViewToRow(DurationCapability dc, AbstractComponent ac, TimelineBlock block, int row) {
+		while (row >= block.rows.size()) {
+			block.rows.add(new JPanel(new TimelineRowLayout()));
+			block.rows.get(block.rows.size() - 1).setOpaque(false);
+			block.add(block.rows.get(block.rows.size() - 1));
+			block.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
 		}
 		View activityView = ActivityView.VIEW_INFO.createView(ac);
 		MouseAdapter controller = new TimelineDurationController(dc, this);
-		rows.get(row).add(activityView, dc);
+		block.rows.get(row).add(activityView, dc);
 		activityView.addMouseListener(controller);
 		activityView.addMouseMotionListener(controller);
 	}
@@ -184,13 +219,13 @@ public class TimelineRowView extends AbstractTimelineView {
 		@Override
 		public float getLayoutAlignmentX(Container target) {
 			// TODO Auto-generated method stub
-			return 0;
+			return 0.5f;
 		}
 
 		@Override
 		public float getLayoutAlignmentY(Container target) {
 			// TODO Auto-generated method stub
-			return 0;
+			return 0.5f;
 		}
 
 		@Override
@@ -198,7 +233,26 @@ public class TimelineRowView extends AbstractTimelineView {
 		}
 		
 	}
+	
+	private class TimelineBlock extends JPanel {
+		private static final long serialVersionUID = 3461668344855752107L;
+		public long maximumTime = Long.MIN_VALUE;
+		public long minimumTime = Long.MAX_VALUE;
+		public List<JComponent> rows = new ArrayList<JComponent>();
+	}
 
+	private class TimelineSeparator extends JPanel {
+		private static final long serialVersionUID = -8551198172846693356L;
+
+		public TimelineSeparator() {
+			setOpaque(false);
+			add(Box.createVerticalStrut(1));
+		}
+		
+		public void paintComponent(Graphics g) {
+			g.drawLine(getLeftPadding(), 0, getWidth() - getRightPadding(), 0);
+		}
+	}
 }
 
 class DurationInfoStub implements DurationCapability {
