@@ -102,6 +102,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private TimelineLocalControls parent = null;
 	
 	private TimelineOverlay overlay = new TimelineOverlay();
+	private long centerTime;
 	
 	private static final Color EDGE_COLOR = new Color(228, 240, 255);
 	private static final Color OVERLAY_COLOR = new Color(0,128,255,180);
@@ -117,6 +118,8 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	public TimelineLocalControls(DurationCapability masterDuration) {
 		super(new BorderLayout());
 		this.masterDuration = masterDuration;
+		
+		centerTime = (masterDuration.getStart() + masterDuration.getEnd()) / 2;
 		
 		setOpaque(false);
 		add(upperPanel = makeUpperPanel(), BorderLayout.NORTH);
@@ -248,12 +251,14 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	
 	@Override
 	public long getStart() {
-		return masterDuration.getStart();
+		return parent != null ? parent.getStart() : 
+			centerTime - (long) ((masterDuration.getEnd() - masterDuration.getStart()) / getZoom()) / 2;//masterDuration.getStart();
 	}
 
 	@Override
 	public long getEnd() {
-		return masterDuration.getEnd();
+		return parent != null ? parent.getStart() :
+			centerTime + (long) ((masterDuration.getEnd() - masterDuration.getStart()) / getZoom()) / 2;//masterDuration.getStart();
 	}
 
 	@Override
