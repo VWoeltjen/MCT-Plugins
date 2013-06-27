@@ -283,6 +283,14 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		masterDuration.setEnd(end); //TODO: Don't delegate
 	}
 	
+	private long getMaximumCenter() {
+		return masterDuration.getEnd() - (long) ((getWidth() - getLeftPadding() - getRightPadding()) / getPixelScale()) / 2;
+	}
+	
+	private long getMinimumCenter() {
+		return masterDuration.getStart() + (long) ((getWidth() - getLeftPadding() - getRightPadding()) / getPixelScale()) / 2;
+	}
+	
 	public double getPixelScale() {
 		return parent != null ?
 				parent.getPixelScale() :
@@ -545,6 +553,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 
 			long delta = sign * (getEnd() - getStart());
 			targetCenter = centerTime + delta;
+			
+			// Clamp the target - make sure you don't go past left or right edge
+			targetCenter = Math.max(Math.min(targetCenter, getMaximumCenter()), getMinimumCenter());
 			speed = delta / (PAN_TIME / PAN_INTERVAL);
 
 			timer = new Timer((int) PAN_INTERVAL, new ActionListener() {
@@ -579,6 +590,8 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
+		// Clamp the center time
+		centerTime = Math.max(Math.min(centerTime, getMaximumCenter()), getMinimumCenter());
 		updateLabels();
 		revalidate();
 		repaint();
