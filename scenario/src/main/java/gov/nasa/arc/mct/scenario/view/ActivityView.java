@@ -14,6 +14,7 @@ import gov.nasa.arc.mct.services.component.ViewType;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -59,7 +60,7 @@ public class ActivityView extends View implements CostOverlay {
 			
 			bg.paintLabels(g2, name, duration, getWidth(), getHeight(), getForeground());
 
-			
+			setToolTipText(name + " " + duration);			
 		}
 	}
 	
@@ -78,12 +79,15 @@ public class ActivityView extends View implements CostOverlay {
 			@Override
 			public void paintLabels(Graphics2D g, String name, String duration,
 					int w, int h, Color fg) {
-				int charHeight = g.getFontMetrics(g.getFont()).getHeight();
-				int baseline   = g.getFontMetrics(g.getFont()).getAscent();
+				FontMetrics metrics = g.getFontMetrics(g.getFont());
+				int charHeight = metrics.getHeight();
+				int baseline   = metrics.getAscent();
 				g.setColor(fg);
 				g.drawString(name, 4, baseline + h / 2 - charHeight / 2);
-				int charsWidth = g.getFontMetrics(g.getFont()).charsWidth(duration.toCharArray(), 0, duration.length());
-				g.drawString(duration, w - charsWidth - 4, baseline + h/2 - charHeight/2);
+				int durationWidth = metrics.stringWidth(duration);
+				if (metrics.stringWidth(name) + durationWidth < w) {					
+					g.drawString(duration, w - durationWidth - 4, baseline + h/2 - charHeight/2);
+				}
 			}
 			
 		},
