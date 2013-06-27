@@ -37,6 +37,7 @@ import java.awt.Stroke;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -123,18 +124,20 @@ public class GraphView extends AbstractTimelineView {
 			int charHeight = getFontMetrics(getFont()).getHeight();
 			if (x.length > 1 && x.length == y.length) {
 				for (int i = 0; i < x.length - 1; i++) {
-					g.drawLine(x[i], y[i], x[i+1], y[i]);
-					g.drawLine(x[i+1], y[i], x[i+1], y[i+1]);
-						
-					double maxValue = Math.max(dataPoints[i], dataPoints[i+1]);
-					double minValue = Math.min(dataPoints[i], dataPoints[i+1]);
-					if (maxValue != minValue && x[i+1] > getLeftPadding() && x[i+1] < getWidth() - getRightPadding()) {
-						int maxY = Math.min(y[i], y[i+1]);
-						int minY = Math.max(y[i], y[i+1]);
-						String maxValueString = Double.toString(maxValue);
-						g.drawString(maxValueString, x[i+1] - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length())/2, maxY - charHeight / 4);
-						String minValueString = Double.toString(minValue);
-						g.drawString(minValueString, x[i+1] - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length())/2, minY + charHeight);
+					if (x[i] >= getLeftPadding() && x[i+1] <= getWidth() - getRightPadding()) {
+						g.drawLine(x[i], y[i], x[i+1], y[i]);
+						g.drawLine(x[i+1], y[i], x[i+1], y[i+1]);
+							
+						double maxValue = Math.max(dataPoints[i], dataPoints[i+1]);
+						double minValue = Math.min(dataPoints[i], dataPoints[i+1]);
+						if (maxValue != minValue && x[i+1] > getLeftPadding() && x[i+1] < getWidth() - getRightPadding()) {
+							int maxY = Math.min(y[i], y[i+1]);
+							int minY = Math.max(y[i], y[i+1]);
+							String maxValueString = Double.toString(maxValue);
+							g.drawString(maxValueString, x[i+1] - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length())/2, maxY - charHeight / 4);
+							String minValueString = Double.toString(minValue);
+							g.drawString(minValueString, x[i+1] - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length())/2, minY + charHeight);
+						}
 					}
 				}
 			}
@@ -165,7 +168,10 @@ public class GraphView extends AbstractTimelineView {
 		}
 		
 		private void updateGraph() {
-			Collection<Long> changeTimes = cost.getChangeTimes();
+			Collection<Long> changeTimes = new TreeSet<Long>(); 
+			changeTimes.addAll(cost.getChangeTimes());
+			changeTimes.add(getStart());
+			changeTimes.add(getEnd());
 			if (changeTimes.size() > 1) {
 				double data[] = new double[changeTimes.size()];
 				long   time[] = new long[changeTimes.size()];
@@ -179,11 +185,6 @@ public class GraphView extends AbstractTimelineView {
 					time[i++] = t;
 				}
 				
-				long start = getStart();
-				long end = getEnd();
-				int leftY = toY(cost.getValue(start), minData, maxData);
-				int rightY = toY(cost.getValue(end), minData, maxData);
-				
 				this.minData = minData;
 				this.maxData = maxData;
 				x = new int[i];
@@ -191,17 +192,8 @@ public class GraphView extends AbstractTimelineView {
 				dataPoints = new double[i];
 				for (int j = 0 ; j < i ; j++) {
 					// Convert to x, y
-					// Note that off-graph points get effectively truncated
-					if (time[j] < start) {
-						x[j] = getLeftPadding();
-						y[j] = leftY;
-					} else if (time[j] > end) {
-						x[j] = getWidth() - getRightPadding();
-						y[j] = rightY;
-					} else {
-						x[j] = toX(time[j]);
-						y[j] = toY(data[j], minData, maxData);
-					}
+					x[j] = toX(time[j]);
+					y[j] = toY(data[j], minData, maxData);
 					dataPoints[j] = data[j];
 				}
 			}
