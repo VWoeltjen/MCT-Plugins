@@ -21,7 +21,6 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view.timeline;
 
-import gov.nasa.arc.mct.policy.ExecutionResult;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 
@@ -34,6 +33,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -58,6 +59,7 @@ import javax.swing.JSlider;
 import javax.swing.OverlayLayout;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
@@ -71,6 +73,10 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private static final int SLIDER_MAX = 100;
 	private static final int TICK_AREA_HEIGHT = 40;
 
+	private static final long PAN_INTERVAL = 1000L / 50L; // pan at 30 fps
+	private static final long PAN_TIME = 200L; // pan for half a second per click
+	private static final double PAN_DRAG = 0.85; // slows down pan
+	
 	private static final Color BACKGROUND_COLOR = Color.white;
 	
 	private static final long[] TICK_DIVISIONS = // These get multiplied in static block below
@@ -211,10 +217,12 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		leftButton.setOpaque(false);
         leftButton.setContentAreaFilled(false);
         leftButton.setBorder(BorderFactory.createEmptyBorder());
+        leftButton.addActionListener(new Panner(-1));
 		JButton rightButton = new JButton(new PanIcon(1));
 		rightButton.setOpaque(false);
         rightButton.setContentAreaFilled(false);
         rightButton.setBorder(BorderFactory.createEmptyBorder());
+        rightButton.addActionListener(new Panner(1));
 		tickPanel.setOpaque(false);
 		
 		
@@ -516,6 +524,48 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			return RIGHT_MARGIN;
 		}
 		
+	}
+	
+	private class Panner implements ActionListener {
+		private int sign;
+		private long targetCenter;
+		private long speed;
+		private Timer timer;
+		
+		public Panner(int sign) {
+			this.sign = sign;
+		}
+		
+		// On button click
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (timer != null) {
+				timer.stop();
+			}
+
+			long delta = sign * (getEnd() - getStart());
+			targetCenter = centerTime + delta;
+			speed = delta / (PAN_TIME / PAN_INTERVAL);
+
+			timer = new Timer((int) PAN_INTERVAL, new ActionListener() {
+				// On timer fires
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					centerTime += speed;
+					speed = (long)  (speed * PAN_DRAG);
+					if ((centerTime - targetCenter) / sign >= 0) {
+						centerTime = targetCenter;
+						timer.stop();
+						timer = null;
+					}
+					stateChanged(new ChangeEvent(e.getSource()));
+				}
+			});
+			timer.start();
+		}
+
+		
+
 	}
 	
 	
