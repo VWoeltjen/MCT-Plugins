@@ -26,7 +26,6 @@ public class ActivityView extends View implements CostOverlay {
 	public static final ViewInfo VIEW_INFO = 
 			new ViewInfo(ActivityView.class, ActivityView.VIEW_ROLE_NAME, ViewType.EMBEDDED);
 	private static final BasicStroke SOLID_2PT_LINE_STROKE = new BasicStroke(2f);
-	private Color textColor = Color.white;
 	private Color lineColor = new Color(100, 100, 100);
 	private Color durationColor = new Color(200,200,200, 100);
 	private ActivityBackgroundShape bg = ActivityBackgroundShape.ACTIVITY;
