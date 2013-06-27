@@ -21,6 +21,13 @@ import java.awt.RenderingHints;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * A View of an Activity object, specifically for use as an embedded view within a 
+ * larger timeline. ActivityComponents display as rounded rectangles; Decision 
+ * components display as horizontal arrows. 
+ * 
+ * @author vwoeltje
+ */
 public class ActivityView extends View implements CostOverlay {
 	private static final long serialVersionUID = -3208388859058655187L;
 	public static final String VIEW_ROLE_NAME = "Activity";

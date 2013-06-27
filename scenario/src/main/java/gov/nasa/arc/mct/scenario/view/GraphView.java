@@ -43,6 +43,13 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
+/**
+ * A View showing a graph of costs associated with a component, as expressed 
+ * by abstractComponentgetCapabilities(CostFunctionCapability.class)
+ * 
+ * @author vwoeltje
+ *
+ */
 public class GraphView extends AbstractTimelineView {
 	private static final long serialVersionUID = -2300291952094003401L;
 

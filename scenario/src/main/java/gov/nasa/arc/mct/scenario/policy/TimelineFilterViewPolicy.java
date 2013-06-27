@@ -31,6 +31,12 @@ import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 import gov.nasa.arc.mct.scenario.view.GraphView;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
+/**
+ * Policy controlling where timeline views are available. Prevents these views from 
+ * being made available for non-duration components
+ * @author vwoeltje
+ *
+ */
 public class TimelineFilterViewPolicy implements Policy  {
 
 	@Override

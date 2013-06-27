@@ -65,6 +65,13 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+/**
+ * Local controls for timeline-style views. Gives a top and bottom bar showing tick 
+ * marks, allowing pan and zoom, and permitting vertical overlays.
+ * 
+ * @author vwoeltje
+ *
+ */
 public class TimelineLocalControls extends JPanel implements DurationCapability, ChangeListener {
 	public static final int LEFT_MARGIN = 80;
 	public static final int RIGHT_MARGIN = 12;
@@ -579,7 +586,15 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 
 	}
 	
-	
+	/**
+	 * Swing components which implement CostOverlay will be detected when the 
+	 * user triggers cost overlay functionality; the CostFunctionCapabilities 
+	 * they report will be used to construct a display of the total costs 
+	 * associated with some component at some specific time. 
+	 * 
+	 * @author vwoeltje
+	 *
+	 */
 	public static interface CostOverlay {
 		public List<CostFunctionCapability> getCostFunctions();
 	}

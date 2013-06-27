@@ -31,35 +31,46 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Abstract superclass for views which display timeline data. The motivation for 
  * defining a parent class for these is to consolidate usage of TimelineLocalControls, 
- * which should be included for all such views (note that TimelineLocalControls will   
+ * which should be included for all such views at the top level. 
+ * (these views are often composited; note that TimelineLocalControls will   
  * suppress its own visibility and derive settings when nested within another 
  * TimelineLocalControls instance.)
- * 
- * TODO: Should also implement 'timeline overlay listener'
  * 
  * @author vwoeltje
  *
  */
 public abstract class AbstractTimelineView extends View implements ChangeListener {
 	private static final long serialVersionUID = -5683099761127087080L;
-
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTimelineView.class);
+	
 	private TimelineLocalControls timelineContainer;
 	
 	public AbstractTimelineView(AbstractComponent ac, ViewInfo vi) {
 		super(ac,vi);
 		
+		// Configure based on DurationCapability
 		DurationCapability dc = ac.getCapability(DurationCapability.class) ;
 		if (dc != null) {
 			timelineContainer = new TimelineLocalControls(dc);
 			add(timelineContainer);
 			timelineContainer.addChangeListener(this);
+		} else {
+			LOGGER.warn(getClass().getName() + " instantiated for component without DurationCapability. " +
+					"This should have been prevented by policy. Subsequent errors anticipated.");
 		}
 	}
 	
+	/**
+	 * Get the start time currently displayed, in milliseconds
+	 * @return
+	 */
 	public long getStart() {
 		return timelineContainer.getStart();
 	}

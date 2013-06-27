@@ -33,6 +33,11 @@ import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
+/**
+ * Mouse controls for moving & resizing activities/decisions within a timeline
+ * @author vwoeltje
+ *
+ */
 public class TimelineDurationController extends MouseAdapter {
 	private DurationCapability durationCapability; 
 	private AbstractTimelineView parentView;
@@ -136,15 +141,8 @@ public class TimelineDurationController extends MouseAdapter {
 
 	}
 
-
-	private long getTimeDifference(int xDifference) {
-		return (long) (xDifference / parentView.getPixelScale());
-	}
-	
 	
 	private abstract class DurationHandle {
 		public abstract void mouseDragged(long timeDifference);
 	}
-	
-	
 }

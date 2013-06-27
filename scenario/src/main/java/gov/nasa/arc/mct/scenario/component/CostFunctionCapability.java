@@ -23,6 +23,19 @@ package gov.nasa.arc.mct.scenario.component;
 
 import java.util.Collection;
 
+/**
+ * Represents some cost function associated with a component. For instance, an 
+ * Activity may have Comms or Power costs associated with it which should be 
+ * tracked and presented along with timelines. 
+ * 
+ * This should be exposed via the getCapabilities (plural) method of 
+ * AbstractComponent. Note that such a component may be configured to have 
+ * multiple costs (Comms and Power, for instance), in which case it should 
+ * return one instance of CostFunctionCapability for each cost. 
+ * 
+ * @author vwoeltje
+ *
+ */
 public interface CostFunctionCapability {
 	public String getName();
 	public String getUnits();

@@ -52,6 +52,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 
+/**
+ * A view of an object showing time-based objects (Activities) laid out 
+ * horizontally according to time, divided into rows. 
+ * 
+ * @author vwoeltje
+ *
+ */
 public class TimelineRowView extends AbstractTimelineView {
 	private static final int TIMELINE_ROW_HEIGHT = 40;
 	private static final int TIMELINE_ROW_SPACING = 8;
