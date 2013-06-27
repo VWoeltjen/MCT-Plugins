@@ -1,6 +1,7 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
 import gov.nasa.arc.mct.services.component.CreateWizardUI;
 import gov.nasa.arc.mct.util.DataValidation;
@@ -12,6 +13,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -44,6 +46,8 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 	
 	private final JLabel message = new JLabel();
     private final JTextField name = new JTextField();
+    private final JTextField startTime = new JTextField("00:00");
+    private final JTextField duration = new JTextField("01:00");
     private Class<? extends AbstractComponent> componentClass;
 	
 	public ActivityCreationWizardUI() {
@@ -60,8 +64,17 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		component.setDisplayName(displayName);
 		ActivityComponent activityComponent = (ActivityComponent) component;
 		ActivityData data = activityComponent.getData();
-		data.setStartDate(new Date(0L));
-		data.setEndDate(new Date(30L * 60L * 1000L));
+		
+		Date startDate, endDate;
+		try {
+			startDate = TimelineLocalControls.DURATION_FORMAT.parse(startTime.getText());
+			endDate = new Date(startDate.getTime() + TimelineLocalControls.DURATION_FORMAT.parse(duration.getText()).getTime()); 
+		} catch (ParseException e) {
+			startDate = new Date(0L);
+			endDate = new Date(30L * 60L * 1000L);
+		}
+		data.setStartDate(startDate);
+		data.setEndDate(endDate);
 		data.setPower(0);
 		data.setComm(0);
 		component.save();
@@ -138,9 +151,21 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		c.weightx = 1;
 		c.gridwidth = 2;
 		c.insets = new Insets(0,10,0,10);
-	        
-		c.gridx = 0;
+
+		c.gridx = 1;
 		c.gridy = 2;
+		c.weightx = 1;
+		c.gridwidth = 2;
+		UIPanel.add(startTime,c);
+		
+		c.gridx = 1;
+		c.gridy = 3;
+		c.weightx = 1;
+		c.gridwidth = 2;
+		UIPanel.add(duration,c);
+		
+		c.gridx = 0;
+		c.gridy = 4;
 		c.weightx = 1;
 		c.gridwidth = 2;
 		UIPanel.add(messagePanel,c);
