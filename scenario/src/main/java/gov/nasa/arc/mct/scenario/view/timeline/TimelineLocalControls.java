@@ -364,6 +364,12 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 				tickHeight = (tickHeight * 3) / 4;
 				tickSizeIndex--;
 			}
+
+			// Draw start/end labels for time
+			String startText = DURATION_FORMAT.format(new Date(startTime));
+			String endText = DURATION_FORMAT.format(new Date(endTime));
+			g.drawString(startText, 0, TICK_AREA_HEIGHT / 3 - metrics.getDescent() - 2);
+			g.drawString(endText, getWidth() - metrics.stringWidth(endText), TICK_AREA_HEIGHT / 3 - metrics.getDescent() - 2);
 		}		
 	}
 	
