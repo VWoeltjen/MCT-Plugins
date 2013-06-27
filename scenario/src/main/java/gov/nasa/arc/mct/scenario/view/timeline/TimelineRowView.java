@@ -85,6 +85,8 @@ public class TimelineRowView extends AbstractTimelineView {
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		super.stateChanged(e);
+		revalidate();
+		repaint();
 		for (JComponent row : rows) {
 			row.revalidate();
 			row.repaint();
@@ -107,7 +109,6 @@ public class TimelineRowView extends AbstractTimelineView {
 	private void addViewToRow(DurationCapability dc, AbstractComponent ac, int row) {
 		while (row >= rows.size()) {
 			rows.add(new JPanel(new TimelineRowLayout()));
-			rows.get(rows.size() - 1).setBackground(Color.BLUE);
 			rows.get(rows.size() - 1).setOpaque(false);
 			upperPanel.add(rows.get(rows.size() - 1));
 			upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
@@ -170,13 +171,14 @@ public class TimelineRowView extends AbstractTimelineView {
 			if (constraints instanceof DurationCapability) {
 				durationInfo.put(comp, (DurationCapability) constraints);
 			} else {
-				throw new IllegalArgumentException("Only valid constraint for TimelineRow is DurationInfo");
+				throw new IllegalArgumentException("Only valid constraint for " + getClass().getName() + 
+						" is " + DurationCapability.class.getName());
 			}
 		}
 
 		@Override
 		public Dimension maximumLayoutSize(Container parent) {
-			return new Dimension(parent.getParent().getWidth(), TIMELINE_ROW_HEIGHT);
+			return new Dimension(Integer.MAX_VALUE, TIMELINE_ROW_HEIGHT);
 		}
 
 		@Override

@@ -108,13 +108,13 @@ public class TimelineDurationController extends MouseAdapter {
 
 			parentView.revalidate();
 			parentView.repaint();
+			// parentView.stateChanged(null); Consider this in lieu of above
 			Object src = e.getSource();
 			if (src instanceof Component) {
 				((Component) src).invalidate();
 				((Component) src).validate();
 				((Component) src).repaint();
-			}
-			
+			}			
 			 
 			parentView.getManifestedComponent().save();
 		}
