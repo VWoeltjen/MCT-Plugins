@@ -13,6 +13,7 @@ import gov.nasa.arc.mct.services.component.ViewType;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -69,10 +70,10 @@ public class ActivityView extends View implements CostOverlay {
 			@Override
 			public void paint(Graphics2D g, int w, int h, Color fg, Color bg) {
 				g.setColor(bg);
-				g.fillRoundRect(1, 1, w-2, h-2, h / 3, h / 3);
+				g.fillRoundRect(1, 1, w-3, h-3, h / 3, h / 3);
 				g.setStroke(SOLID_2PT_LINE_STROKE);
 				g.setColor(fg);
-				g.drawRoundRect(1, 1, w-2, h-2, h / 3, h / 3);	
+				g.drawRoundRect(1, 1, w-3, h-3, h / 3, h / 3);	
 			}
 
 			@Override
@@ -92,23 +93,27 @@ public class ActivityView extends View implements CostOverlay {
 			@Override
 			public void paint(Graphics2D g, int w, int h, Color fg, Color bg) {
 				int x[] = {0, w-h/2,  w-h/2, w, w-h/2, w-h/2, 0 };
-				int y[] = {2*h/5, 2*h/5, h/3, h/2, 2*h/3, 3*h/5, 3*h/5};
+				int y[] = {1*h/3, 1*h/3, h/4, h/2, 3*h/4, 2*h/3, 2*h/3};
 				g.setColor(bg);
 				g.fillPolygon(x,y,7);
-				g.setStroke(SOLID_2PT_LINE_STROKE);
-				g.setColor(fg);
-				g.drawPolygon(x,y,7);
+//				g.setStroke(SOLID_2PT_LINE_STROKE);
+//				g.setColor(fg);
+//				g.drawPolygon(x,y,7);
 			}
 
 			@Override
 			public void paintLabels(Graphics2D g, String name, String duration,
-					int w, int h, Color fg) {
+					int w, int h, Color fg) {	
+				Font originalFont = g.getFont();
+				g.setFont(originalFont.deriveFont(originalFont.getSize2D() - 1.0f));
 				int charHeight = g.getFontMetrics(g.getFont()).getHeight();
 				int baseline   = g.getFontMetrics(g.getFont()).getAscent();
 				int charsWidth = g.getFontMetrics(g.getFont()).charsWidth(name.toCharArray(), 0, name.length());
 
 				g.setColor(fg);
-				g.drawString(name, w/2 - charsWidth/2, baseline + h / 2 - charHeight / 2);
+				g.drawString(name, w/2 - charsWidth/2, baseline + h / 2 - charHeight / 2 - 1);
+				
+				g.setFont(originalFont);
 			}
 			
 		};
