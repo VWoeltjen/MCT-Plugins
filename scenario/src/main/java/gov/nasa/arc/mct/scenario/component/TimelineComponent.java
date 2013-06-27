@@ -11,13 +11,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class TimelineComponent extends CostFunctionComponent {
+public class TimelineComponent extends CostFunctionComponent implements DurationCapability {
 	
 	public String getDisplay(){
 		return this.getDisplayName();
 	}
 
 	private Set<AbstractComponent> modifiedObjects = new HashSet<AbstractComponent>();
+	
+	@Override
+	protected <T> T handleGetCapability(Class<T> capability) {
+		if (capability.isAssignableFrom(getClass())) {
+			return capability.cast(this);
+		}
+		return super.handleGetCapability(capability);
+	}
+	
 	public void addToModifiedObjects(AbstractComponent ac) {
 		modifiedObjects.add(ac);
 	}
@@ -29,5 +38,35 @@ public class TimelineComponent extends CostFunctionComponent {
 	@Override
 	public void notifiedSaveAllSuccessful() {
 		modifiedObjects.clear();
+	}
+	
+	@Override
+	public long getStart() {		
+		return 0;
+	}
+	@Override
+	public long getEnd() {
+		// The end of a Timeline is the end of its last activity
+		long end = 0;
+		for (AbstractComponent child : getComponents()) {
+			DurationCapability dc = child.getCapability(DurationCapability.class);
+			if (dc != null) {
+				long childEnd = dc.getEnd();
+				if (childEnd > end) {
+					end = childEnd;
+				}
+			}
+		}
+		return end;
+	}
+	@Override
+	public void setStart(long start) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void setEnd(long end) {
+		// TODO Auto-generated method stub
+		
 	}
 }
