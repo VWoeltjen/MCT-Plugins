@@ -60,9 +60,8 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
 		component.setDisplayName(displayName);
 		DecisionComponent decisionComponent = (DecisionComponent) component;
 		DecisionData data = decisionComponent.getData();
-		Date currentTime = Calendar.getInstance().getTime();
-		data.setStartDate(currentTime);
-		data.setEndDate(currentTime);
+		data.setStartDate(new Date(0L));
+		data.setEndDate(new Date(30L * 60L * 1000L));
 		component.save();
         
         return component;

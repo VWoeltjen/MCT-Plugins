@@ -2,7 +2,9 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyEditor;
+import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -12,8 +14,7 @@ import java.util.List;
 
 public final class ActivityStartTimePropertyEditor implements PropertyEditor<Object> {
 	private ActivityComponent activityComponent = null;
-	private static String DATE_FORMAT = "yyyy/D HH:mm";
-	public static final SimpleDateFormat FORMATTER = new SimpleDateFormat(DATE_FORMAT);
+	public static final DateFormat FORMATTER = TimelineLocalControls.DURATION_FORMAT;
 
 	public ActivityStartTimePropertyEditor(AbstractComponent component) {
 		activityComponent = (ActivityComponent)component;
@@ -58,7 +59,7 @@ public final class ActivityStartTimePropertyEditor implements PropertyEditor<Obj
 		try {
 			FORMATTER.parse(s);			
 		} catch (ParseException e) {
-			return "Date formatter error: please use " + DATE_FORMAT;
+			return "Date formatter error: please use " + FORMATTER.toString();
 		}
 
 		return null;

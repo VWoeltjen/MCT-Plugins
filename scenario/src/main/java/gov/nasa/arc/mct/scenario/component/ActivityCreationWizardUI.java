@@ -60,9 +60,8 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		component.setDisplayName(displayName);
 		ActivityComponent activityComponent = (ActivityComponent) component;
 		ActivityData data = activityComponent.getData();
-		Date currentTime = Calendar.getInstance().getTime();
-		data.setStartDate(currentTime);
-		data.setEndDate(currentTime);
+		data.setStartDate(new Date(0L));
+		data.setEndDate(new Date(30L * 60L * 1000L));
 		data.setPower(0);
 		data.setComm(0);
 		component.save();
