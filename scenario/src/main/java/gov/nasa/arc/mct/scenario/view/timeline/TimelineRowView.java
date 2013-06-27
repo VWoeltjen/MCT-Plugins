@@ -49,6 +49,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 
 public class TimelineRowView extends AbstractTimelineView {
 	private static final int TIMELINE_ROW_HEIGHT = 40;
@@ -78,6 +79,19 @@ public class TimelineRowView extends AbstractTimelineView {
 		
 		upperPanel.add(GraphView.VIEW_INFO.createView(ac));
 	}
+
+	
+	
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		super.stateChanged(e);
+		for (JComponent row : rows) {
+			row.revalidate();
+			row.repaint();
+		}
+	}
+
+
 
 	private void addActivities(AbstractComponent ac, int depth, Set<String> ids) {
 		DurationCapability dc = ac.getCapability(DurationCapability.class);

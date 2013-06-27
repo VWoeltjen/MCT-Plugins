@@ -39,8 +39,10 @@ import java.awt.event.MouseMotionListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -57,11 +59,15 @@ import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-public class TimelineLocalControls extends JPanel implements DurationCapability {
+public class TimelineLocalControls extends JPanel implements DurationCapability, ChangeListener {
 	public static final int LEFT_MARGIN = 80;
 	public static final int RIGHT_MARGIN = 12;
 	
+	private static final double ZOOM_MAX_POWER = 7; // 2 ^ 7
+	private static final int SLIDER_MAX = 100;
 	private static final int TICK_AREA_HEIGHT = 40;
 
 	private static final long[] TICK_DIVISIONS = // These get multiplied in static block below
@@ -106,6 +112,8 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 	
 	private JLabel timeLabel;
 	
+	private Collection<ChangeListener> changeListeners = new HashSet<ChangeListener>();
+	
 	public TimelineLocalControls(DurationCapability masterDuration) {
 		super(new BorderLayout());
 		this.masterDuration = masterDuration;
@@ -141,6 +149,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		upperPanel.setVisible(isTopLevelControl);
 		lowerPanel.setVisible(isTopLevelControl);
 		overlay.setVisible(false);
+		if (parent != null) {
+			parent.addChangeListener(this);
+		}
 	}
 
 	public JComponent getContentPane() {
@@ -164,8 +175,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 		JPanel upperPanel = new JPanel(new BorderLayout());
 		
 		durationLabel = new JLabel();
-		zoomControl = new JSlider();
+		zoomControl = new JSlider(0, SLIDER_MAX, 0);
 		zoomControl.setOpaque(false);
+		zoomControl.addChangeListener(this);
 		
 		upperPanel.add(durationLabel, BorderLayout.WEST);
 		upperPanel.add(zoomControl, BorderLayout.EAST);
@@ -257,6 +269,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 	public double getPixelScale() {
 		return parent != null ?
 				parent.getPixelScale() :
+				getZoom() * 
 				(double) (getWidth() - getLeftPadding() - getRightPadding()) / 
 				(double) (getEnd() - getStart());
 	}
@@ -271,6 +284,10 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 	
 	public int getRightPadding() {
 		return TimelineLocalControls.RIGHT_MARGIN;
+	}
+	
+	private double getZoom() {
+		return Math.pow(2, ((double) zoomControl.getValue()) / ((double) SLIDER_MAX) * ZOOM_MAX_POWER);
 	}
 	
 	// Utility functions to pick out meaningful tick sizes
@@ -489,6 +506,21 @@ public class TimelineLocalControls extends JPanel implements DurationCapability 
 	
 	public static interface CostOverlay {
 		public List<CostFunctionCapability> getCostFunctions();
+	}
+
+	public void addChangeListener(ChangeListener l) {
+		changeListeners.add(l);
+	}
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		revalidate();
+		repaint();
+		contentPane.revalidate();
+		contentPane.repaint();
+		for (ChangeListener l : changeListeners) {
+			l.stateChanged(e);
+		}
 	}
 
 }

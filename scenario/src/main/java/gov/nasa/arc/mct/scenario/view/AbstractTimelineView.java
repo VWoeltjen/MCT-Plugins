@@ -28,6 +28,8 @@ import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 
 /**
@@ -42,7 +44,7 @@ import javax.swing.JComponent;
  * @author vwoeltje
  *
  */
-public abstract class AbstractTimelineView extends View {
+public abstract class AbstractTimelineView extends View implements ChangeListener {
 	private static final long serialVersionUID = -5683099761127087080L;
 
 	private TimelineLocalControls timelineContainer;
@@ -54,6 +56,7 @@ public abstract class AbstractTimelineView extends View {
 		if (dc != null) {
 			timelineContainer = new TimelineLocalControls(dc);
 			add(timelineContainer);
+			timelineContainer.addChangeListener(this);
 		}
 	}
 	
@@ -79,4 +82,12 @@ public abstract class AbstractTimelineView extends View {
 	protected JComponent getContentPane() {
 		return timelineContainer != null ? timelineContainer.getContentPane() : this; 
 	}
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		revalidate();
+		repaint();
+	}
+	
+	
 }
