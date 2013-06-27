@@ -1,5 +1,7 @@
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.policy.PolicyInfo;
+import gov.nasa.arc.mct.scenario.policy.TimelineFilterViewPolicy;
 import gov.nasa.arc.mct.scenario.view.ActivityEmbeddedView;
 import gov.nasa.arc.mct.scenario.view.ActivityOverviewView;
 import gov.nasa.arc.mct.scenario.view.GraphView;
@@ -37,6 +39,10 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			bundle.getString("description_timeline"), 
 			TimelineComponent.class);
 	
+	private static final PolicyInfo timelinePolicy = new PolicyInfo(
+			PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(), 
+			TimelineFilterViewPolicy.class);
+	
 	@Override
 	public Collection<ComponentTypeInfo> getComponentTypes() {
 		// return the component types provided
@@ -52,27 +58,41 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		
 		// Also, note that the default node view, canvas view, and housing view will be supplied
 		// by the MCT platform.
-		if (componentTypeId.equals(ActivityComponent.class.getName())) {
-			return Arrays.asList(
-					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.CENTER),
+//		if (componentTypeId.equals(ActivityComponent.class.getName())) {
+//			return Arrays.asList(
+//					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.CENTER),
+//					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.OBJECT),
+//					new ViewInfo(GraphView.class, "Cost Graph", ViewType.OBJECT),
+//					new ViewInfo(GraphView.class, "Cost Graph", ViewType.CENTER),
+//					new ViewInfo(ActivityEmbeddedView.class, ActivityEmbeddedView.VIEW_ROLE_NAME, ActivityEmbeddedView.class.getName(), ViewType.EMBEDDED, null, null, true, ActivityComponent.class),
+//					new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.OBJECT, null, null, true, ActivityComponent.class),
+//		    		new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.CENTER, null, null, true, ActivityComponent.class)
+//					
+//			);
+//		} else if (componentTypeId.equals(TimelineComponent.class.getName())) {
+//			return Arrays.asList(
+//					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.CENTER),
+//					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.OBJECT),
+//		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.CENTER, null, null, true, TimelineComponent.class),
+//		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.OBJECT, null, null, true, TimelineComponent.class),
+//		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.EMBEDDED, null, null, true, TimelineComponent.class)
+//			);
+//		}
+		
+		// TimelineFilterViewPolicy will suppress these as appropriate
+		return Arrays.asList(					
+				    new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.CENTER),
 					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.OBJECT),
 					new ViewInfo(GraphView.class, "Cost Graph", ViewType.OBJECT),
-					new ViewInfo(GraphView.class, "Cost Graph", ViewType.CENTER),
-					new ViewInfo(ActivityEmbeddedView.class, ActivityEmbeddedView.VIEW_ROLE_NAME, ActivityEmbeddedView.class.getName(), ViewType.EMBEDDED, null, null, true, ActivityComponent.class),
-					new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.OBJECT, null, null, true, ActivityComponent.class),
-		    		new ViewInfo(ActivityOverviewView.class, ActivityOverviewView.VIEW_ROLE_NAME, ActivityOverviewView.class.getName(), ViewType.CENTER, null, null, true, ActivityComponent.class)
-					
-			);
-		} else if (componentTypeId.equals(TimelineComponent.class.getName())) {
-			return Arrays.asList(
-					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.CENTER),
-					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.OBJECT),
-		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.CENTER, null, null, true, TimelineComponent.class),
-		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.OBJECT, null, null, true, TimelineComponent.class),
-		    		new ViewInfo(TimelineView.class, TimelineView.VIEW_ROLE_NAME, TimelineView.class.getName(), ViewType.EMBEDDED, null, null, true, TimelineComponent.class)
-			);
-		}
-		return Collections.emptyList();
+					new ViewInfo(GraphView.class, "Cost Graph", ViewType.CENTER));
+		//return Collections.emptyList();
+	}
+
+	@Override
+	public Collection<PolicyInfo> getPolicyInfos() {
+		return Arrays.asList(
+				timelinePolicy
+				);
 	}
 	
 }

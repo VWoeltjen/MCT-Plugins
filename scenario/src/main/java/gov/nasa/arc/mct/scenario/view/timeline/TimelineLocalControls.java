@@ -21,6 +21,7 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view.timeline;
 
+import gov.nasa.arc.mct.policy.ExecutionResult;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 
@@ -70,6 +71,8 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private static final int SLIDER_MAX = 100;
 	private static final int TICK_AREA_HEIGHT = 40;
 
+	private static final Color BACKGROUND_COLOR = Color.white;
+	
 	private static final long[] TICK_DIVISIONS = // These get multiplied in static block below
 		{1, 10, 10, 10, // Up to 1000 ms -> 1s
 		 5, 3,  2,  2,  // Up to   60 s  -> 1m
@@ -150,6 +153,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 				SwingUtilities.getAncestorOfClass(TimelineLocalControls.class, this);
 		boolean isTopLevelControl = parent == null;
 		upperPanel.setVisible(isTopLevelControl);
+		middlePanel.setOpaque(isTopLevelControl);
 		lowerPanel.setVisible(isTopLevelControl);
 		overlay.setVisible(false);
 		if (parent != null) {
@@ -165,7 +169,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private JComponent makeMiddlePanel() {	
 		JPanel midPanel = new JPanel();// new JPanel(new GridLayout(1,1));//springLayout);
 		midPanel.setLayout(new OverlayLayout(midPanel));
-		midPanel.setOpaque(false);
+		midPanel.setBackground(BACKGROUND_COLOR);
 		midPanel.add(overlay);
 		midPanel.add(contentPane);
 		
