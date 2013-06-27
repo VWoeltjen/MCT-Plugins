@@ -269,7 +269,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 
 	@Override
 	public long getEnd() {
-		return parent != null ? parent.getStart() :
+		return parent != null ? parent.getEnd() :
 			centerTime + (long) (((double) (masterDuration.getEnd() - masterDuration.getStart()) / getZoom()) / 2.0);//masterDuration.getStart();
 	}
 

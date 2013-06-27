@@ -60,6 +60,14 @@ public abstract class AbstractTimelineView extends View implements ChangeListene
 		}
 	}
 	
+	public long getStart() {
+		return timelineContainer.getStart();
+	}
+	
+	public long getEnd() {
+		return timelineContainer.getEnd();
+	}
+	
 	public double getPixelScale() {
 		return timelineContainer != null ?
 				timelineContainer.getPixelScale() : 

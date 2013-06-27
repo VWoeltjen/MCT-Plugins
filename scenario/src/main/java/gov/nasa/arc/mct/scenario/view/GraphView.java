@@ -118,17 +118,17 @@ public class GraphView extends AbstractTimelineView {
 				renderHints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 				((Graphics2D) g).setRenderingHints(renderHints);
 			}
-			
+						
 			// Draw the data line. Note that points have been computed in a separate method
 			int charHeight = getFontMetrics(getFont()).getHeight();
 			if (x.length > 1 && x.length == y.length) {
 				for (int i = 0; i < x.length - 1; i++) {
 					g.drawLine(x[i], y[i], x[i+1], y[i]);
 					g.drawLine(x[i+1], y[i], x[i+1], y[i+1]);
-					
+						
 					double maxValue = Math.max(dataPoints[i], dataPoints[i+1]);
 					double minValue = Math.min(dataPoints[i], dataPoints[i+1]);
-					if (maxValue != minValue) {
+					if (maxValue != minValue && x[i+1] > getLeftPadding() && x[i+1] < getWidth() - getRightPadding()) {
 						int maxY = Math.min(y[i], y[i+1]);
 						int minY = Math.max(y[i], y[i+1]);
 						String maxValueString = Double.toString(maxValue);
@@ -178,14 +178,30 @@ public class GraphView extends AbstractTimelineView {
 					if (data[i] < minData) minData = data[i];
 					time[i++] = t;
 				}
+				
+				long start = getStart();
+				long end = getEnd();
+				int leftY = toY(cost.getValue(start), minData, maxData);
+				int rightY = toY(cost.getValue(end), minData, maxData);
+				
 				this.minData = minData;
 				this.maxData = maxData;
 				x = new int[i];
 				y = new int[i];
 				dataPoints = new double[i];
 				for (int j = 0 ; j < i ; j++) {
-					x[j] = toX(time[j]);
-					y[j] = toY(data[j], minData, maxData);
+					// Convert to x, y
+					// Note that off-graph points get effectively truncated
+					if (time[j] < start) {
+						x[j] = getLeftPadding();
+						y[j] = leftY;
+					} else if (time[j] > end) {
+						x[j] = getWidth() - getRightPadding();
+						y[j] = rightY;
+					} else {
+						x[j] = toX(time[j]);
+						y[j] = toY(data[j], minData, maxData);
+					}
 					dataPoints[j] = data[j];
 				}
 			}
