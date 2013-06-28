@@ -152,11 +152,23 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		c.gridwidth = 2;
 		c.insets = new Insets(0,10,0,10);
 
+		c.gridx = 0;
+		c.gridy = 2;
+		c.weightx = 1;
+		c.gridwidth = 2;
+		UIPanel.add(new JLabel("Start:"),c);
+		
 		c.gridx = 1;
 		c.gridy = 2;
 		c.weightx = 1;
 		c.gridwidth = 2;
 		UIPanel.add(startTime,c);
+		
+		c.gridx = 0;
+		c.gridy = 3;
+		c.weightx = 1;
+		c.gridwidth = 2;
+		UIPanel.add(new JLabel("Duration:"),c);
 		
 		c.gridx = 1;
 		c.gridy = 3;
