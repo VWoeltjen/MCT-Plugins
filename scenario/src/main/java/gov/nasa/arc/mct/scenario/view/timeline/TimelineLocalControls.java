@@ -25,6 +25,7 @@ import gov.nasa.arc.mct.gui.SelectionProvider;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
+import gov.nasa.arc.mct.scenario.util.DurationFormatter;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

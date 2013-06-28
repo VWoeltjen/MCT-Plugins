@@ -2,7 +2,7 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyEditor;
-import gov.nasa.arc.mct.scenario.view.timeline.DurationFormatter;
+import gov.nasa.arc.mct.scenario.util.DurationFormatter;
 import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 
 import java.text.DateFormat;
