@@ -23,6 +23,7 @@ package gov.nasa.arc.mct.scenario.view.timeline;
 
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
+import gov.nasa.arc.mct.scenario.util.DurationFormatter;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
