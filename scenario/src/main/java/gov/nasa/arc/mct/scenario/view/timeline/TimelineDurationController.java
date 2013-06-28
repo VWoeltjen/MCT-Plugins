@@ -21,6 +21,7 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view.timeline;
 
+import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 
@@ -30,8 +31,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.SwingUtilities;
 
 /**
  * Mouse controls for moving & resizing activities/decisions within a timeline
@@ -107,6 +106,9 @@ public class TimelineDurationController extends MouseAdapter {
 			initialStart = durationCapability.getStart();
 			initialEnd = durationCapability.getEnd();
 			activeHandle = handles.get(comp.getCursor().getType());
+		}
+		if (src instanceof View) {
+			parentView.select((View) src);
 		}
 	}
 

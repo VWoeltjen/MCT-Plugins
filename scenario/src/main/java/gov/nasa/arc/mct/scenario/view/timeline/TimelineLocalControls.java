@@ -21,6 +21,8 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view.timeline;
 
+import gov.nasa.arc.mct.gui.SelectionProvider;
+import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 
@@ -38,10 +40,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,7 +76,7 @@ import javax.swing.event.ChangeListener;
  * @author vwoeltje
  *
  */
-public class TimelineLocalControls extends JPanel implements DurationCapability, ChangeListener {
+public class TimelineLocalControls extends JPanel implements DurationCapability, ChangeListener, SelectionProvider {
 	public static final int LEFT_MARGIN = 80;
 	public static final int RIGHT_MARGIN = 12;
 	
@@ -130,7 +134,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private JLabel timeLabel;
 	
 	private Collection<ChangeListener> changeListeners = new HashSet<ChangeListener>();
-	
+	private List<PropertyChangeListener> selectionListeners = new ArrayList<PropertyChangeListener>();
+	private View selectedView = null;
+
 	public TimelineLocalControls(DurationCapability masterDuration) {
 		super(new BorderLayout());
 		this.masterDuration = masterDuration;
@@ -616,5 +622,38 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			l.stateChanged(e);
 		}
 	}
+	
+	@Override
+	public void addSelectionChangeListener(PropertyChangeListener listener) {
+		addPropertyChangeListener(SelectionProvider.SELECTION_CHANGED_PROP, listener);
+	}
+
+	@Override
+	public void removeSelectionChangeListener(PropertyChangeListener listener) {
+		removePropertyChangeListener(SelectionProvider.SELECTION_CHANGED_PROP, listener);
+	}
+
+	@Override
+	public Collection<View> getSelectedManifestations() {		
+		return (selectedView == null) ? Collections.<View>emptyList() : 
+			Collections.<View>singleton(selectedView);
+	}
+
+	@Override
+	public void clearCurrentSelections() {
+		selectedView = null;
+	}
+	
+	public void select(View view) {
+		if (parent != null && parent != this) {
+			parent.select(view);
+		} else {
+			Collection<View> oldSelections = getSelectedManifestations();
+			selectedView = view;
+			firePropertyChange(SelectionProvider.SELECTION_CHANGED_PROP, oldSelections, getSelectedManifestations());
+		}
+	}
+	
+	
 
 }
