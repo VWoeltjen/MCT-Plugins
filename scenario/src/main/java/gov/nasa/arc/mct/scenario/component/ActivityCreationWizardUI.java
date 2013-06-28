@@ -1,6 +1,7 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.scenario.view.timeline.DurationFormatter;
 import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
 import gov.nasa.arc.mct.services.component.CreateWizardUI;
@@ -67,8 +68,8 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		
 		Date startDate, endDate;
 		try {
-			startDate = TimelineLocalControls.DURATION_FORMAT.parse(startTime.getText());
-			endDate = new Date(startDate.getTime() + TimelineLocalControls.DURATION_FORMAT.parse(duration.getText()).getTime()); 
+			startDate = new Date(DurationFormatter.parse(startTime.getText()));
+			endDate = new Date(startDate.getTime() + DurationFormatter.parse(duration.getText())); 
 		} catch (ParseException e) {
 			startDate = new Date(0L);
 			endDate = new Date(30L * 60L * 1000L);

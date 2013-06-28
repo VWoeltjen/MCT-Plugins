@@ -2,6 +2,7 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyEditor;
+import gov.nasa.arc.mct.scenario.view.timeline.DurationFormatter;
 import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 
 import java.text.DateFormat;
@@ -14,7 +15,6 @@ import java.util.List;
 
 public final class ActivityEndTimePropertyEditor implements PropertyEditor<Object> {
 	private ActivityComponent activityComponent = null;
-	public static final DateFormat FORMATTER = TimelineLocalControls.DURATION_FORMAT;
 
 	public ActivityEndTimePropertyEditor(AbstractComponent component) {
 		activityComponent = (ActivityComponent)component;
@@ -25,7 +25,7 @@ public final class ActivityEndTimePropertyEditor implements PropertyEditor<Objec
 		Date endDate = activityComponent.getModel().getData().getEndTime();
 		if (endDate == null)
 			endDate = Calendar.getInstance().getTime();
-		return String.valueOf(FORMATTER.format(endDate));
+		return DurationFormatter.formatDuration(endDate.getTime());//String.valueOf(FORMATTER.format(endDate));
 	}
 
 	/**
@@ -44,7 +44,7 @@ public final class ActivityEndTimePropertyEditor implements PropertyEditor<Objec
 		ActivityData businessModel = activityComponent.getModel().getData();
 		Date parsedDate = null;
 		try {
-			parsedDate = FORMATTER.parse(newValue);			
+			parsedDate = new Date( DurationFormatter.parse(newValue) );			
 		} catch (ParseException e) {
 			// Format verified in verify()
 		}
@@ -57,9 +57,9 @@ public final class ActivityEndTimePropertyEditor implements PropertyEditor<Objec
 			return "Cannot be unspecified";
 		}
 		try {
-			FORMATTER.parse(s);			
+			DurationFormatter.parse(s);
 		} catch (ParseException e) {
-			return "Date formatter error: please use " + FORMATTER.toString();
+			return "Date formatter error";
 		}
 
 		return null;

@@ -81,8 +81,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		
 		// TimelineFilterViewPolicy will suppress these as appropriate
 		return Arrays.asList(					
-				    new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.CENTER),
-					new ViewInfo(TimelineRowView.class, "New Timeline", ViewType.OBJECT),
+				    new ViewInfo(TimelineRowView.class, "Timeline", ViewType.CENTER),
+					new ViewInfo(TimelineRowView.class, "Timeline", ViewType.OBJECT),
 					new ViewInfo(GraphView.class, "Cost Graph", ViewType.OBJECT),
 					new ViewInfo(GraphView.class, "Cost Graph", ViewType.CENTER));
 		//return Collections.emptyList();

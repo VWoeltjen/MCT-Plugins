@@ -6,6 +6,7 @@ import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.CostFunctionComponent;
 import gov.nasa.arc.mct.scenario.component.DecisionComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
+import gov.nasa.arc.mct.scenario.view.timeline.DurationFormatter;
 import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls.CostOverlay;
 import gov.nasa.arc.mct.services.component.ViewInfo;
@@ -62,7 +63,7 @@ public class ActivityView extends View implements CostOverlay {
 			
 			String name = getManifestedComponent().getDisplayName();			
 			String duration = (durationCapability != null) ?
-				TimelineLocalControls.DURATION_FORMAT.format(new Date(durationCapability.getEnd() - durationCapability.getStart())) : 
+				DurationFormatter.formatDuration(durationCapability.getEnd() - durationCapability.getStart()) : 
 					"";
 			
 			bg.paintLabels(g2, name, duration, getWidth(), getHeight(), getForeground());

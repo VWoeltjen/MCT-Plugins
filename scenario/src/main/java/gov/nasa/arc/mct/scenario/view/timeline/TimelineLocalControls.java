@@ -95,9 +95,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		};
 	private static final Map<Long, String> NAMED_TICK_SIZES = new HashMap<Long, String>();
 	
-	public static final DateFormat DURATION_FORMAT = new SimpleDateFormat("ddd HH:mm");
+	//public static final DateFormat DURATION_FORMAT = new SimpleDateFormat("ddd HH:mm");
 	static {
-		DURATION_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
+		//DURATION_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
 		for (int i = 1; i < TICK_DIVISIONS.length; i++) {
 			TICK_DIVISIONS[i] *= TICK_DIVISIONS[i-1];
 		}
@@ -207,7 +207,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 				BorderFactory.createMatteBorder(0, 0, 1, 0, EDGE_COLOR.darker()),				
 				BorderFactory.createEmptyBorder(4, 4, 4, 4))); //TODO: Move to constant
 		
-		durationLabel.setText("Total Duration: " + DURATION_FORMAT.format(new Date(masterDuration.getEnd() - masterDuration.getStart())));
+		durationLabel.setText("Total Duration: " + DurationFormatter.formatDuration(masterDuration.getEnd() - masterDuration.getStart()));
 		
 		return upperPanel;
 	}
@@ -265,7 +265,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			label = "???"; // TODO: Log
 		}
 		timeLabel.setText(label);
-		durationLabel.setText("Total Duration: " + DURATION_FORMAT.format(new Date(masterDuration.getEnd() - masterDuration.getStart())));
+		durationLabel.setText("Total Duration: " + DurationFormatter.formatDuration((masterDuration.getEnd() - masterDuration.getStart())));
 	}
 	
 	@Override
@@ -393,8 +393,8 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			}
 
 			// Draw start/end labels for time
-			String startText = DURATION_FORMAT.format(new Date(startTime));
-			String endText = DURATION_FORMAT.format(new Date(endTime));
+			String startText = DurationFormatter.formatDuration(startTime);
+			String endText = DurationFormatter.formatDuration(endTime);
 			g.drawString(startText, 0, TICK_AREA_HEIGHT / 3 - metrics.getDescent() - 2);
 			g.drawString(endText, getWidth() - metrics.stringWidth(endText), TICK_AREA_HEIGHT / 3 - metrics.getDescent() - 2);
 		}		
