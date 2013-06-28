@@ -49,31 +49,53 @@ public class TimelineDurationController extends MouseAdapter {
 	private long           initialEnd   = 0;
 	
 	public TimelineDurationController(DurationCapability dc,
-			AbstractTimelineView parentView) {
+			AbstractTimelineView parent) {
 		super();
 		this.durationCapability = dc;
-		this.parentView = parentView;
+		this.parentView = parent;
 		
 		handles.put(Cursor.E_RESIZE_CURSOR, new DurationHandle() {
 			@Override
 			public void mouseDragged(long timeDifference) {
+				timeDifference = clamp(timeDifference, initialEnd, initialStart, parentView.getEnd());		
 				durationCapability.setEnd(initialEnd + timeDifference);
 			}			
 		});
 		handles.put(Cursor.W_RESIZE_CURSOR, new DurationHandle() {
 			@Override
 			public void mouseDragged(long timeDifference) {
+				timeDifference = clamp(timeDifference, initialStart, parentView.getStart(), initialEnd);
 				durationCapability.setStart(initialStart + timeDifference);
 			}			
 		});
 		handles.put(Cursor.MOVE_CURSOR, new DurationHandle() {
 			@Override
 			public void mouseDragged(long timeDifference) {
+				timeDifference = clamp(timeDifference, initialStart, parentView.getStart(), parentView.getEnd() - (initialEnd-initialStart));
 				durationCapability.setStart(initialStart + timeDifference);
 				durationCapability.setEnd(initialEnd + timeDifference);
 			}			
 		});
 		
+	}
+
+	/**
+	 * Utility method to clamp the difference in time related to a mouse drag to 
+	 * some appropriate time span (i.e. not off the edge of the timeline...)
+	 * @param timeDifference
+	 * @param initial
+	 * @param min
+	 * @param max
+	 * @return
+	 */
+	private long clamp(long timeDifference, long initial, long min, long max) {
+		if (timeDifference < 0 && initial + timeDifference < min) {
+			timeDifference = min - initial;
+		}
+		if (timeDifference > 0 && initial + timeDifference > max) {
+			timeDifference = max - initial;
+		}
+		return timeDifference;
 	}
 	
 	@Override
