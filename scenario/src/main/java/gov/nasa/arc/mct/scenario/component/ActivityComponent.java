@@ -132,6 +132,11 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	}
 
 	public void constrainChildren(DurationCapability source, boolean isStart) {
+		constrainActivities(source, isStart);
+		constrainDecisions(isStart);
+	}
+	
+	private void constrainActivities(DurationCapability source, boolean isStart) {
 		int sign = isStart ? 1 : -1;
 		long movingEdge = isStart ? source.getStart() : source.getEnd();
 		long mostOverlapping = movingEdge;
@@ -153,8 +158,54 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 					durationCapabilityToShift.getStart() + delta);
 			durationCapabilityToShift.setEnd(
 					durationCapabilityToShift.getEnd() + delta);
-			constrainChildren(durationCapabilityToShift, isStart);
+			constrainActivities(durationCapabilityToShift, isStart);
 		}
+	}
+	
+	private void constrainDecisions(boolean movingTowardStart) {
+		// Enforce special positioning rules for Decisions
+		boolean moved = false;
+		do {
+			moved = false;
+			for (AbstractComponent child : getComponents()) {
+				if (child instanceof DecisionComponent) {
+					long start = ((DecisionComponent) child).getStart();
+					long end = ((DecisionComponent) child).getEnd();
+					DurationCapability preceedingCapability = null;
+					DurationCapability followingCapability = null;
+					long nearestPrecedent = getStart();
+					long nearestFollower = getEnd();
+					for (AbstractComponent otherChild : getComponents()) {
+						if (child != otherChild) {
+							DurationCapability dc = otherChild
+									.getCapability(DurationCapability.class);
+							if (dc.getEnd() > nearestPrecedent && dc.getEnd() <= end) {
+								preceedingCapability = dc;
+								nearestPrecedent = dc.getEnd();
+							}
+							if (dc.getStart() < nearestFollower && dc.getStart() >= start) {
+								 followingCapability = dc;
+								 nearestFollower = dc.getStart();
+							}
+						}
+					}
+					if (preceedingCapability != null && nearestPrecedent < start && !overlaps((DurationCapability) child, preceedingCapability)) {
+						long delta = (start - nearestPrecedent) * (movingTowardStart ? -1 : 1);
+						DurationCapability toMove = (DurationCapability) (movingTowardStart ? child : preceedingCapability);
+						toMove.setStart(toMove.getStart() + delta);
+						toMove.setEnd(toMove.getEnd() + delta);
+						moved = true;
+					}
+					if (followingCapability != null && nearestFollower > end && !overlaps((DurationCapability) child, followingCapability)) {
+						long delta = (end - nearestFollower) * (movingTowardStart ? 1 : -1);
+						DurationCapability toMove = (DurationCapability) (!movingTowardStart ? child : followingCapability);
+						toMove.setStart(toMove.getStart() + delta);
+						toMove.setEnd(toMove.getEnd() + delta);
+						moved = true;
+					}
+				}
+			}
+		} while (moved);
 	}
 	
 	/**
