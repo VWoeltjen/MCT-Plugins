@@ -121,20 +121,28 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 	@Override
 	public void setStart(long start) {
+		long old = getStart();
 		getData().setStartDate(new Date(start));
 		save();		
+		if (old < start) {
+			constrainToDuration();
+		}
 	}
 
 	@Override
 	public void setEnd(long end) {
+		long old = getEnd();
 		getData().setEndDate(new Date(end));
 		save();
+		if (old > end) {
+			constrainToDuration();
+		}
 	}
 
 	public void constrainChildren(DurationCapability source, boolean isStart) {
 		constrainActivities(source, isStart);
-		constrainToDuration();
 		constrainDecisions(isStart);
+		constrainToDuration();
 	}
 	
 	private void constrainToDuration() {
@@ -164,12 +172,14 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				latest.setEnd(getEnd());
 				latest.setStart(latest.getStart() + delta);
 				constrainActivities(latest, true);
+				constrainDecisions(true);
 			} 
 			if (minimum < getStart()) {
 				delta = getStart() - minimum;
 				earliest.setEnd(earliest.getEnd() + delta);
 				earliest.setStart(getStart());
 				constrainActivities(earliest, false);
+				constrainDecisions(false);
 			}
 		}
 	}
