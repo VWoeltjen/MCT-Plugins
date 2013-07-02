@@ -23,6 +23,7 @@ package gov.nasa.arc.mct.scenario.view.timeline;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
+import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 import gov.nasa.arc.mct.scenario.view.ActivityView;
@@ -133,22 +134,22 @@ public class TimelineRowView extends AbstractTimelineView {
 			if (dc.getEnd() > block.maximumTime) {
 				block.maximumTime = dc.getEnd();
 			}
-			addActivities(ac, 0, new HashSet<String>(), block);
+			addActivities(ac, null, 0, new HashSet<String>(), block);
 		}		
 	}
 
-	private void addActivities(AbstractComponent ac, int depth, Set<String> ids, TimelineBlock block) {
+	private void addActivities(AbstractComponent ac, AbstractComponent parent, int depth, Set<String> ids, TimelineBlock block) {
 		DurationCapability dc = ac.getCapability(DurationCapability.class);
 		if (dc != null && !ids.contains(ac.getComponentId())) {
-			addViewToRow(dc, ac, block, depth);
+			addViewToRow(dc, ac, (ActivityComponent) (parent instanceof ActivityComponent ? parent : null), block, depth);
 			ids.add(ac.getComponentId()); // Prevent infinite loops in case of cycle
 			for (AbstractComponent child : ac.getComponents()) {
-				addActivities(child, depth + 1, ids, block);
+				addActivities(child, ac, depth + 1, ids, block);
 			}			
 		}
 	}
 	
-	private void addViewToRow(DurationCapability dc, AbstractComponent ac, TimelineBlock block, int row) {
+	private void addViewToRow(DurationCapability dc, AbstractComponent ac, ActivityComponent parent, TimelineBlock block, int row) {
 		while (row >= block.rows.size()) {
 			block.rows.add(new JPanel(new TimelineRowLayout()));
 			block.rows.get(block.rows.size() - 1).setOpaque(false);
@@ -156,7 +157,7 @@ public class TimelineRowView extends AbstractTimelineView {
 			block.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
 		}
 		View activityView = ActivityView.VIEW_INFO.createView(ac);
-		MouseAdapter controller = new TimelineDurationController(dc, this);
+		MouseAdapter controller = new TimelineDurationController(parent, dc, this);
 		block.rows.get(row).add(activityView, dc);
 		activityView.addMouseListener(controller);
 		activityView.addMouseMotionListener(controller);

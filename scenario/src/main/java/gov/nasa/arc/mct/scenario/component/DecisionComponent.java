@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class DecisionComponent extends AbstractComponent implements DurationCapability {
+
 	private final AtomicReference<DecisionModelRole> model = new AtomicReference<DecisionModelRole>(new DecisionModelRole());
 	
 	public DecisionData getData() {
@@ -98,5 +99,10 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 	public void setEnd(long end) {
 		getData().setEndDate(new Date(end));
 	}
-	
+
+	@Override
+	public boolean isLeaf() {
+		return true;
+	}
+
 }

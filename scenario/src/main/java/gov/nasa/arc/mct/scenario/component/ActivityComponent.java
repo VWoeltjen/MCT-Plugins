@@ -122,7 +122,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	@Override
 	public void setStart(long start) {
 		getData().setStartDate(new Date(start));
-		save();
+		save();		
 	}
 
 	@Override
@@ -131,6 +131,41 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		save();
 	}
 
+	public void constrainChildren(DurationCapability source, boolean isStart) {
+		int sign = isStart ? 1 : -1;
+		long movingEdge = isStart ? source.getStart() : source.getEnd();
+		long mostOverlapping = movingEdge;
+		DurationCapability durationCapabilityToShift = null;
+		for (AbstractComponent child : getComponents()) {
+			DurationCapability dc = child
+					.getCapability(DurationCapability.class);
+			if (dc != source && overlaps(dc, source)) {
+				long movedEdge = isStart ? dc.getEnd() : dc.getStart();
+				if (movedEdge * sign > mostOverlapping * sign) {
+					mostOverlapping = movedEdge;
+					durationCapabilityToShift = dc;
+				}
+			}
+		}
+		if (durationCapabilityToShift != null) {
+			long delta = movingEdge - mostOverlapping;
+			durationCapabilityToShift.setStart(
+					durationCapabilityToShift.getStart() + delta);
+			durationCapabilityToShift.setEnd(
+					durationCapabilityToShift.getEnd() + delta);
+			constrainChildren(durationCapabilityToShift, isStart);
+		}
+	}
+	
+	/**
+	 * Utility method to determine if two DurationCapabilities overlap 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private boolean overlaps(DurationCapability a, DurationCapability b) {
+		return (a.getStart() < b.getEnd() && a.getEnd() > b.getStart());
+	}
 	
 	private class CostFunctionStub implements CostFunctionCapability {
 		private boolean isComm; //Otherwise, is power

@@ -21,6 +21,7 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view.timeline;
 
+import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 
@@ -31,14 +32,13 @@ import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.SwingUtilities;
-
 /**
  * Mouse controls for moving & resizing activities/decisions within a timeline
  * @author vwoeltje
  *
  */
 public class TimelineDurationController extends MouseAdapter {
+	private ActivityComponent parentComponent = null;
 	private DurationCapability durationCapability; 
 	private AbstractTimelineView parentView;
 	
@@ -47,6 +47,12 @@ public class TimelineDurationController extends MouseAdapter {
 	private int            initialX     = 0;
 	private long           initialStart = 0;
 	private long           initialEnd   = 0;
+	
+	public TimelineDurationController(ActivityComponent immediateParent, DurationCapability dc,
+			AbstractTimelineView parent) {
+		this(dc, parent);
+		this.parentComponent = immediateParent;
+	}
 	
 	public TimelineDurationController(DurationCapability dc,
 			AbstractTimelineView parent) {
@@ -133,6 +139,10 @@ public class TimelineDurationController extends MouseAdapter {
 			long tDiff = (long) (xDiff / parentView.getPixelScale());
 			activeHandle.mouseDragged(tDiff);
 
+			if (parentComponent != null) {
+				parentComponent.constrainChildren(durationCapability, tDiff < 0);
+			}
+			
 			parentView.revalidate();
 			parentView.repaint();
 			// parentView.stateChanged(null); Consider this in lieu of above
