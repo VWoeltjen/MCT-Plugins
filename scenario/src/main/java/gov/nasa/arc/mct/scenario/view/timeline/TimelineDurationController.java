@@ -139,7 +139,8 @@ public class TimelineDurationController extends MouseAdapter {
 		if (activeHandle != null) {
 			boolean isTowardStart = e.getXOnScreen() < priorX;
 			int xDiff = e.getXOnScreen() - initialX;
-			long tDiff = (long) (xDiff / parentView.getPixelScale());
+			long tDiff = (long) (xDiff / parentView.getPixelScale());			
+			
 			activeHandle.mouseDragged(tDiff);
 
 			if (parentComponent != null) {

@@ -133,7 +133,45 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 	public void constrainChildren(DurationCapability source, boolean isStart) {
 		constrainActivities(source, isStart);
+		constrainToDuration();
 		constrainDecisions(isStart);
+	}
+	
+	private void constrainToDuration() {
+		long minimum = getStart();
+		long maximum = getEnd();
+		DurationCapability latest = null;
+		DurationCapability earliest = null;
+		for (AbstractComponent child : getComponents()) {
+			DurationCapability dc = child.getCapability(DurationCapability.class);
+			if (dc != null) {
+				if (dc.getStart() < minimum) {
+					earliest = dc;
+					minimum = dc.getStart();
+				}
+				if (dc.getEnd() > maximum) {
+					latest = dc;
+					maximum = dc.getEnd();
+				}
+			}
+		}
+		if (maximum > getEnd() && minimum < getStart()) {
+			
+		} else {
+			long delta = 0L;
+			if (maximum > getEnd()) {
+				delta = getEnd() - maximum;
+				latest.setEnd(getEnd());
+				latest.setStart(latest.getStart() + delta);
+				constrainActivities(latest, true);
+			} 
+			if (minimum < getStart()) {
+				delta = getStart() - minimum;
+				earliest.setEnd(earliest.getEnd() + delta);
+				earliest.setStart(getStart());
+				constrainActivities(earliest, false);
+			}
+		}
 	}
 	
 	private void constrainActivities(DurationCapability source, boolean isStart) {
