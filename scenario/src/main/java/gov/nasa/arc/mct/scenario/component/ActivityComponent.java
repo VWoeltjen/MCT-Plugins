@@ -206,7 +206,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 					durationCapabilityToShift.getStart() + delta);
 			durationCapabilityToShift.setEnd(
 					durationCapabilityToShift.getEnd() + delta);
-			constrainActivities(durationCapabilityToShift, isStart);
+			constrainActivities(durationCapabilityToShift, delta < 0);
 		}
 	}
 	
@@ -227,11 +227,11 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 						if (child != otherChild) {
 							DurationCapability dc = otherChild
 									.getCapability(DurationCapability.class);
-							if (dc.getEnd() > nearestPrecedent && dc.getEnd() <= end) {
+							if (dc.getEnd() > nearestPrecedent && dc.getEnd() <= start) {
 								preceedingCapability = dc;
 								nearestPrecedent = dc.getEnd();
 							}
-							if (dc.getStart() < nearestFollower && dc.getStart() >= start) {
+							if (dc.getStart() < nearestFollower && dc.getStart() >= end) {
 								 followingCapability = dc;
 								 nearestFollower = dc.getStart();
 							}

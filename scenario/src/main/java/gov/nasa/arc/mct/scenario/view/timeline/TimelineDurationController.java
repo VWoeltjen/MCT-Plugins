@@ -118,8 +118,9 @@ public class TimelineDurationController extends MouseAdapter {
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		if (activeHandle != null) {
-			boolean isTowardStart = e.getXOnScreen() < priorX;
+			
 			int xDiff = e.getXOnScreen() - initialX;
+			if (xDiff == 0) return; // No need to move
 			long tDiff = (long) (xDiff / parentView.getPixelScale());			
 			long currentTimeDiff = activeHandle.changesStart ?
 					(durationCapability.getStart() - initialStart) :
@@ -131,20 +132,25 @@ public class TimelineDurationController extends MouseAdapter {
 					activeHandle.changesEnd   ? parentView.getEnd() : initialEnd							
 					);
 			tDiff -= currentTimeDiff;
-
-			if (Math.abs(tDiff) > (durationCapability.getEnd() - durationCapability.getStart()) / 2) {
-				tDiff = (durationCapability.getEnd() - durationCapability.getStart()) / 2 * (tDiff > 0 ? 1 : -1);
-			}
-
-			if (activeHandle.changesStart) {
-				durationCapability.setStart(durationCapability.getStart() + tDiff);
-			}
-			if (activeHandle.changesEnd) {
-				durationCapability.setEnd(durationCapability.getEnd() + tDiff);
-			}
+			if (tDiff == 0) return; // No need to move
 			
-			if (parentComponent != null) {
-				parentComponent.constrainChildren(durationCapability, isTowardStart);
+			long timeStep = (long) (1 / parentView.getPixelScale());
+			boolean isTowardStart = tDiff < 0;
+			
+			for (long t = 0; t <= Math.abs(tDiff); t+=timeStep) { 
+				long delta = (tDiff < 0 ? -1 : 1) *
+						((t == 0) ? (Math.abs(tDiff) % timeStep) : timeStep);
+			
+				if (activeHandle.changesStart) {
+					durationCapability.setStart(durationCapability.getStart() + delta);
+				}
+				if (activeHandle.changesEnd) {
+					durationCapability.setEnd(durationCapability.getEnd() + delta);
+				}
+				
+				if (parentComponent != null) {
+					parentComponent.constrainChildren(durationCapability, isTowardStart);
+				}
 			}
 			
 			parentView.revalidate();
