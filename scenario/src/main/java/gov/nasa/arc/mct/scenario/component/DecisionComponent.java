@@ -29,7 +29,7 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 		if (capability.isAssignableFrom(getClass()) && getData().getEndTime() != null) {
 			return capability.cast(this);
 		}
-		if (ModelStatePersistence.class.isAssignableFrom(capability)) {
+		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
 		    JAXBModelStatePersistence<DecisionModelRole> persistence = new JAXBModelStatePersistence<DecisionModelRole>() {
 
 				@Override
@@ -94,11 +94,13 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 	@Override
 	public void setStart(long start) {
 		getData().setStartDate(new Date(start));
+		save();
 	}
 
 	@Override
 	public void setEnd(long end) {
 		getData().setEndDate(new Date(end));
+		save();
 	}
 
 	@Override
