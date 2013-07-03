@@ -25,7 +25,8 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 	
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
-		if (capability.isAssignableFrom(getClass())) {
+		// Note: Don't report self as capability until initialized.
+		if (capability.isAssignableFrom(getClass()) && getData().getEndTime() != null) {
 			return capability.cast(this);
 		}
 		if (ModelStatePersistence.class.isAssignableFrom(capability)) {

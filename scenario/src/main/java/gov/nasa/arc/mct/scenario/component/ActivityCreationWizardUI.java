@@ -60,7 +60,7 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 			AbstractComponent targetComponent) {
 		String displayName = name.getText().trim();
         AbstractComponent component = null;
-                
+        
         component = comp.newInstance(componentClass, targetComponent);
 		component.setDisplayName(displayName);
 		ActivityComponent activityComponent = (ActivityComponent) component;
@@ -80,6 +80,15 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		data.setComm(0);
 		component.save();
         
+		if (targetComponent instanceof ActivityComponent) {
+			//TODO - this should be handled by addDelegateComponentsCallback 
+			//       in ActivityComponent, but at the time this is called 
+			//       (comp.newInstance above) there is still no 
+			//       time data associated with this component
+			((ActivityComponent) targetComponent).constrainChildren(activityComponent, false);
+			((ActivityComponent) targetComponent).constrainChildren(activityComponent, true);
+		}
+		
         return component;
 	}
 

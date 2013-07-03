@@ -41,7 +41,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
-		if (capability.isAssignableFrom(getClass())) {
+		// Note: Don't report self as capability until initialized.
+		if (capability.isAssignableFrom(getClass()) && getData().getEndTime() != null) {
 			return capability.cast(this);
 		}
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
@@ -152,7 +153,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		DurationCapability earliest = null;
 		for (AbstractComponent child : getComponents()) {
 			DurationCapability dc = child.getCapability(DurationCapability.class);
-			if (dc != null) {
+			if (dc != null && dc.getStart() != dc.getEnd()) {
 				if (dc.getStart() < minimum) {
 					earliest = dc;
 					minimum = dc.getStart();
@@ -256,6 +257,13 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		} while (moved);
 	}
 	
+	@Override
+	protected void addDelegateComponentsCallback(
+			Collection<AbstractComponent> childComponents) {
+		super.addDelegateComponentsCallback(childComponents);
+		constrainToDuration();
+	}
+
 	/**
 	 * Utility method to determine if two DurationCapabilities overlap 
 	 * @param a

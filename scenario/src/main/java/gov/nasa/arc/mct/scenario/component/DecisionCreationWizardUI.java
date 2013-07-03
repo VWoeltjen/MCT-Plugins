@@ -77,6 +77,14 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
 		data.setEndDate(endDate);
 		component.save();
 
+		if (targetComponent instanceof ActivityComponent) {
+			//TODO - this should be handled by addDelegateComponentsCallback 
+			//       in ActivityComponent, but at the time this is called 
+			//       (comp.newInstance above) there is still no 
+			//       time data associated with this component
+			((ActivityComponent) targetComponent).constrainChildren(decisionComponent, false);
+			((ActivityComponent) targetComponent).constrainChildren(decisionComponent, true);
+		}
         
         return component;
 	}
