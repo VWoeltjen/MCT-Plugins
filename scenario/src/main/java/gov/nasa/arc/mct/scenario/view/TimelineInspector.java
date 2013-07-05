@@ -133,7 +133,12 @@ public class TimelineInspector extends View {
             viewTitle.setIcon(view.getManifestedComponent().getIcon());
             viewTitle.setText(view.getManifestedComponent().getDisplayName() + DASH + view.getInfo().getViewName() + PANEL_SPECIFIC);
             viewTitle.setTransferHandler(new WidgetTransferHandler());
-            content = this.view = view.getInfo().createView(view.getManifestedComponent());
+            Collection<ViewInfo> viewInfos = view.getManifestedComponent().getViewInfos(ViewType.OBJECT);
+            for (ViewInfo vi : viewInfos) { // find Info view
+            	if (vi.getViewName().contains("Info")) {
+            		content = this.view = vi.createView(view.getManifestedComponent());		
+            	}
+            } // TODO: Maybe do a custom view for fiddling with duration?            
             JComponent viewControls = getViewControls();
             if (viewControls != null) {
                 c.weightx = 0;
