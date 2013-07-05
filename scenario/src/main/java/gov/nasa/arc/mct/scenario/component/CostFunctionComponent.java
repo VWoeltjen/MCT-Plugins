@@ -21,17 +21,28 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import gov.nasa.arc.mct.components.AbstractComponent;
-
 public abstract class CostFunctionComponent extends AbstractComponent {
+	// getCapabilities(CostFunctionCapability.class) invokes the same on children,
+	// which may result in an infinite loop in the presence of a cycle. This 
+	// ignoreList is used to bail out of cycles.
+	private static ThreadLocal<HashSet<String>> ignoreList = new ThreadLocal<HashSet<String>>() {
+		@Override
+		protected HashSet<String> initialValue() {
+			return new HashSet<String>();
+		}		
+	};
+	
 	public List<CostFunctionCapability> getInternalCostFunctions() {
 		return Collections.emptyList();
 	}
@@ -40,6 +51,9 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 	@Override
 	protected <T> List<T> handleGetCapabilities(Class<T> capability) {
 		if (capability.isAssignableFrom(CostFunctionCapability.class)) {
+			
+			ignoreList.get().add(getComponentId()); // Track components visited to avoid cyclic cost functions
+			
 			Map<String, AggregateCostFunction> costFunctions = new HashMap<String, AggregateCostFunction>();
 			for (CostFunctionCapability costFunction : getInternalCostFunctions()) {
 				if (!costFunctions.containsKey(costFunction.getName())) {
@@ -49,12 +63,14 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 				costFunctions.get(costFunction.getName()).add(costFunction);
 			}
 			for (AbstractComponent child : getComponents()) {
-				for (CostFunctionCapability costFunction : child.getCapabilities(CostFunctionCapability.class)) {
-					if (!costFunctions.containsKey(costFunction.getName())) {
-						costFunctions.put(costFunction.getName(), 
-								new AggregateCostFunction(costFunction.getName(), costFunction.getUnits()));
+				if (!ignoreList.get().contains(child.getComponentId())) { // Don't continue down a cycle
+					for (CostFunctionCapability costFunction : child.getCapabilities(CostFunctionCapability.class)) {
+						if (!costFunctions.containsKey(costFunction.getName())) {
+							costFunctions.put(costFunction.getName(), 
+									new AggregateCostFunction(costFunction.getName(), costFunction.getUnits()));
+						}
+						costFunctions.get(costFunction.getName()).add(costFunction);
 					}
-					costFunctions.get(costFunction.getName()).add(costFunction);
 				}
 			}
 			
@@ -63,6 +79,8 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 			for (AggregateCostFunction aggregateCostFunction : costFunctions.values()) {
 				aggregateCostFunctions.add(capability.cast(aggregateCostFunction));
 			}
+			
+			ignoreList.get().remove(getComponentId());
 			
 			return aggregateCostFunctions;
 		}
@@ -99,7 +117,6 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 			double sum = 0;
 			for (CostFunctionCapability c : costs) {
 				sum += c.getValue(time);
-				// TODO: Could exit this loop early, but data sets may never be large enough that this matters...
 			}
 			return sum;
 		}
