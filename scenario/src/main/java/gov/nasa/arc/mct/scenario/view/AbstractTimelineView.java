@@ -110,6 +110,11 @@ public abstract class AbstractTimelineView extends View implements ChangeListene
 		return timelineContainer.getRightPadding();
 	}
 	
+	@Override
+	public boolean isContentOwner() {
+		return true;
+	}
+	
 
 	protected JComponent getContentPane() {
 		return timelineContainer != null ? timelineContainer.getContentPane() : this; 
