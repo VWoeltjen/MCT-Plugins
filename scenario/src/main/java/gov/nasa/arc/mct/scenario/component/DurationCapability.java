@@ -21,6 +21,7 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+
 /**
  * Represents some cost function associated with a component. For instance, an 
  * Activity may have Comms or Power costs associated with it which should be 

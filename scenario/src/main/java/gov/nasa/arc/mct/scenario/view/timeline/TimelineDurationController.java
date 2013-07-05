@@ -21,7 +21,9 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view.timeline;
 
+
 import gov.nasa.arc.mct.gui.View;
+import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 
@@ -38,6 +40,7 @@ import java.util.Map;
  *
  */
 public class TimelineDurationController extends MouseAdapter {
+	private ActivityComponent parentComponent = null;
 	private DurationCapability durationCapability; 
 	private AbstractTimelineView parentView;
 	
@@ -46,6 +49,13 @@ public class TimelineDurationController extends MouseAdapter {
 	private int            initialX     = 0;
 	private long           initialStart = 0;
 	private long           initialEnd   = 0;
+	private int            priorX       = 0;
+	
+	public TimelineDurationController(ActivityComponent immediateParent, DurationCapability dc,
+			AbstractTimelineView parent) {
+		this(dc, parent);
+		this.parentComponent = immediateParent;
+	}
 	
 	public TimelineDurationController(DurationCapability dc,
 			AbstractTimelineView parent) {
@@ -53,28 +63,9 @@ public class TimelineDurationController extends MouseAdapter {
 		this.durationCapability = dc;
 		this.parentView = parent;
 		
-		handles.put(Cursor.E_RESIZE_CURSOR, new DurationHandle() {
-			@Override
-			public void mouseDragged(long timeDifference) {
-				timeDifference = clamp(timeDifference, initialEnd, initialStart, parentView.getEnd());		
-				durationCapability.setEnd(initialEnd + timeDifference);
-			}			
-		});
-		handles.put(Cursor.W_RESIZE_CURSOR, new DurationHandle() {
-			@Override
-			public void mouseDragged(long timeDifference) {
-				timeDifference = clamp(timeDifference, initialStart, parentView.getStart(), initialEnd);
-				durationCapability.setStart(initialStart + timeDifference);
-			}			
-		});
-		handles.put(Cursor.MOVE_CURSOR, new DurationHandle() {
-			@Override
-			public void mouseDragged(long timeDifference) {
-				timeDifference = clamp(timeDifference, initialStart, parentView.getStart(), parentView.getEnd() - (initialEnd-initialStart));
-				durationCapability.setStart(initialStart + timeDifference);
-				durationCapability.setEnd(initialEnd + timeDifference);
-			}			
-		});
+		handles.put(Cursor.E_RESIZE_CURSOR, new DurationHandle(false, true));
+		handles.put(Cursor.W_RESIZE_CURSOR, new DurationHandle(true, false));
+		handles.put(Cursor.MOVE_CURSOR, new DurationHandle(true, true));
 		
 	}
 
@@ -103,6 +94,7 @@ public class TimelineDurationController extends MouseAdapter {
 		if (src instanceof Component) {
 			Component comp = (Component) src;
 			initialX = e.getXOnScreen();
+			priorX = initialX;
 			initialStart = durationCapability.getStart();
 			initialEnd = durationCapability.getEnd();
 			activeHandle = handles.get(comp.getCursor().getType());
@@ -131,13 +123,44 @@ public class TimelineDurationController extends MouseAdapter {
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		if (activeHandle != null) {
+			
 			int xDiff = e.getXOnScreen() - initialX;
-			long tDiff = (long) (xDiff / parentView.getPixelScale());
-			activeHandle.mouseDragged(tDiff);
-
+			if (xDiff == 0) return; // No need to move
+			long tDiff = (long) (xDiff / parentView.getPixelScale());			
+			long currentTimeDiff = activeHandle.changesStart ?
+					(durationCapability.getStart() - initialStart) :
+					(durationCapability.getEnd() - initialEnd);
+			
+			tDiff = clamp(tDiff,
+					activeHandle.changesStart ? initialStart : initialEnd,
+					activeHandle.changesStart ? parentView.getStart() : initialStart,
+					activeHandle.changesEnd   ? parentView.getEnd() : initialEnd							
+					);
+			tDiff -= currentTimeDiff;
+			if (tDiff == 0) return; // No need to move
+			
+			long timeStep = (long) (1 / parentView.getPixelScale());
+			boolean isTowardStart = tDiff < 0;
+			
+			for (long t = 0; t <= Math.abs(tDiff); t+=timeStep) { 
+				long delta = (tDiff < 0 ? -1 : 1) *
+						((t == 0) ? (Math.abs(tDiff) % timeStep) : timeStep);
+			
+				if (activeHandle.changesStart) {
+					durationCapability.setStart(durationCapability.getStart() + delta);
+				}
+				if (activeHandle.changesEnd) {
+					durationCapability.setEnd(durationCapability.getEnd() + delta);
+				}
+				
+				if (parentComponent != null) {
+					parentComponent.constrainChildren(durationCapability, isTowardStart);
+				}
+			}
+			
 			parentView.revalidate();
 			parentView.repaint();
-			// parentView.stateChanged(null); Consider this in lieu of above
+			parentView.stateChanged(null);
 			Object src = e.getSource();
 			if (src instanceof Component) {
 				((Component) src).invalidate();
@@ -146,6 +169,7 @@ public class TimelineDurationController extends MouseAdapter {
 			}			
 			 
 			parentView.getManifestedComponent().save();
+			priorX = e.getXOnScreen();
 		}
 	}
 
@@ -166,7 +190,13 @@ public class TimelineDurationController extends MouseAdapter {
 	}
 
 	
-	private abstract class DurationHandle {
-		public abstract void mouseDragged(long timeDifference);
+	private class DurationHandle {
+		public final boolean changesStart;
+		public final boolean changesEnd;
+		public DurationHandle(boolean changesStart, boolean changesEnd) {
+			super();
+			this.changesStart = changesStart;
+			this.changesEnd = changesEnd;
+		}		
 	}
 }

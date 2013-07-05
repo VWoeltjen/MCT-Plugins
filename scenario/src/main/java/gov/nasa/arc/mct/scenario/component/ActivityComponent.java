@@ -41,7 +41,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
-		if (capability.isAssignableFrom(getClass())) {
+		// Note: Don't report self as capability until initialized.
+		if (capability.isAssignableFrom(getClass()) && getData().getEndTime() != null) {
 			return capability.cast(this);
 		}
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
@@ -121,16 +122,157 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 	@Override
 	public void setStart(long start) {
+		long old = getStart();
 		getData().setStartDate(new Date(start));
-		save();
+		save();		
+		if (old < start) {
+			constrainToDuration();
+		}
 	}
 
 	@Override
 	public void setEnd(long end) {
+		long old = getEnd();
 		getData().setEndDate(new Date(end));
 		save();
+		if (old > end) {
+			constrainToDuration();
+		}
 	}
 
+	public void constrainChildren(DurationCapability source, boolean isStart) {
+		constrainActivities(source, isStart);
+		constrainDecisions(isStart);
+		constrainToDuration();
+	}
+	
+	private void constrainToDuration() {
+		long minimum = getStart();
+		long maximum = getEnd();
+		DurationCapability latest = null;
+		DurationCapability earliest = null;
+		for (AbstractComponent child : getComponents()) {
+			DurationCapability dc = child.getCapability(DurationCapability.class);
+			if (dc != null && dc.getStart() != dc.getEnd()) {
+				if (dc.getStart() < minimum) {
+					earliest = dc;
+					minimum = dc.getStart();
+				}
+				if (dc.getEnd() > maximum) {
+					latest = dc;
+					maximum = dc.getEnd();
+				}
+			}
+		}
+		if (maximum > getEnd() && minimum < getStart()) {
+			
+		} else {
+			long delta = 0L;
+			if (maximum > getEnd()) {
+				delta = getEnd() - maximum;
+				latest.setEnd(getEnd());
+				latest.setStart(latest.getStart() + delta);
+				constrainActivities(latest, true);
+				constrainDecisions(true);
+			} 
+			if (minimum < getStart()) {
+				delta = getStart() - minimum;
+				earliest.setEnd(earliest.getEnd() + delta);
+				earliest.setStart(getStart());
+				constrainActivities(earliest, false);
+				constrainDecisions(false);
+			}
+		}
+	}
+	
+	private void constrainActivities(DurationCapability source, boolean isStart) {
+		int sign = isStart ? 1 : -1;
+		long movingEdge = isStart ? source.getStart() : source.getEnd();
+		long mostOverlapping = movingEdge;
+		DurationCapability durationCapabilityToShift = null;
+		for (AbstractComponent child : getComponents()) {
+			DurationCapability dc = child
+					.getCapability(DurationCapability.class);
+			if (dc != source && overlaps(dc, source)) {
+				long movedEdge = isStart ? dc.getEnd() : dc.getStart();
+				if (movedEdge * sign > mostOverlapping * sign) {
+					mostOverlapping = movedEdge;
+					durationCapabilityToShift = dc;
+				}
+			}
+		}
+		if (durationCapabilityToShift != null) {
+			long delta = movingEdge - mostOverlapping;
+			durationCapabilityToShift.setStart(
+					durationCapabilityToShift.getStart() + delta);
+			durationCapabilityToShift.setEnd(
+					durationCapabilityToShift.getEnd() + delta);
+			constrainActivities(durationCapabilityToShift, delta < 0);
+		}
+	}
+	
+	private void constrainDecisions(boolean movingTowardStart) {
+		// Enforce special positioning rules for Decisions
+		boolean moved = false;
+		do {
+			moved = false;
+			for (AbstractComponent child : getComponents()) {
+				if (child instanceof DecisionComponent) {
+					long start = ((DecisionComponent) child).getStart();
+					long end = ((DecisionComponent) child).getEnd();
+					DurationCapability preceedingCapability = null;
+					DurationCapability followingCapability = null;
+					long nearestPrecedent = getStart();
+					long nearestFollower = getEnd();
+					for (AbstractComponent otherChild : getComponents()) {
+						if (child != otherChild) {
+							DurationCapability dc = otherChild
+									.getCapability(DurationCapability.class);
+							if (dc.getEnd() > nearestPrecedent && dc.getEnd() <= start) {
+								preceedingCapability = dc;
+								nearestPrecedent = dc.getEnd();
+							}
+							if (dc.getStart() < nearestFollower && dc.getStart() >= end) {
+								 followingCapability = dc;
+								 nearestFollower = dc.getStart();
+							}
+						}
+					}
+					if (preceedingCapability != null && nearestPrecedent < start && !overlaps((DurationCapability) child, preceedingCapability)) {
+						long delta = (start - nearestPrecedent) * (movingTowardStart ? -1 : 1);
+						DurationCapability toMove = (DurationCapability) (movingTowardStart ? child : preceedingCapability);
+						toMove.setStart(toMove.getStart() + delta);
+						toMove.setEnd(toMove.getEnd() + delta);
+						moved = true;
+					}
+					if (followingCapability != null && nearestFollower > end && !overlaps((DurationCapability) child, followingCapability)) {
+						long delta = (end - nearestFollower) * (movingTowardStart ? 1 : -1);
+						DurationCapability toMove = (DurationCapability) (!movingTowardStart ? child : followingCapability);
+						toMove.setStart(toMove.getStart() + delta);
+						toMove.setEnd(toMove.getEnd() + delta);
+						moved = true;
+					}
+				}
+			}
+		} while (moved);
+	}
+	
+	@Override
+	protected void addDelegateComponentsCallback(
+			Collection<AbstractComponent> childComponents) {
+		super.addDelegateComponentsCallback(childComponents);
+		constrainToDuration();
+	}
+
+	/**
+	 * Utility method to determine if two DurationCapabilities overlap 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private boolean overlaps(DurationCapability a, DurationCapability b) {
+		return (a.getStart() < b.getEnd() && a.getEnd() > b.getStart());
+	}
 	
 	private class CostFunctionStub implements CostFunctionCapability {
 		private boolean isComm; //Otherwise, is power
