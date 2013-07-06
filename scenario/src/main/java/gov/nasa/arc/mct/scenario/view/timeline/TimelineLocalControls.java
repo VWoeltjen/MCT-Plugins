@@ -111,7 +111,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	
 	private static final long serialVersionUID = 5844637696012429283L;
 	
-	private DurationCapability masterDuration;
+	//private DurationCapability masterDuration;
 	private JComponent upperPanel;
 	private JComponent middlePanel;
 	private JComponent contentPane = new JPanel(new GridLayout(1,1));
@@ -132,11 +132,17 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	
 	private Collection<ChangeListener> changeListeners = new HashSet<ChangeListener>();
 	
+	private long start;
+	private long end;
+	
 	public TimelineLocalControls(DurationCapability masterDuration) {
 		super(new BorderLayout());
-		this.masterDuration = masterDuration;
+		//this.masterDuration = masterDuration;
 		
 		centerTime = (masterDuration.getStart() + masterDuration.getEnd()) / 2;
+		
+		start = masterDuration.getStart();
+		end = masterDuration.getEnd();
 		
 		setOpaque(false);
 		add(upperPanel = makeUpperPanel(), BorderLayout.NORTH);
@@ -208,7 +214,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 				BorderFactory.createMatteBorder(0, 0, 1, 0, EDGE_COLOR.darker()),				
 				BorderFactory.createEmptyBorder(4, 4, 4, 4))); //TODO: Move to constant
 		
-		durationLabel.setText("Total Duration: " + DurationFormatter.formatDuration(masterDuration.getEnd() - masterDuration.getStart()));
+		durationLabel.setText("Total Duration: " + DurationFormatter.formatDuration(end - start));
 		
 		return upperPanel;
 	}
@@ -266,37 +272,39 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			label = "???"; // TODO: Log
 		}
 		timeLabel.setText(label);
-		durationLabel.setText("Total Duration: " + DurationFormatter.formatDuration((masterDuration.getEnd() - masterDuration.getStart())));
+		durationLabel.setText("Total Duration: " + DurationFormatter.formatDuration(end - start));
 	}
 	
 	@Override
 	public long getStart() {
 		return parent != null ? parent.getStart() : 
-			centerTime - (long) (((double) (masterDuration.getEnd() - masterDuration.getStart()) / getZoom()) / 2.0);//masterDuration.getStart();
+			centerTime - (long) (((double) (end - start) / getZoom()) / 2.0);//masterDuration.getStart();
 	}
 
 	@Override
 	public long getEnd() {
 		return parent != null ? parent.getEnd() :
-			centerTime + (long) (((double) (masterDuration.getEnd() - masterDuration.getStart()) / getZoom()) / 2.0);//masterDuration.getStart();
+			centerTime + (long) (((double) (end - start) / getZoom()) / 2.0);//masterDuration.getStart();
 	}
 
 	@Override
 	public void setStart(long start) {
-		masterDuration.setStart(start); //TODO: Don't delegate
+		this.start = start;		
+		//masterDuration.setStart(start); //TODO: Don't delegate
 	}
 
 	@Override
 	public void setEnd(long end) {
-		masterDuration.setEnd(end); //TODO: Don't delegate
+		this.end = end;
+		//masterDuration.setEnd(end); //TODO: Don't delegate
 	}
 	
 	private long getMaximumCenter() {
-		return masterDuration.getEnd() - (long) ((getWidth() - getLeftPadding() - getRightPadding()) / getPixelScale()) / 2;
+		return end - (long) ((getWidth() - getLeftPadding() - getRightPadding()) / getPixelScale()) / 2;
 	}
 	
 	private long getMinimumCenter() {
-		return masterDuration.getStart() + (long) ((getWidth() - getLeftPadding() - getRightPadding()) / getPixelScale()) / 2;
+		return start + (long) ((getWidth() - getLeftPadding() - getRightPadding()) / getPixelScale()) / 2;
 	}
 	
 	public double getPixelScale() {
