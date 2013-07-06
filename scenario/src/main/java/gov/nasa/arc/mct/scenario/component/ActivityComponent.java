@@ -149,6 +149,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	private void constrainToDuration() {
 		long minimum = getStart();
 		long maximum = getEnd();
+		long duration = maximum - minimum;
+		long childDuration = 0;
 		DurationCapability latest = null;
 		DurationCapability earliest = null;
 		for (AbstractComponent child : getComponents()) {
@@ -162,26 +164,38 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 					latest = dc;
 					maximum = dc.getEnd();
 				}
+				childDuration += dc.getEnd() - dc.getStart();
 			}
 		}
-		if (maximum > getEnd() && minimum < getStart()) {
-			
-		} else {
-			long delta = 0L;
-			if (maximum > getEnd()) {
+		if (maximum > getEnd() && minimum < getStart()) { // Shrink children to fit, if needed
+			if (childDuration > duration) {
+				double durationFactor = ((double) duration) / ((double) childDuration);
+				for (AbstractComponent child : getComponents()) {
+					DurationCapability dc = child.getCapability(DurationCapability.class);
+					if (dc != null) {
+						long delta = (dc.getEnd() - dc.getStart() - (long) ((dc.getEnd() - dc.getStart()) * durationFactor)) / 2 + 1;
+						dc.setEnd(dc.getEnd() - delta);
+						dc.setStart(dc.getStart() + delta);
+					}
+				}
+				minimum = earliest.getStart();
+				maximum = latest.getEnd();
+			}
+		}
+		long delta = 0L;
+		if (maximum > getEnd()) {
 				delta = getEnd() - maximum;
 				latest.setEnd(getEnd());
 				latest.setStart(latest.getStart() + delta);
 				constrainActivities(latest, true);
 				constrainDecisions(true);
-			} 
-			if (minimum < getStart()) {
+		} 
+		if (minimum < getStart()) {
 				delta = getStart() - minimum;
 				earliest.setEnd(earliest.getEnd() + delta);
 				earliest.setStart(getStart());
 				constrainActivities(earliest, false);
 				constrainDecisions(false);
-			}
 		}
 	}
 	
