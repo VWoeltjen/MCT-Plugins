@@ -58,6 +58,41 @@
 		</plugin>	
         
         <plugin>
+           <groupId>com.google.code.maven-replacer-plugin</groupId>
+           <artifactId>replacer</artifactId>
+           <version>1.5.2</version>
+           <executions>
+               <execution>
+                   <phase>package</phase>
+                   <goals>
+                       <goal>replace</goal>
+                   </goals>                   
+               </execution>
+           </executions>
+           <configuration>
+               <file>${project.build.directory}/platform.dir/mct-platform-${mct.platform.version}/resources/properties/persistence.properties</file>
+               <replacements>
+                   <replacement>
+                       <token>mct.database_connectionUrl=.*</token>
+                       <value>mct.database_connectionUrl=jdbc\:mysql\://${mct.db.host}\\:${mct.db.port}/</value>
+                   </replacement>
+                   <replacement>
+                       <token>mct.database_name=.*</token>
+                       <value>mct.database_name=${mct.db.name}</value>
+                   </replacement>                  
+                   <replacement>
+                       <token>mct.database_userName=.*</token>
+                       <value>mct.database_userName=${mct.db.user}</value>
+                   </replacement>         
+                   <replacement>
+                       <token>mct.database_password=.*</token>
+                       <value>mct.database_password=${mct.db.password}</value>
+                   </replacement>                                               
+               </replacements>
+           </configuration>
+       </plugin>
+        
+        <plugin>
   			<groupId>org.apache.maven.plugins</groupId>
   			<artifactId>maven-assembly-plugin</artifactId>
   			<version>2.2-beta-5</version>
