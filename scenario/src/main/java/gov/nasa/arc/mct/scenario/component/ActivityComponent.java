@@ -143,15 +143,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	
 	public void setDuration(String duration) {
 		getData().setDurationTime(duration);
-		
-		/*Date endDate;
-		try {
-			endDate = new Date(this.getStart() + DurationFormatter.parse(String.valueOf(duration)));
-		} catch (ParseException e) {
-			endDate = new Date(30L * 60L * 1000L);
-		}
-		getData().setEndDate(endDate);
-		save();*/
+		save();
 	}
 
 	public void constrainChildren(DurationCapability source, boolean isStart) {
