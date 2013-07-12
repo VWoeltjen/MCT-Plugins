@@ -23,6 +23,8 @@ package gov.nasa.arc.mct.scenario.util;
 
 import java.text.ParseException;
 
+// converts back and forth between strings and longs (i.e. 01:01:01 to time in ms)
+
 public class DurationFormatter {
 	private static final long MS_IN_SEC = 1000L;
 	private static final long MS_IN_MIN = 	60L * MS_IN_SEC;

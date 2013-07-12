@@ -5,7 +5,9 @@ import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
+import gov.nasa.arc.mct.scenario.util.DurationFormatter;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -94,6 +96,9 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		PropertyDescriptor endTime = new PropertyDescriptor("End Time", 
 				new ActivityEndTimePropertyEditor(this),  VisualControlDescriptor.TextField);
 		endTime.setFieldMutable(true);
+		PropertyDescriptor duration = new PropertyDescriptor("Duration",
+				new DurationPropertyEditor(this), VisualControlDescriptor.TextField);
+		duration.setFieldMutable(true);
 		PropertyDescriptor power = new PropertyDescriptor("Power (W)", 
 				new PowerPropertyEditor(this),  VisualControlDescriptor.TextField);
 		power.setFieldMutable(true);
@@ -103,6 +108,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		fields.add(startTime);
 		fields.add(endTime);
+		fields.add(duration);
 		fields.add(power);
 		fields.add(comm);
 
@@ -118,6 +124,10 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	public long getEnd() {
 		return getData().getEndTime().getTime();
 	}
+	
+	public String getDuration() {
+		return getData().getDurationTime();
+	}
 
 	@Override
 	public void setStart(long start) {
@@ -129,6 +139,19 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	public void setEnd(long end) {
 		getData().setEndDate(new Date(end));
 		save();
+	}
+	
+	public void setDuration(String duration) {
+		getData().setDurationTime(duration);
+		
+		/*Date endDate;
+		try {
+			endDate = new Date(this.getStart() + DurationFormatter.parse(String.valueOf(duration)));
+		} catch (ParseException e) {
+			endDate = new Date(30L * 60L * 1000L);
+		}
+		getData().setEndDate(endDate);
+		save();*/
 	}
 
 	public void constrainChildren(DurationCapability source, boolean isStart) {
