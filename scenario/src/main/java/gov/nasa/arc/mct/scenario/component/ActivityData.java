@@ -16,6 +16,7 @@ public class ActivityData {
 	private double power;
 	private double comm;
 	private long duration;
+	private String type;
 	private Date startDate;
 	private Date endDate;
 
@@ -50,6 +51,14 @@ public class ActivityData {
 		Date endDate = new Date(this.startDate.getTime() + this.duration);
 		this.endDate = endDate;
 	}
+	
+	public String getActivityType() {
+		return type;
+	}
+	
+	public void setActivityType(String type) {
+		this.type = type;
+	}
 
 	public Date getStartTime() {
 		return startDate;
@@ -57,7 +66,7 @@ public class ActivityData {
 
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
-		this.duration = this.endDate.getTime() - startDate.getTime();
+		if (this.endDate != null) this.duration = this.endDate.getTime() - this.startDate.getTime();
 	}
 
 	public Date getEndTime() {

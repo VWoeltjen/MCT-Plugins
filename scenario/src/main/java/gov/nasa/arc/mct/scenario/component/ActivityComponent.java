@@ -90,6 +90,9 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		// Describe MyData's field "doubleData". 
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
+		PropertyDescriptor type = new PropertyDescriptor("Activity Type",
+				new TypePropertyEditor(this), VisualControlDescriptor.TextField);
+		type.setFieldMutable(true);
 		PropertyDescriptor startTime = new PropertyDescriptor("Start Time", 
 				new ActivityStartTimePropertyEditor(this),  VisualControlDescriptor.TextField);
 		startTime.setFieldMutable(true);
@@ -106,6 +109,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				new CommPropertyEditor(this),  VisualControlDescriptor.TextField);
 		comm.setFieldMutable(true);
 
+		fields.add(type);
 		fields.add(startTime);
 		fields.add(endTime);
 		fields.add(duration);
@@ -113,6 +117,11 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		fields.add(comm);
 
 		return fields;
+	}
+	
+	public String getType()
+	{
+		return getData().getActivityType();
 	}
 
 	@Override
@@ -127,6 +136,12 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	
 	public String getDuration() {
 		return getData().getDurationTime();
+	}
+	
+	public void setType(String type)
+	{
+		getData().setActivityType(type);
+		save();
 	}
 
 	@Override
