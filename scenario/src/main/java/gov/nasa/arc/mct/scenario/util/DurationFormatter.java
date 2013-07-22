@@ -25,6 +25,26 @@ import java.text.ParseException;
 
 // converts back and forth between strings and longs (i.e. 01:01:01 to time in ms)
 
+/**
+ * Utility class to support conversion of Durations from Strings to longs (where 
+ * longs are time in ms.)
+ * 
+ * The JRE includes classes/interfaces for formatting Dates, but a date is 
+ * somewhat different than a duration. For instance, "10 second past the epoch" 
+ * is 001 00:00:10 as a date, but 000 00:00:10 as a duration (that is, 
+ * people expect to see dates using 1-based indexing, whereas durations 
+ * are 0-based quantities.)
+ * 
+ * This class expects and produces durations in the form:
+ * 
+ * "DAYS HOURS:MINUTES:SECONDS"
+ * 
+ * Where days or seconds may be omitted (and will be omitted during String 
+ * conversion if they are 0.)
+ * 
+ * @author vwoeltje
+ *
+ */
 public class DurationFormatter {
 	private static final long MS_IN_SEC = 1000L;
 	private static final long MS_IN_MIN = 	60L * MS_IN_SEC;
