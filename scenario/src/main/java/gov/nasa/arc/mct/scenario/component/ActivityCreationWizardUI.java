@@ -77,7 +77,6 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		data.setActivityType("enter activity type here");
 		data.setStartDate(startDate);
 		data.setEndDate(endDate);
-		data.setDurationTime(duration.getText());
 		data.setPower(0);
 		data.setComm(0);
 		component.save();

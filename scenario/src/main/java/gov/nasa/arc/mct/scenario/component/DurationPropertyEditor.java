@@ -17,7 +17,7 @@ public final class DurationPropertyEditor implements PropertyEditor<Object> {
 
 	@Override
 	public String getAsText() {
-		String numericData = activityComponent.getModel().getData().getDurationTime();
+		String numericData = DurationFormatter.formatDuration(activityComponent.getModel().getData().getDurationTime());
 		return numericData;
 	}
 
@@ -34,9 +34,12 @@ public final class DurationPropertyEditor implements PropertyEditor<Object> {
 		if (verify(newValue) != null) {
 			throw new IllegalArgumentException(result);
 		}
-			ActivityData businessModel = activityComponent.getModel().getData();
-			businessModel.setDurationTime(newValue);
-			
+		ActivityData businessModel = activityComponent.getModel().getData();
+		try {
+			businessModel.setDurationTime(DurationFormatter.parse(newValue));
+		} catch (ParseException e) {
+			throw new IllegalArgumentException("Invalid date entered as text", e);
+		}			
 	}
 
 	@SuppressWarnings("unused")

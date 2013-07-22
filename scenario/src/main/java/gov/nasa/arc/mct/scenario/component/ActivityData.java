@@ -1,8 +1,5 @@
 package gov.nasa.arc.mct.scenario.component;
 
-import gov.nasa.arc.mct.scenario.util.DurationFormatter;
-
-import java.text.ParseException;
 import java.util.Date;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -15,7 +12,6 @@ public class ActivityData {
 
 	private double power;
 	private double comm;
-	private long duration;
 	private String type;
 	private Date startDate;
 	private Date endDate;
@@ -36,19 +32,14 @@ public class ActivityData {
 		this.comm = comm;
 	}
 	
-	public String getDurationTime()
+	public long getDurationTime()
 	{
-		return DurationFormatter.formatDuration(duration);
+		return endDate.getTime() - startDate.getTime();
 	}
 	
-	public void setDurationTime(String duration)
-	{
-		try {
-		this.duration = DurationFormatter.parse(duration);
-		} catch (ParseException e) {
-			this.duration = 30L * 60L * 1000L;
-		}
-		Date endDate = new Date(this.startDate.getTime() + this.duration);
+	public void setDurationTime(long duration)
+	{		
+		Date endDate = new Date(this.startDate.getTime() + duration);
 		this.endDate = endDate;
 	}
 	
@@ -66,7 +57,6 @@ public class ActivityData {
 
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
-		if (this.endDate != null) this.duration = this.endDate.getTime() - this.startDate.getTime();
 	}
 
 	public Date getEndTime() {
@@ -75,7 +65,6 @@ public class ActivityData {
 
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
-		this.duration = this.endDate.getTime() - startDate.getTime();
 	}
 	
 }

@@ -134,7 +134,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		return getData().getEndTime().getTime();
 	}
 	
-	public String getDuration() {
+	public long getDuration() {
 		return getData().getDurationTime();
 	}
 	
@@ -156,7 +156,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		save();
 	}
 	
-	public void setDuration(String duration) {
+	public void setDuration(long duration) {
 		getData().setDurationTime(duration);
 		save();
 	}
