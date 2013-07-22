@@ -45,7 +45,7 @@ import javax.swing.JPanel;
 
 /**
  * A View showing a graph of costs associated with a component, as expressed 
- * by abstractComponentgetCapabilities(CostFunctionCapability.class)
+ * by abstractComponent.getCapabilities(CostFunctionCapability.class)
  * 
  * @author vwoeltje
  *
