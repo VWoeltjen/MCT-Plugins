@@ -12,7 +12,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-
+/**
+ * Property editor to support specification of an Activity's start time in the Info View.
+ *
+ */
 public final class ActivityStartTimePropertyEditor implements PropertyEditor<Object> {
 	private ActivityComponent activityComponent = null;
 	

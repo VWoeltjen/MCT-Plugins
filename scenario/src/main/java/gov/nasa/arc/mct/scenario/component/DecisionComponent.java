@@ -11,6 +11,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Represents an Decision user object.
+ * 
+ * Decisions have start and end times, which should fill the gap between two other 
+ * Activity siblings. A Decision represents some external consideration/evaluation 
+ * which must be performed within a certain time before a timeline proceeds.  
+ *
+ */
 public class DecisionComponent extends AbstractComponent implements DurationCapability {
 
 	private final AtomicReference<DecisionModelRole> model = new AtomicReference<DecisionModelRole>(new DecisionModelRole());

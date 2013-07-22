@@ -32,6 +32,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+/**
+ * Abstract superclass for components which may aggregate the costs exposed 
+ * by their children with those they exhibit themselves (such as ActivityComponent, 
+ * which may have nested sub-activities with their own costs)
+ * 
+ * @author vwoeltje
+ *
+ */
 public abstract class CostFunctionComponent extends AbstractComponent {
 	// getCapabilities(CostFunctionCapability.class) invokes the same on children,
 	// which may result in an infinite loop in the presence of a cycle. This 

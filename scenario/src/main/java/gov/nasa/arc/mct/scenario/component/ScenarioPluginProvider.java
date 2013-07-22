@@ -17,6 +17,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.ResourceBundle;
 
+/**
+ * ComponentProvider for the scenario plug-in. Exposes Activities, Scenarios, Timelines, 
+ * Decisions, and associated policies/views to the MCT platform.
+ * 
+ *
+ */
 public class ScenarioPluginProvider extends AbstractComponentProvider {
 
 	// use a resource bundle for strings to enable localization in the future if required

@@ -5,9 +5,7 @@ import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
-import gov.nasa.arc.mct.scenario.util.DurationFormatter;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +15,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Represents an Activity user object.
+ * 
+ * Activities have start and end times, associated costs, and plain-text types. 
+ * Activities may contain "sub-activities" (other activities); note that these 
+ * sub-activities must always be contained entirely within their parent's 
+ * time span.
+ *
+ */
 public class ActivityComponent extends CostFunctionComponent implements DurationCapability {
 	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	

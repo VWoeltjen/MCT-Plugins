@@ -7,7 +7,10 @@ import gov.nasa.arc.mct.scenario.util.DurationFormatter;
 import java.text.ParseException;
 import java.util.List;
 
-
+/**
+ * Property editor to support specification of an Activity's duration in the Info View.
+ *
+ */
 public final class DurationPropertyEditor implements PropertyEditor<Object> {
 	ActivityComponent activityComponent = null;
 

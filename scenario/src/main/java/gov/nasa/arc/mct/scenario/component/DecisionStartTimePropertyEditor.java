@@ -9,7 +9,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-
+/**
+ * Property editor to support specification of an Decision's start time in the Info View.
+ *
+ */
 public final class DecisionStartTimePropertyEditor implements PropertyEditor<Object> {
 	private DecisionComponent decisionComponent = null;
 	//public static final DateFormat FORMATTER = TimelineLocalControls.DURATION_FORMAT;

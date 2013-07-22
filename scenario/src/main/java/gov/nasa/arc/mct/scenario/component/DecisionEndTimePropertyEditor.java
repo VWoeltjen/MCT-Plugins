@@ -3,16 +3,16 @@ package gov.nasa.arc.mct.scenario.component;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyEditor;
 import gov.nasa.arc.mct.scenario.util.DurationFormatter;
-import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-
+/**
+ * Property editor to support specification of a Decision's end time in the Info View.
+ *
+ */
 public final class DecisionEndTimePropertyEditor implements PropertyEditor<Object> {
 	private DecisionComponent decisionComponent = null;
 

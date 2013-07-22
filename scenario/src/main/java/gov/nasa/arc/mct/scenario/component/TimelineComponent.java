@@ -11,6 +11,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * A Timeline serves as a container for activities. Multiple timelines may be arranged 
+ * within a Scenario.
+ * 
+ *
+ */
 public class TimelineComponent extends CostFunctionComponent implements DurationCapability {
 	
 	public String getDisplay(){

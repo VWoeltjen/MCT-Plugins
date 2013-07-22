@@ -26,6 +26,12 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+/**
+ * The Creation dialog box for Decision components.
+ * 
+ * Contains fields to specify activity start time and duration.
+ * 
+ */
 public class DecisionCreationWizardUI  extends CreateWizardUI {
 
 	private static final ResourceBundle bundle ;
