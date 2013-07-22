@@ -5,7 +5,9 @@ import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
+import gov.nasa.arc.mct.scenario.util.DurationFormatter;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -89,12 +91,18 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		// Describe MyData's field "doubleData". 
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
+		PropertyDescriptor type = new PropertyDescriptor("Activity Type",
+				new TypePropertyEditor(this), VisualControlDescriptor.TextField);
+		type.setFieldMutable(true);
 		PropertyDescriptor startTime = new PropertyDescriptor("Start Time", 
 				new ActivityStartTimePropertyEditor(this),  VisualControlDescriptor.TextField);
 		startTime.setFieldMutable(true);
 		PropertyDescriptor endTime = new PropertyDescriptor("End Time", 
 				new ActivityEndTimePropertyEditor(this),  VisualControlDescriptor.TextField);
 		endTime.setFieldMutable(true);
+		PropertyDescriptor duration = new PropertyDescriptor("Duration",
+				new DurationPropertyEditor(this), VisualControlDescriptor.TextField);
+		duration.setFieldMutable(true);
 		PropertyDescriptor power = new PropertyDescriptor("Power (W)", 
 				new PowerPropertyEditor(this),  VisualControlDescriptor.TextField);
 		power.setFieldMutable(true);
@@ -102,12 +110,19 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				new CommPropertyEditor(this),  VisualControlDescriptor.TextField);
 		comm.setFieldMutable(true);
 
+		fields.add(type);
 		fields.add(startTime);
 		fields.add(endTime);
+		fields.add(duration);
 		fields.add(power);
 		fields.add(comm);
 
 		return fields;
+	}
+	
+	public String getType()
+	{
+		return getData().getActivityType();
 	}
 
 	@Override
@@ -118,6 +133,16 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	@Override
 	public long getEnd() {
 		return getData().getEndTime().getTime();
+	}
+	
+	public long getDuration() {
+		return getData().getDurationTime();
+	}
+	
+	public void setType(String type)
+	{
+		getData().setActivityType(type);
+		save();
 	}
 
 	@Override
@@ -138,6 +163,11 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		if (old > end) {
 			constrainToDuration();
 		}
+	}
+	
+	public void setDuration(long duration) {
+		getData().setDurationTime(duration);
+		save();
 	}
 
 	public void constrainChildren(DurationCapability source, boolean isStart) {

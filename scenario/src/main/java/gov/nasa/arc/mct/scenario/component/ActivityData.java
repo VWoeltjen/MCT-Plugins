@@ -12,6 +12,7 @@ public class ActivityData {
 
 	private double power;
 	private double comm;
+	private String type;
 	private Date startDate;
 	private Date endDate;
 
@@ -29,6 +30,25 @@ public class ActivityData {
 
 	public void setComm(double comm) {
 		this.comm = comm;
+	}
+	
+	public long getDurationTime()
+	{
+		return endDate.getTime() - startDate.getTime();
+	}
+	
+	public void setDurationTime(long duration)
+	{		
+		Date endDate = new Date(this.startDate.getTime() + duration);
+		this.endDate = endDate;
+	}
+	
+	public String getActivityType() {
+		return type;
+	}
+	
+	public void setActivityType(String type) {
+		this.type = type;
 	}
 
 	public Date getStartTime() {
