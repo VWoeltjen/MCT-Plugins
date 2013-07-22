@@ -30,7 +30,7 @@ import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.component.TimelineComponent;
 import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 import gov.nasa.arc.mct.scenario.view.GraphView;
-import gov.nasa.arc.mct.scenario.view.timeline.TimelineRowView;
+import gov.nasa.arc.mct.scenario.view.TimelineRowView;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 /**

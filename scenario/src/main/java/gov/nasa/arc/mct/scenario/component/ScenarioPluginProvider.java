@@ -2,11 +2,7 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.policy.PolicyInfo;
 import gov.nasa.arc.mct.scenario.policy.TimelineFilterViewPolicy;
-import gov.nasa.arc.mct.scenario.view.ActivityEmbeddedView;
-import gov.nasa.arc.mct.scenario.view.ActivityOverviewView;
-import gov.nasa.arc.mct.scenario.view.GraphView;
-import gov.nasa.arc.mct.scenario.view.TimelineView;
-import gov.nasa.arc.mct.scenario.view.timeline.TimelineRowView;
+import gov.nasa.arc.mct.scenario.view.TimelineRowView;
 import gov.nasa.arc.mct.services.component.AbstractComponentProvider;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 import gov.nasa.arc.mct.services.component.ViewInfo;
@@ -14,7 +10,6 @@ import gov.nasa.arc.mct.services.component.ViewType;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.ResourceBundle;
 
 /**

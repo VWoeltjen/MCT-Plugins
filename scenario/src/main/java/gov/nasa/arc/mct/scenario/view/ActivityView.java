@@ -7,8 +7,7 @@ import gov.nasa.arc.mct.scenario.component.CostFunctionComponent;
 import gov.nasa.arc.mct.scenario.component.DecisionComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.util.DurationFormatter;
-import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
-import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls.CostOverlay;
+import gov.nasa.arc.mct.scenario.view.TimelineLocalControls.CostOverlay;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 

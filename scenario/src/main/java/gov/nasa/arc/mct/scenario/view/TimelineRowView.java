@@ -19,15 +19,12 @@
  * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
  * information. 
  *******************************************************************************/
-package gov.nasa.arc.mct.scenario.view.timeline;
+package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
-import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
-import gov.nasa.arc.mct.scenario.view.ActivityView;
-import gov.nasa.arc.mct.scenario.view.GraphView;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import java.awt.BorderLayout;

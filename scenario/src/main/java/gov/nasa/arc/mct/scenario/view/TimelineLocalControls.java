@@ -19,7 +19,7 @@
  * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
  * information. 
  *******************************************************************************/
-package gov.nasa.arc.mct.scenario.view.timeline;
+package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;

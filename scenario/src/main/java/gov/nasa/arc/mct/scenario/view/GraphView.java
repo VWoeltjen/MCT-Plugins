@@ -23,7 +23,7 @@ package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
-import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls.CostOverlay;
+import gov.nasa.arc.mct.scenario.view.TimelineLocalControls.CostOverlay;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 

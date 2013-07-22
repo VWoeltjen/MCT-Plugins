@@ -24,7 +24,6 @@ package gov.nasa.arc.mct.scenario.view;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
-import gov.nasa.arc.mct.scenario.view.timeline.TimelineLocalControls;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import javax.swing.JComponent;
