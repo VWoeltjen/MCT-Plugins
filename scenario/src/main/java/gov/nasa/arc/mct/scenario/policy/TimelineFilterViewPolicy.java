@@ -30,7 +30,7 @@ import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.component.TimelineComponent;
 import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 import gov.nasa.arc.mct.scenario.view.GraphView;
-import gov.nasa.arc.mct.scenario.view.TimelineRowView;
+import gov.nasa.arc.mct.scenario.view.TimelineView;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 /**
@@ -60,7 +60,7 @@ public class TimelineFilterViewPolicy implements Policy  {
 						viewInfo.getViewName() + " only valid for objects with cost functions.");
 			}
 		}
-		if (TimelineRowView.class.isAssignableFrom(viewInfo.getViewClass())) {
+		if (TimelineView.class.isAssignableFrom(viewInfo.getViewClass())) {
 			if (!(targetComponent instanceof TimelineComponent)) {
 				return new ExecutionResult(context, false, 
 						viewInfo.getViewName() + " only valid for Timeline objects.");

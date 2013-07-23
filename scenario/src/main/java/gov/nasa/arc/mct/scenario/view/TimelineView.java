@@ -57,7 +57,7 @@ import javax.swing.event.ChangeEvent;
  * @author vwoeltje
  *
  */
-public class TimelineRowView extends AbstractTimelineView {
+public class TimelineView extends AbstractTimelineView {
 	private static final int TIMELINE_ROW_HEIGHT = 40;
 	private static final int TIMELINE_ROW_SPACING = 8;
 	private static final long serialVersionUID = -5039383350178424964L;
@@ -68,7 +68,7 @@ public class TimelineRowView extends AbstractTimelineView {
 	private Color backgroundColor = Color.WHITE;
 	
 	
-	public TimelineRowView(AbstractComponent ac, ViewInfo vi) {
+	public TimelineView(AbstractComponent ac, ViewInfo vi) {
 		super(ac,vi);
 		
 		getContentPane().setLayout(new BorderLayout());
@@ -161,7 +161,7 @@ public class TimelineRowView extends AbstractTimelineView {
 	}
 	
 	public static void main(String[] args) {
-		TimelineRowView rowView = new TimelineRowView(null, null);//new DurationInfoStub(0l, 1000l));
+		TimelineView rowView = new TimelineView(null, null);//new DurationInfoStub(0l, 1000l));
 		rowView.add(new JLabel("Test"), new DurationInfoStub(10L*1000, 20L*2000));
 		
 		JFrame frame = new JFrame();
