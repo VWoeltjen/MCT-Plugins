@@ -51,7 +51,19 @@ public class DurationFormatter {
 	private static final long MS_IN_HOUR = 	60L * MS_IN_MIN;
 	private static final long MS_IN_DAY = 24L * MS_IN_HOUR;
 	
-	
+	/**
+	 * Convert a String representation of a duration to time in milliseconds.
+	 * String should be in one of the following formats:
+	 * 
+	 * "DAYS HOURS:MINUTES:SECONDS"
+	 * "HOURS:MINUTES:SECONDS"
+	 * "HOURS:MINUTES"
+	 * "DAYS HOURS:MINUTES"
+	 * 
+	 * @param duration the String representation of the duration
+	 * @return time in milliseconds
+	 * @throws ParseException thrown when String format is not recognized
+	 */
 	public static long parse(String duration) throws ParseException {
 		long ms = 0;
 		try {
@@ -73,6 +85,16 @@ public class DurationFormatter {
 		return ms;		
 	}
 	
+	/**
+	 * Convert a duration to a String representation. Format is 
+	 * "DAYS HOURS:MINUTES:SECONDS"
+	 * 
+	 * Note that either DAYS and/or SECONDS will be omitted if 
+	 * they are 0. 
+	 * 
+	 * @param duration
+	 * @return
+	 */
 	public static String formatDuration(long duration) {
 		StringBuilder builder = new StringBuilder();
 		if (duration > MS_IN_DAY) {
