@@ -51,11 +51,16 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 		}		
 	};
 	
+	/**
+	 * Get any cost functions associated with this specific component. Users 
+	 * of this component should generally use getCapabilities(CostFunctionCapability.class), 
+	 * which will include the cost functions of children as well.
+	 * @return a list of cost functions specific to this component
+	 */
 	public List<CostFunctionCapability> getInternalCostFunctions() {
 		return Collections.emptyList();
 	}
 	
-	// TODO: Hoist this into a shared superclass of Timeline, Activity, and Scenario?
 	@Override
 	protected <T> List<T> handleGetCapabilities(Class<T> capability) {
 		if (capability.isAssignableFrom(CostFunctionCapability.class)) {
@@ -95,6 +100,13 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 		return super.handleGetCapabilities(capability);
 	}
 
+	/**
+	 * A cost function which acts as a sum or union of other cost functions
+	 * which share the same name. This is used to aggregate costs exposed by 
+	 * children of a component.
+	 * 
+	 * @author vwoeltje
+	 */
 	private class AggregateCostFunction implements CostFunctionCapability {
 		private String name;
 		private String units;

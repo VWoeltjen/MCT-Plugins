@@ -37,8 +37,32 @@ import java.util.Collection;
  *
  */
 public interface CostFunctionCapability {
+	/**
+	 * Get the name of this cost.
+	 * @return the name of this cost
+	 */
 	public String getName();
+	
+	/**
+	 * Get the units used for this cost (as a string)
+	 * @return the units used by this cost
+	 */
 	public String getUnits();
+	
+	/**
+	 * Assess this cost at the specified time. 
+	 * @param time the time, in milliseconds since start of timeline
+	 * @return the cost at the specified time
+	 */
 	public double getValue(long time);
+	
+	/**
+	 * Get the times at which this cost function changes. Since costs 
+	 * are handled step-wise, having a list of points at which costs 
+	 * change makes it simple to draw/label these transitions.
+	 * Times returned here are in milliseconds after the start 
+	 * of timeline.
+	 * @return a collection of times at which costs change
+	 */
 	public Collection<Long> getChangeTimes();
 }
