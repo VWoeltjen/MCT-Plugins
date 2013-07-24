@@ -23,21 +23,43 @@ package gov.nasa.arc.mct.scenario.component;
 
 
 /**
- * Represents some cost function associated with a component. For instance, an 
- * Activity may have Comms or Power costs associated with it which should be 
- * tracked and presented along with timelines. 
+ * Represents some duration associated with a component. Components with 
+ * durations have start and end times, relative to some starting point 
+ * (the starting point is intentionally unspecified - generally speaking, 
+ * these are taken as time after the start of some timeline.) 
  * 
- * This should be exposed via the getCapabilities (plural) method of 
- * AbstractComponent. Note that such a component may be configured to have 
- * multiple costs (Comms and Power, for instance), in which case it should 
- * return one instance of CostFunctionCapability for each cost. 
+ * This should be exposed via the getCapability method of a component.
  * 
  * @author vwoeltje
  *
  */
 public interface DurationCapability {
+	/**
+	 * Get the start time of the component, measured in milliseconds 
+	 * since the start of the timeline.
+	 * @return the start time of this component
+	 */
 	public long getStart();
+	
+	/**
+	 * Get the end time of the component, measured in milliseconds 
+	 * since the start of the timeline.
+	 * @return the end time of this component
+	 */
 	public long getEnd();
+	
+
+	/**
+	 * Set the start time of the component, measured in milliseconds 
+	 * since the start of the timeline.
+	 * @param start the new start time for this component
+	 */
 	public void setStart(long start);
+	
+	/**
+	 * Set the end time of the component, measured in milliseconds 
+	 * since the start of the timeline.
+	 * @param end the new end time for this component
+	 */
 	public void setEnd(long end);
 }
