@@ -45,7 +45,6 @@ public final class DurationPropertyEditor implements PropertyEditor<Object> {
 		}			
 	}
 
-	@SuppressWarnings("unused")
 	private String verify(String s) {
 		assert s != null;
 		if (s.isEmpty()) {

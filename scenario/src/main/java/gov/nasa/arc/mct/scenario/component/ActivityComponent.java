@@ -27,14 +27,14 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ActivityComponent extends CostFunctionComponent implements DurationCapability {
 	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	
+	/**
+	 * Get the underlying data about this Activity (start time, end time, costs, type...)
+	 * @return underlying activity data
+	 */
 	public ActivityData getData() {
 		return getModel().getData();
 	}
-	
-	public String getDisplay(){
-		return this.getDisplayName();
-	}
-	
+		
 	@Override
 	public Set<AbstractComponent> getAllModifiedObjects() {
 		// TODO: What about cycles?
@@ -84,6 +84,10 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		return Arrays.<CostFunctionCapability>asList(new CostFunctionStub(true), new CostFunctionStub(false));
 	}
 
+	/**
+	 * Get the container for underlying Activity data
+	 * @return the container for underlying Activity data (its model)
+	 */
 	public ActivityModelRole getModel() {
 		return model.get();
 	}
@@ -95,7 +99,6 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
 
 
-		// Describe MyData's field "doubleData". 
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
 		PropertyDescriptor type = new PropertyDescriptor("Activity Type",
@@ -119,7 +122,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		fields.add(type);
 		fields.add(startTime);
-		fields.add(endTime);
+		//fields.add(endTime); TODO: This is desirable, but must synchronize with Duration
 		fields.add(duration);
 		fields.add(power);
 		fields.add(comm);
@@ -127,8 +130,11 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		return fields;
 	}
 	
-	public String getType()
-	{
+	/**
+	 * Get the named type associated with this activity.
+	 * @return
+	 */
+	public String getType() {
 		return getData().getActivityType();
 	}
 
@@ -140,14 +146,9 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	@Override
 	public long getEnd() {
 		return getData().getEndTime().getTime();
-	}
+	}	
 	
-	public long getDuration() {
-		return getData().getDurationTime();
-	}
-	
-	public void setType(String type)
-	{
+	public void setType(String type) {
 		getData().setActivityType(type);
 		save();
 	}
@@ -171,28 +172,46 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			constrainToDuration();
 		}
 	}
-	
-	public void setDuration(long duration) {
-		getData().setDurationTime(duration);
-		save();
-	}
 
+	/**
+	 * Constrain the duration of this Activity's child objects, based on changes 
+	 * to some other duration. 
+	 * 
+	 * It is desirable that changes initiated explicitly by the user (through the 
+	 * GUI, for instance) are not "undone" by these constraints, if possible. 
+	 * The arguments to this method indicate the source of this change, allowing 
+	 * constraints to be enforced relative to that. (For instance, if two 
+	 * sub-activities overlap, one must be pushed forward and/or the other must 
+	 * be pushed backward in time. The decision of which to push is made using 
+	 * these arguments.)
+	 * 
+	 * @param source the Activity or other child object which has changed
+     * @param isStart true if the change in time was toward the start (i.e. negative)
+	 */
 	public void constrainChildren(DurationCapability source, boolean isStart) {
 		constrainActivities(source, isStart);
 		constrainDecisions(isStart);
 		constrainToDuration();
 	}
 	
+	/**
+	 * Ensure that all sub-activities fit within this activity. If possible, 
+	 * simply push activities inward. If there is not "empty space" between 
+	 * sub-activities with which to do this, then simply squash them 
+	 * proportionally. 
+	 */
 	private void constrainToDuration() {
+		// Note that durations are in ms
 		long minimum = getStart();
 		long maximum = getEnd();
 		long duration = maximum - minimum;
-		long childDuration = 0;
+		long childDuration = 0; // Used to track total duration of children
 		DurationCapability latest = null;
 		DurationCapability earliest = null;
 		for (AbstractComponent child : getComponents()) {
 			DurationCapability dc = child.getCapability(DurationCapability.class);
 			if (dc != null && dc.getStart() != dc.getEnd()) {
+				// Identify minimum/maximum times
 				if (dc.getStart() < minimum) {
 					earliest = dc;
 					minimum = dc.getStart();
@@ -201,10 +220,11 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 					latest = dc;
 					maximum = dc.getEnd();
 				}
+				// Track total duration; this is used to decide if we must squash to fit
 				childDuration += dc.getEnd() - dc.getStart();
 			}
 		}
-		if (maximum > getEnd() && minimum < getStart()) { // Shrink children to fit, if needed
+		if (maximum > getEnd() && minimum < getStart()) { // Squash children to fit, if needed
 			if (childDuration > duration) {
 				double durationFactor = ((double) duration) / ((double) childDuration);
 				for (AbstractComponent child : getComponents()) {
@@ -220,14 +240,14 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			}
 		}
 		long delta = 0L;
-		if (maximum > getEnd()) {
+		if (maximum > getEnd()) { // Push in from the end, if needed
 				delta = getEnd() - maximum;
 				latest.setEnd(getEnd());
 				latest.setStart(latest.getStart() + delta);
 				constrainActivities(latest, true);
 				constrainDecisions(true);
 		} 
-		if (minimum < getStart()) {
+		if (minimum < getStart()) { // Push in from the start, if needed
 				delta = getStart() - minimum;
 				earliest.setEnd(earliest.getEnd() + delta);
 				earliest.setStart(getStart());
@@ -236,11 +256,20 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		}
 	}
 	
+	/**
+	 * Constrain this component's sub-activities 
+	 * (decisions are handled in a separate pass)
+	 * 
+	 * @param source the Activity or other child object which has changed
+	 * @param isStart true if the change in time was toward the start (i.e. negative)
+	 */
 	private void constrainActivities(DurationCapability source, boolean isStart) {
 		int sign = isStart ? 1 : -1;
 		long movingEdge = isStart ? source.getStart() : source.getEnd();
 		long mostOverlapping = movingEdge;
 		DurationCapability durationCapabilityToShift = null;
+		
+		// Determine which child component must be shifted by this change, if any
 		for (AbstractComponent child : getComponents()) {
 			DurationCapability dc = child
 					.getCapability(DurationCapability.class);
@@ -252,6 +281,9 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				}
 			}
 		}
+		
+		// Shift the identified child forward/backward. 
+		// This may push other children via a recursive call.
 		if (durationCapabilityToShift != null) {
 			long delta = movingEdge - mostOverlapping;
 			durationCapabilityToShift.setStart(
@@ -260,8 +292,19 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 					durationCapabilityToShift.getEnd() + delta);
 			constrainActivities(durationCapabilityToShift, delta < 0);
 		}
+		
+		// TODO: The search-shift-recurse algorithm used here is O(n^2)
+		//       for n sub-activities.
+		//       An O(n lg n) iterative solution should be possible.
+		//       (i.e. sort, then shift as necessary in one pass)
 	}
 	
+	/**
+	 * Constrain this component's sub-activities 
+	 * (decisions are handled in a separate pass)
+	 * 
+	 * @param movingTowardStart true if the change was toward start (i.e. negative)
+	 */
 	private void constrainDecisions(boolean movingTowardStart) {
 		// Enforce special positioning rules for Decisions
 		boolean moved = false;
@@ -311,6 +354,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	@Override
 	protected void addDelegateComponentsCallback(
 			Collection<AbstractComponent> childComponents) {
+		// Enforce duration constraints when adding sub-activities
 		super.addDelegateComponentsCallback(childComponents);
 		constrainToDuration();
 	}
@@ -325,6 +369,14 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		return (a.getStart() < b.getEnd() && a.getEnd() > b.getStart());
 	}
 	
+	/**
+	 * Stub implementation of cost functions for activity components.
+	 * In the future, this should be generalizable to include more than 
+	 * just Comms and Power
+	 * 
+	 * @author vwoeltje
+	 *
+	 */
 	private class CostFunctionStub implements CostFunctionCapability {
 		private boolean isComm; //Otherwise, is power
 		
