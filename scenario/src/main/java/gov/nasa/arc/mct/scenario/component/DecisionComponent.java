@@ -23,12 +23,13 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 
 	private final AtomicReference<DecisionModelRole> model = new AtomicReference<DecisionModelRole>(new DecisionModelRole());
 	
+	/**
+	 * Get underlying data about this decision (specifically,
+	 * start and end times.)
+	 * @return
+	 */
 	public DecisionData getData() {
 		return getModel().getData();
-	}
-	
-	public String getDisplay(){
-		return this.getDisplayName();
 	}
 	
 	@Override
@@ -62,6 +63,11 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 		return null;
 	}
 	
+	/**
+	 * Get a container for internal data about this decision
+	 * (specifically, its start and end times.)
+	 * @return contained data about this decision
+	 */
 	public DecisionModelRole getModel() {
 		return model.get();
 	}
@@ -72,8 +78,7 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 		// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
 		List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
 
-
-		// Describe MyData's field "doubleData". 
+ 
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
 		PropertyDescriptor startTime = new PropertyDescriptor("Start Time", 
@@ -113,7 +118,7 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 
 	@Override
 	public boolean isLeaf() {
-		return true;
+		return true; // Decisions should never have children in the user object graph
 	}
 
 }
