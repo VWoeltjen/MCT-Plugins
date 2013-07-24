@@ -48,24 +48,30 @@ public class TimelineFilterViewPolicy implements Policy  {
 		AbstractComponent targetComponent = context.getProperty(PolicyContext.PropertyName.TARGET_COMPONENT.getName(), AbstractComponent.class);
 		ViewInfo viewInfo = context.getProperty(PolicyContext.PropertyName.TARGET_VIEW_INFO.getName(), ViewInfo.class);
 
+		// Any timeline-like view requires a DurationCapability
 		if (AbstractTimelineView.class.isAssignableFrom(viewInfo.getViewClass())) {
 			if (targetComponent.getCapability(DurationCapability.class) == null) {
 				return new ExecutionResult(context, false, 
 						viewInfo.getViewName() + " only valid for objects with durations.");
 			}
 		}
+		
+		// Graph views require cost functions
 		if (GraphView.class.isAssignableFrom(viewInfo.getViewClass())) {
 			if (targetComponent.getCapabilities(CostFunctionCapability.class).isEmpty()) {
 				return new ExecutionResult(context, false, 
 						viewInfo.getViewName() + " only valid for objects with cost functions.");
 			}
 		}
+		
+		// Timeline view is exclusively available to Timeline objects
 		if (TimelineView.class.isAssignableFrom(viewInfo.getViewClass())) {
 			if (!(targetComponent instanceof TimelineComponent)) {
 				return new ExecutionResult(context, false, 
 						viewInfo.getViewName() + " only valid for Timeline objects.");
 			}
 		}		
+		
 		return trueResult;
 	}
 
