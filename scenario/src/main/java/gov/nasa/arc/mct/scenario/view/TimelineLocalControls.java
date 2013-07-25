@@ -180,7 +180,14 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			parent.addChangeListener(this);
 		}
 	}
-
+	
+	/**
+	 * Get the component in which content can be placed. In practice, 
+	 * this should be populated with the view-specific part of sub-classes; 
+	 * that is, stuff other than the common timeline local controls 
+	 * should be added to the content pane.
+	 * @return the content area for this view
+	 */
 	public JComponent getContentPane() {
 		return contentPane;
 	}
@@ -299,14 +306,29 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		//masterDuration.setEnd(end); //TODO: Don't delegate
 	}
 	
+	/**
+	 * Compute the maximum time that can be at the center of this component without 
+	 * leaving empty space to the right. This is used to bound panning behavior
+	 * @return the maximum time value that can be at the center of the view
+	 */
 	private long getMaximumCenter() {
 		return end - (long) ((getWidth() - getLeftPadding() - getRightPadding()) / getPixelScale()) / 2;
 	}
-	
+
+	/**
+	 * Compute the minimum time that can be at the center of this component without 
+	 * leaving empty space to the left. This is used to bound panning behavior
+	 * @return the minimum time value that can be at the center of the view
+	 */
 	private long getMinimumCenter() {
 		return start + (long) ((getWidth() - getLeftPadding() - getRightPadding()) / getPixelScale()) / 2;
 	}
 	
+	/**
+	 * Get the pixel scale currently being displayed. This is taken as the number of 
+	 * pixels per millisecond (generally, this is must less than 1.0)
+	 * @return number of pixels in a millisecond
+	 */
 	public double getPixelScale() {
 		return parent != null ?
 				parent.getPixelScale() :

@@ -49,6 +49,7 @@ public abstract class AbstractTimelineView extends View implements ChangeListene
 	private static final long serialVersionUID = -5683099761127087080L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTimelineView.class);
 	
+	// Much start/end time behavior is deferred to the local controls
 	private TimelineLocalControls timelineContainer;
 	
 	public AbstractTimelineView(AbstractComponent ac, ViewInfo vi) {
@@ -68,16 +69,25 @@ public abstract class AbstractTimelineView extends View implements ChangeListene
 	
 	/**
 	 * Get the start time currently displayed, in milliseconds
-	 * @return
+	 * @return start time in milliseconds
 	 */
 	public long getStart() {
 		return timelineContainer.getStart();
 	}
 	
+	/**
+	 * Get the end time currently displayed, in milliseconds
+	 * @return end time in milliseconds
+	 */
 	public long getEnd() {
 		return timelineContainer.getEnd();
 	}
 	
+	/**
+	 * Get the pixel scale currently being displayed. This is taken as the number of 
+	 * pixels per millisecond (generally, this is must less than 1.0)
+	 * @return number of pixels in a millisecond
+	 */
 	public double getPixelScale() {
 		return timelineContainer != null ?
 				timelineContainer.getPixelScale() : 
@@ -88,15 +98,32 @@ public abstract class AbstractTimelineView extends View implements ChangeListene
 		return timelineContainer != null ? timelineContainer.getTimeOffset() : 0;
 	}
 	
+	/**
+	 * Get the number of pixels used for padding on the left-hand side.
+	 * This, in conjunction with getPixelScale() and getTimeOffset() allows 
+	 * easy conversion from X values to Time values, and vice versa.
+	 * @return the number of pixels used for padding on the left
+	 */
 	public int getLeftPadding() {
 		return timelineContainer.getLeftPadding();
 	}
 	
+	/**
+	 * Get the number of pixels used for padding on the right-hand side.
+	 * @return the number of pixels used for padding on the right
+	 */
 	public int getRightPadding() {
 		return timelineContainer.getRightPadding();
 	}
 	
 
+	/**
+	 * Get the component in which content can be placed. In practice, 
+	 * this should be populated with the view-specific part of sub-classes; 
+	 * that is, stuff other than the common timeline local controls 
+	 * should be added to the content pane.
+	 * @return the content area for this view
+	 */
 	protected JComponent getContentPane() {
 		return timelineContainer != null ? timelineContainer.getContentPane() : this; 
 	}

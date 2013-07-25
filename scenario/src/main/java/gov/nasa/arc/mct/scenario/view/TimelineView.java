@@ -160,17 +160,6 @@ public class TimelineView extends AbstractTimelineView {
 		activityView.addMouseMotionListener(controller);
 	}
 	
-	public static void main(String[] args) {
-		TimelineView rowView = new TimelineView(null, null);//new DurationInfoStub(0l, 1000l));
-		rowView.add(new JLabel("Test"), new DurationInfoStub(10L*1000, 20L*2000));
-		
-		JFrame frame = new JFrame();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().add(rowView);
-		frame.setSize(500, 100);
-		frame.setVisible(true);
-	}
-	
 
 	private class TimelineRowLayout implements LayoutManager2 {
 		private Map<Component, DurationCapability> durationInfo = new HashMap<Component, DurationCapability>();
@@ -257,31 +246,5 @@ public class TimelineView extends AbstractTimelineView {
 		public void paintComponent(Graphics g) {
 			g.drawLine(getLeftPadding(), 0, getWidth() - getRightPadding(), 0);
 		}
-	}
-}
-
-class DurationInfoStub implements DurationCapability {
-	private long start, end;
-	
-	public DurationInfoStub(long start, long end) {
-		super();
-		this.start = start;
-		this.end = end;
-	}
-
-	public long getStart() {
-		return start;
-	}
-
-	public void setStart(long start) {
-		this.start = start;
-	}
-
-	public long getEnd() {
-		return end;
-	}
-
-	public void setEnd(long end) {
-		this.end = end;
 	}
 }
