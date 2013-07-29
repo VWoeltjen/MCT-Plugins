@@ -21,6 +21,8 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view;
 
+
+import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 
@@ -95,6 +97,9 @@ public class TimelineDurationController extends MouseAdapter {
 			initialStart = durationCapability.getStart();
 			initialEnd = durationCapability.getEnd();
 			activeHandle = handles.get(comp.getCursor().getType());
+		}
+		if (src instanceof View) {
+			parentView.select((View) src);
 		}
 	}
 
