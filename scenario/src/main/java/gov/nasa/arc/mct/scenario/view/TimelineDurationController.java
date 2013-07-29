@@ -98,15 +98,17 @@ public class TimelineDurationController extends MouseAdapter {
 			initialEnd = durationCapability.getEnd();
 			activeHandle = handles.get(comp.getCursor().getType());
 		}
-		if (src instanceof View) {
-			parentView.select((View) src);
-		}
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
 		super.mouseReleased(e);
+		Object src = e.getSource();
+		if (src instanceof View) {
+			parentView.select(null);
+			parentView.select((View) src);
+		}
 	}
 
 
