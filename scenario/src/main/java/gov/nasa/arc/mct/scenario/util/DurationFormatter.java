@@ -69,13 +69,15 @@ public class DurationFormatter {
 		try {
 			String[] dayTime = duration.split(" ");
 			if (dayTime.length > 1) {
+				// Parse days first, if they're there
 				return Long.parseLong(dayTime[0]) * MS_IN_DAY + parse(dayTime[1]);
 			} else {
+				// Parse hours/minutes/seconds
 				String[] hms = dayTime[0].split(":");
-				for (int i = 0; i < 3; i++) {
-					ms *= 60L;
-					if (hms.length > i) {
-						ms += Long.parseLong(hms[i]) * 1000L;
+				for (int i = 0; i < 3; i++) { // Hours, Minutes, Seconds
+					ms *= 60L; // Multiply running total by 60 (convert sec->min, min->hrs)
+					if (hms.length > i) { // Ignore minutes/seconds if unspecified (treat as 0)
+						ms += Long.parseLong(hms[i]) * 1000L; // Treat as seconds; subsequent passes will scale to min/hrs
 					}
 				}
 			}
@@ -97,28 +99,34 @@ public class DurationFormatter {
 	 */
 	public static String formatDuration(long duration) {
 		StringBuilder builder = new StringBuilder();
-		if (duration > MS_IN_DAY) {
-			builder.append(duration / MS_IN_DAY);
+		if (duration > MS_IN_DAY) { // Don't show days if duration is less than a day
+			builder.append(duration / MS_IN_DAY); // Integer divide to get days
 			builder.append(' ');
 		}
 		
-		duration %= MS_IN_DAY;
-		appendTwoDigits(builder, duration / MS_IN_HOUR);
+		duration %= MS_IN_DAY; // Modulo out days, leaving H:M:S
+		appendTwoDigits(builder, duration / MS_IN_HOUR); // Integer divide to get hours
 		builder.append(':');
 		
-		duration %= MS_IN_HOUR;
-		appendTwoDigits(builder, duration / MS_IN_MIN);
+		duration %= MS_IN_HOUR; // Modulo out hours, leaving M:S
+		appendTwoDigits(builder, duration / MS_IN_MIN); // Integer divide to get minutes
 		
 		
-		duration %= MS_IN_MIN;
-		if (duration > 0) {
+		duration %= MS_IN_MIN; // Modulo out minutes, leaving seconds
+		if (duration > 0) { // Don't show seconds if there are none
 			builder.append(':');
-			appendTwoDigits(builder, duration / MS_IN_SEC);
+			appendTwoDigits(builder, duration / MS_IN_SEC); // Integer divide to get seconds
 		}
 		
 		return builder.toString();
 	}
 	
+	/**
+	 * Utility method to ensure two digits are always appended 
+	 * (for hours/mins/secs formatting)
+	 * @param b
+	 * @param d
+	 */
 	private static void appendTwoDigits(StringBuilder b, long d) {
 		if (d < 10) {
 			b.append('0');

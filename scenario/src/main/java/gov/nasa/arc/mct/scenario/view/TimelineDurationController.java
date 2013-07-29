@@ -118,21 +118,30 @@ public class TimelineDurationController extends MouseAdapter {
 	public void mouseDragged(MouseEvent e) {
 		if (activeHandle != null) {
 			
+			// Figure out how far to move the time, relative to initial time
+			// (computing relative to initial time ensures that times are 
+			// consistent - i.e. moving a activity back and forth should not 
+			// accumulate error from pixel conversions.)
 			int xDiff = e.getXOnScreen() - initialX;
-			if (xDiff == 0) return; // No need to move
-			long tDiff = (long) (xDiff / parentView.getPixelScale());			
+			long tDiff = (long) (xDiff / parentView.getPixelScale());		
+			
+			// Determine how much the time has already been moved.
 			long currentTimeDiff = activeHandle.changesStart ?
 					(durationCapability.getStart() - initialStart) :
-					(durationCapability.getEnd() - initialEnd);
-			
+					(durationCapability.getEnd() - initialEnd);			
+		
 			tDiff = clamp(tDiff,
 					activeHandle.changesStart ? initialStart : initialEnd,
 					activeHandle.changesStart ? parentView.getStart() : initialStart,
 					activeHandle.changesEnd   ? parentView.getEnd() : initialEnd							
 					);
-			tDiff -= currentTimeDiff;
+			tDiff -= currentTimeDiff; // Determine how far (in ms) to move from current position
 			if (tDiff == 0) return; // No need to move
 			
+			// Rather than changing all the time at once, do so it the equivalent of
+			// 1-pixel increments. This helps to ensure that duration constraint 
+			// behavior occurs consistently (otherwise, a fast mouse gesture could 
+			// allow one sub-activity to "jump" over its sibling.)
 			long timeStep = (long) (1 / parentView.getPixelScale());
 			boolean isTowardStart = tDiff < 0;
 			

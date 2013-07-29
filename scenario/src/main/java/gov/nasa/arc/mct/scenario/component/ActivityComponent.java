@@ -37,6 +37,10 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		
 	@Override
 	public Set<AbstractComponent> getAllModifiedObjects() {
+		// Note that this is necessary to support Save All
+		// ("all modified objects" is the All in Save All;
+		//  typically, this should be all dirty children.)
+		
 		// TODO: What about cycles?
 		Set<AbstractComponent> modified = new HashSet<AbstractComponent>();
 		for (AbstractComponent child : getComponents()) {
@@ -185,6 +189,14 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	 * be pushed backward in time. The decision of which to push is made using 
 	 * these arguments.)
 	 * 
+	 * TODO: These constraints are not consistently enforced outside of the 
+	 * Timeline View GUI. Note that it is possible to create object graphs 
+	 * which cannot enforce constraints consistently (for instance, 
+	 * when one sub-activity has multiple parents). It is currently not 
+	 * well-defined what should happen in this situation - it may be necessary 
+	 * to re-think the manner in which sub-activity start/end times are 
+	 * defined. 
+	 * 
 	 * @param source the Activity or other child object which has changed
      * @param isStart true if the change in time was toward the start (i.e. negative)
 	 */
@@ -210,6 +222,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		DurationCapability earliest = null;
 		for (AbstractComponent child : getComponents()) {
 			DurationCapability dc = child.getCapability(DurationCapability.class);
+			// Check if capability is supported, and of non-zero duration
 			if (dc != null && dc.getStart() != dc.getEnd()) {
 				// Identify minimum/maximum times
 				if (dc.getStart() < minimum) {
@@ -229,7 +242,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				double durationFactor = ((double) duration) / ((double) childDuration);
 				for (AbstractComponent child : getComponents()) {
 					DurationCapability dc = child.getCapability(DurationCapability.class);
-					if (dc != null) {
+					if (dc != null) { // If getCapability returned null, capability is unsupported by this child
 						long delta = (dc.getEnd() - dc.getStart() - (long) ((dc.getEnd() - dc.getStart()) * durationFactor)) / 2 + 1;
 						dc.setEnd(dc.getEnd() - delta);
 						dc.setStart(dc.getStart() + delta);
@@ -273,7 +286,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		for (AbstractComponent child : getComponents()) {
 			DurationCapability dc = child
 					.getCapability(DurationCapability.class);
-			if (dc != source && overlaps(dc, source)) {
+			// Filter out children without capabilities, the source, and non-overlapping children
+			if (dc != null && dc != source && overlaps(dc, source)) {
 				long movedEdge = isStart ? dc.getEnd() : dc.getStart();
 				if (movedEdge * sign > mostOverlapping * sign) {
 					mostOverlapping = movedEdge;
@@ -307,10 +321,13 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	 */
 	private void constrainDecisions(boolean movingTowardStart) {
 		// Enforce special positioning rules for Decisions
+		// Decisions should never have empty space before or after,
+		// but should also maintain consistent duration
 		boolean moved = false;
 		do {
 			moved = false;
 			for (AbstractComponent child : getComponents()) {
+				// Identify decisions among children
 				if (child instanceof DecisionComponent) {
 					long start = ((DecisionComponent) child).getStart();
 					long end = ((DecisionComponent) child).getEnd();
@@ -318,28 +335,37 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 					DurationCapability followingCapability = null;
 					long nearestPrecedent = getStart();
 					long nearestFollower = getEnd();
+					
+					// Search for nearest preceeding/following siblings of decision
 					for (AbstractComponent otherChild : getComponents()) {
 						if (child != otherChild) {
 							DurationCapability dc = otherChild
 									.getCapability(DurationCapability.class);
-							if (dc.getEnd() > nearestPrecedent && dc.getEnd() <= start) {
-								preceedingCapability = dc;
-								nearestPrecedent = dc.getEnd();
-							}
-							if (dc.getStart() < nearestFollower && dc.getStart() >= end) {
-								 followingCapability = dc;
-								 nearestFollower = dc.getStart();
+							if (dc != null) { // getCapability returns null if otherChild does not offer this capability
+								if (dc.getEnd() > nearestPrecedent && dc.getEnd() <= start) {
+									preceedingCapability = dc;
+									nearestPrecedent = dc.getEnd();
+								}
+								if (dc.getStart() < nearestFollower && dc.getStart() >= end) {
+									 followingCapability = dc;
+									 nearestFollower = dc.getStart();
+								}
 							}
 						}
 					}
+					
+					// If a preceeding capability was found, and there is a gap, move one or the other
 					if (preceedingCapability != null && nearestPrecedent < start && !overlaps((DurationCapability) child, preceedingCapability)) {
-						long delta = (start - nearestPrecedent) * (movingTowardStart ? -1 : 1);
+						// Decide which capability to move and how far to move it based on the direction of the initiating change
+						long delta = (start - nearestPrecedent) * (movingTowardStart ? -1 : 1);						
 						DurationCapability toMove = (DurationCapability) (movingTowardStart ? child : preceedingCapability);
 						toMove.setStart(toMove.getStart() + delta);
 						toMove.setEnd(toMove.getEnd() + delta);
 						moved = true;
 					}
+					// If a following capability was found, and there is a gap, move one or the other
 					if (followingCapability != null && nearestFollower > end && !overlaps((DurationCapability) child, followingCapability)) {
+						// Decide which capability to move and how far to move it based on the direction of the initiating change
 						long delta = (end - nearestFollower) * (movingTowardStart ? 1 : -1);
 						DurationCapability toMove = (DurationCapability) (!movingTowardStart ? child : followingCapability);
 						toMove.setStart(toMove.getStart() + delta);
@@ -348,7 +374,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 					}
 				}
 			}
-		} while (moved);
+		} while (moved); // Repeat until all decision gaps are closed
 	}
 	
 	@Override

@@ -23,7 +23,6 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		return this.getDisplayName();
 	}
 
-	private Set<AbstractComponent> modifiedObjects = new HashSet<AbstractComponent>();
 	
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
@@ -33,11 +32,12 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		return super.handleGetCapability(capability);
 	}
 	
-	public void addToModifiedObjects(AbstractComponent ac) {
-		modifiedObjects.add(ac);
-	}
 	@Override
 	public Set<AbstractComponent> getAllModifiedObjects() {
+		// Note that this is necessary to support Save All
+		// ("all modified objects" is the All in Save All;
+		//  typically, this should be all dirty children.)		
+		
 		// TODO: What about cycles?
 		Set<AbstractComponent> modified = new HashSet<AbstractComponent>();
 		for (AbstractComponent child : getComponents()) {
@@ -49,14 +49,11 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		return modified;
 	}
 	
-	@Override
-	public void notifiedSaveAllSuccessful() {
-		modifiedObjects.clear();
-	}
-	
+
 	@Override
 	public long getStart() {		
-		return 0;
+		// Time is measured as "milliseconds since start of timeline", so this is always 0
+		return 0l;
 	}
 	@Override
 	public long getEnd() {

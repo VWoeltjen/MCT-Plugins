@@ -92,7 +92,7 @@ public class GraphView extends AbstractTimelineView {
 		private double minData;
 		private double maxData;
 		
-		private int cachedWidth = 0;
+		//private int cachedWidth = 0;
 		
 		public CostGraph(CostFunctionCapability cost) {
 			super();
@@ -106,10 +106,10 @@ public class GraphView extends AbstractTimelineView {
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			
-			// Update graph data for new width
+			// TODO: Updating may too much computation to do every frame
 			//if (getWidth() != cachedWidth) {
 				updateGraph();
-				cachedWidth = getWidth();
+				//cachedWidth = getWidth();
 			//}
 			
 			// Choose color for data line
@@ -175,6 +175,7 @@ public class GraphView extends AbstractTimelineView {
 		}
 		
 		private void updateGraph() {
+			// Note: TreeSet is always sorted, meaning subsequent iteration occurs in drawing order
 			Collection<Long> changeTimes = new TreeSet<Long>(); 
 			changeTimes.addAll(cost.getChangeTimes());
 			changeTimes.add(getStart());
