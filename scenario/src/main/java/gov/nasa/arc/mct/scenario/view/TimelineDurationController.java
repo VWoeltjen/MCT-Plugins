@@ -102,6 +102,10 @@ public class TimelineDurationController extends MouseAdapter {
 			initialEnd = durationCapability.getEnd();
 			activeHandle = handles.get(comp.getCursor().getType());
 		}
+		if (src instanceof View) {			
+			parentView.select(null);			
+			parentView.select((View) src);			
+		}
 	}
 
 	@Override
@@ -110,9 +114,7 @@ public class TimelineDurationController extends MouseAdapter {
 		super.mouseReleased(e);
 		Object src = e.getSource();
 		if (src instanceof View) {
-			parentView.select(null);			
-
-			parentView.select((View) src);
+			((View) src).getManifestedComponent().save();
 		}
 	}
 
