@@ -88,7 +88,7 @@ public class TimelineView extends AbstractTimelineView {
 			addTopLevelActivity(child);//addActivities(child, 0, new HashSet<String>());
 		}
 		
-		upperPanel.add(GraphView.VIEW_INFO.createView(ac));
+		upperPanel.add(new CollapsibleContainer(GraphView.VIEW_INFO.createView(ac)));
 	}
 
 	
