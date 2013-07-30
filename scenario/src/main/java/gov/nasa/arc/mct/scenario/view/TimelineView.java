@@ -75,8 +75,11 @@ public class TimelineView extends AbstractTimelineView {
 	
 	public TimelineView(AbstractComponent ac, ViewInfo vi) {
 		// Work with a clone, so that children pulled out using getComponents are all local versions
-		// This supports synchronization of Inspector with views in the Timeline
-		super(ac=PlatformAccess.getPlatform().getPersistenceProvider().getComponent(ac.getComponentId()),vi);
+		// This supports synchronization of Inspector with views in the Timeline		
+		super(vi.getViewType().equals(ViewType.EMBEDDED) ?
+				ac :
+				(ac=PlatformAccess.getPlatform().getPersistenceProvider().getComponent(ac.getComponentId())),
+				vi);
 		
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(upperPanel, BorderLayout.NORTH);

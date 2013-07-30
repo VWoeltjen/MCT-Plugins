@@ -51,7 +51,9 @@ public class ScenarioView extends AbstractTimelineView {
 				View view = TimelineView.VIEW_INFO.createView(child);
 				upperPanel.add(new CollapsibleContainer(view));
 			}
-		}	
+		}
+		
+		upperPanel.add(GraphView.VIEW_INFO.createView(getManifestedComponent()));
 	}
 
 	
