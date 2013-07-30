@@ -27,9 +27,11 @@ import gov.nasa.arc.mct.policy.Policy;
 import gov.nasa.arc.mct.policy.PolicyContext;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
+import gov.nasa.arc.mct.scenario.component.ScenarioComponent;
 import gov.nasa.arc.mct.scenario.component.TimelineComponent;
 import gov.nasa.arc.mct.scenario.view.AbstractTimelineView;
 import gov.nasa.arc.mct.scenario.view.GraphView;
+import gov.nasa.arc.mct.scenario.view.ScenarioView;
 import gov.nasa.arc.mct.scenario.view.TimelineInspector;
 import gov.nasa.arc.mct.scenario.view.TimelineView;
 import gov.nasa.arc.mct.services.component.ViewInfo;
@@ -63,6 +65,14 @@ public class TimelineFilterViewPolicy implements Policy  {
 			if (targetComponent.getCapabilities(CostFunctionCapability.class).isEmpty()) {
 				return new ExecutionResult(context, false, 
 						viewInfo.getViewName() + " only valid for objects with cost functions.");
+			}
+		}
+		
+		// Scenario view is exclusively available to Scenario objects
+		if (ScenarioView.class.isAssignableFrom(viewInfo.getViewClass())) {
+			if (!(targetComponent instanceof ScenarioComponent)) {
+				return new ExecutionResult(context, false, 
+						viewInfo.getViewName() + " only valid for Timeline objects.");
 			}
 		}
 		

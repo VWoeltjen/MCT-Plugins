@@ -27,6 +27,7 @@ import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.services.component.ViewInfo;
+import gov.nasa.arc.mct.services.component.ViewType;
 import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 
 import java.awt.BorderLayout;
@@ -60,6 +61,8 @@ import javax.swing.event.ChangeEvent;
  *
  */
 public class TimelineView extends AbstractTimelineView {
+	static final ViewInfo VIEW_INFO = new ViewInfo(TimelineView.class, "Timeline", ViewType.EMBEDDED);
+	
 	private static final int TIMELINE_ROW_HEIGHT = 40;
 	private static final int TIMELINE_ROW_SPACING = 8;
 	private static final long serialVersionUID = -5039383350178424964L;

@@ -21,9 +21,38 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
+import gov.nasa.arc.mct.scenario.component.TimelineComponent;
+import gov.nasa.arc.mct.services.component.ViewInfo;
 
-public class ScenarioView extends View {
+import java.awt.BorderLayout;
+
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
+
+public class ScenarioView extends AbstractTimelineView {
+	private static final long serialVersionUID = 4734756748449290286L;
+
+	public ScenarioView(AbstractComponent ac, ViewInfo vi) {
+		super(ac, vi);
+		
+		setOpaque(false);
+		
+		JPanel upperPanel = new JPanel();
+		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.Y_AXIS));
+		upperPanel.setOpaque(false);
+
+		getContentPane().setLayout(new BorderLayout());
+		getContentPane().add(upperPanel, BorderLayout.NORTH);
+		
+		for (AbstractComponent child : ac.getComponents()) {
+			if (child instanceof TimelineComponent) {
+				View view = TimelineView.VIEW_INFO.createView(child);
+				upperPanel.add(new CollapsibleContainer(view));
+			}
+		}	
+	}
 
 	
 }
