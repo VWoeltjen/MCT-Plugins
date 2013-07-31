@@ -27,6 +27,7 @@ import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.services.component.ViewInfo;
+import gov.nasa.arc.mct.services.component.ViewType;
 import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 
 import java.awt.BorderLayout;
@@ -60,6 +61,8 @@ import javax.swing.event.ChangeEvent;
  *
  */
 public class TimelineView extends AbstractTimelineView {
+	static final ViewInfo VIEW_INFO = new ViewInfo(TimelineView.class, "Timeline", ViewType.EMBEDDED);
+	
 	private static final int TIMELINE_ROW_HEIGHT = 40;
 	private static final int TIMELINE_ROW_SPACING = 8;
 	private static final long serialVersionUID = -5039383350178424964L;
@@ -72,8 +75,11 @@ public class TimelineView extends AbstractTimelineView {
 	
 	public TimelineView(AbstractComponent ac, ViewInfo vi) {
 		// Work with a clone, so that children pulled out using getComponents are all local versions
-		// This supports synchronization of Inspector with views in the Timeline
-		super(ac=PlatformAccess.getPlatform().getPersistenceProvider().getComponent(ac.getComponentId()),vi);
+		// This supports synchronization of Inspector with views in the Timeline		
+		super(vi.getViewType().equals(ViewType.EMBEDDED) ?
+				ac :
+				(ac=PlatformAccess.getPlatform().getPersistenceProvider().getComponent(ac.getComponentId())),
+				vi);
 		
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(upperPanel, BorderLayout.NORTH);
@@ -88,7 +94,7 @@ public class TimelineView extends AbstractTimelineView {
 			addTopLevelActivity(child);//addActivities(child, 0, new HashSet<String>());
 		}
 		
-		upperPanel.add(GraphView.VIEW_INFO.createView(ac));
+		upperPanel.add(new CollapsibleContainer(GraphView.VIEW_INFO.createView(ac)));
 	}
 
 	
