@@ -22,9 +22,9 @@
 package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.gui.View;
-import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -36,9 +36,15 @@ public class CollapsibleContainer extends JPanel {
 	private static final long serialVersionUID = -7397365143392342779L;
 
 	private View view;
-	
+	private Component label;
+
 	public CollapsibleContainer(View view) {
+		this(view, new JLabel(view.getInfo().getViewName()));
+	}
+	
+	public CollapsibleContainer(View view, Component label) {
 		this.view = view;
+		this.label = label;
 		
 		setLayout(new BorderLayout());
 		add(view, BorderLayout.CENTER);
@@ -48,11 +54,10 @@ public class CollapsibleContainer extends JPanel {
 	}
 	
 	private JComponent createTopPanel() {
-		ViewInfo vi = view.getInfo();
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
 		panel.setLayout(new BorderLayout());
-		panel.add(new JLabel(vi.getViewName()), BorderLayout.WEST);
+		panel.add(label, BorderLayout.WEST);
 		panel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {

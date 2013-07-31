@@ -49,7 +49,8 @@ public class ScenarioView extends AbstractTimelineView {
 		for (AbstractComponent child : ac.getComponents()) {
 			if (child instanceof TimelineComponent) {
 				View view = TimelineView.VIEW_INFO.createView(child);
-				upperPanel.add(new CollapsibleContainer(view));
+				View label = LabelView.VIEW_INFO.createView(child);
+				upperPanel.add(new CollapsibleContainer(view, label));
 			}
 		}
 		
