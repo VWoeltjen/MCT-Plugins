@@ -27,8 +27,11 @@ import gov.nasa.arc.mct.scenario.component.TimelineComponent;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 
 import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 public class ScenarioView extends AbstractTimelineView {
@@ -45,16 +48,27 @@ public class ScenarioView extends AbstractTimelineView {
 
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(upperPanel, BorderLayout.NORTH);
+		getContentPane().setBackground(Color.WHITE);
+		//getContentPane().setOpaque(false);
 		
 		for (AbstractComponent child : ac.getComponents()) {
 			if (child instanceof TimelineComponent) {
-				View view = TimelineView.VIEW_INFO.createView(child);
-				View label = LabelView.VIEW_INFO.createView(child);
-				upperPanel.add(new CollapsibleContainer(view, label));
+				upperPanel.add(createTimeline((TimelineComponent) child));
 			}
 		}
 		
 		upperPanel.add(GraphView.VIEW_INFO.createView(getManifestedComponent()));
+	}
+	
+	private Component createTimeline(TimelineComponent component) {
+		View view = TimelineView.VIEW_INFO.createView(component);
+		View label = LabelView.VIEW_INFO.createView(component);
+		JComponent container = new CollapsibleContainer(view, label);
+
+		container.setOpaque(true);
+		container.setBackground(Color.LIGHT_GRAY);
+		
+		return container;
 	}
 
 	

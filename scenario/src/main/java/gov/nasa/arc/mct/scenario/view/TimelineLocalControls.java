@@ -182,6 +182,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		middlePanel.setOpaque(isTopLevelControl);
 		lowerPanel.setVisible(isTopLevelControl);
 		overlay.setVisible(false);
+		contentPane.setOpaque(isTopLevelControl);
 		if (parent != null) {
 			parent.addChangeListener(this);
 		}
