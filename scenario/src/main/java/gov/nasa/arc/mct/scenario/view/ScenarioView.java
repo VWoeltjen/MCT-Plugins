@@ -23,12 +23,14 @@ package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
+import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.TimelineComponent;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -51,13 +53,18 @@ public class ScenarioView extends AbstractTimelineView {
 		getContentPane().setBackground(Color.WHITE);
 		//getContentPane().setOpaque(false);
 		
+		//TODO: Use clone strategy, set work unit delegate for kids
+		
 		for (AbstractComponent child : ac.getComponents()) {
 			if (child instanceof TimelineComponent) {
 				upperPanel.add(createTimeline((TimelineComponent) child));
 			}
 		}
 		
-		upperPanel.add(GraphView.VIEW_INFO.createView(getManifestedComponent()));
+		List<CostFunctionCapability> costs = ac.getCapabilities(CostFunctionCapability.class);
+		if (costs != null && !costs.isEmpty()) {
+			upperPanel.add(new CollapsibleContainer(GraphView.VIEW_INFO.createView(getManifestedComponent())));
+		}
 	}
 	
 	private Component createTimeline(TimelineComponent component) {

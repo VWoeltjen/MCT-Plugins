@@ -25,6 +25,7 @@ import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
+import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
@@ -48,8 +49,6 @@ import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 
@@ -94,7 +93,10 @@ public class TimelineView extends AbstractTimelineView {
 			addTopLevelActivity(child);//addActivities(child, 0, new HashSet<String>());
 		}
 		
-		upperPanel.add(new CollapsibleContainer(GraphView.VIEW_INFO.createView(ac)));
+		List<CostFunctionCapability> costs = ac.getCapabilities(CostFunctionCapability.class);
+		if (costs != null && !costs.isEmpty()) {
+			upperPanel.add(new CollapsibleContainer(GraphView.VIEW_INFO.createView(ac)));
+		}
 	}
 
 	
