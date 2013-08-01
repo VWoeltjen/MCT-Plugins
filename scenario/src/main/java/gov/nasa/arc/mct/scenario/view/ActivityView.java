@@ -53,7 +53,7 @@ public class ActivityView extends View implements CostOverlay {
 		revalidate();
 		repaint();
 		
-		// Update parents; ie cost graphs
+		// Update parent component views (may include cost graphs)
 		AbstractComponent parent = getManifestedComponent().getWorkUnitDelegate();
 		if (parent != null && parent != getManifestedComponent()) {
 			for (View v : parent.getAllViewManifestations()) {

@@ -149,7 +149,11 @@ public class TimelineView extends AbstractTimelineView {
 		DurationCapability dc = ac.getCapability(DurationCapability.class);		
 		if (dc != null && !ids.contains(ac.getComponentId())) {
 			// Using workunitdelegate means these views will sync with inspector
-			ac.getCapability(ComponentInitializer.class).setWorkUnitDelegate(getManifestedComponent());
+			// If we already have a delegate, use that; otherwise, use manifested component
+			// (this strategy permits parent views, like Scenario, to take over)
+			AbstractComponent manifestedComponent = getManifestedComponent();
+			AbstractComponent workDelegate = manifestedComponent.getWorkUnitDelegate();
+			ac.getCapability(ComponentInitializer.class).setWorkUnitDelegate(workDelegate != null ? workDelegate : manifestedComponent);
 			addViewToRow(dc, ac, (ActivityComponent) (parent instanceof ActivityComponent ? parent : null), block, depth);
 			ids.add(ac.getComponentId()); // Prevent infinite loops in case of cycle
 			for (AbstractComponent child : ac.getComponents()) {
