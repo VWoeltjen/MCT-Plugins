@@ -2,6 +2,7 @@ package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
+import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.CostFunctionComponent;
 import gov.nasa.arc.mct.scenario.component.DecisionComponent;
@@ -18,7 +19,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -45,7 +45,14 @@ public class ActivityView extends View implements CostOverlay {
 			bg = ActivityBackgroundShape.DECISION;			
 		}
 		durationCapability = ac.getCapability(DurationCapability.class);
-		setOpaque(false);
+		setOpaque(false);		
+		if (ac instanceof ActivityComponent) {
+			String type = ((ActivityComponent) ac).getType();
+			if (type != null && !type.isEmpty()) {
+				durationColor = ScenarioColorPalette.getColorMixed(type, durationColor, 0.75f);
+				lineColor = durationColor.darker();
+			}
+		}
 	}
 	
 	@Override
