@@ -83,14 +83,21 @@ public class ActivityView extends View implements CostOverlay {
 			// Draw activity duration			
 			bg.paint(g2, getWidth(), getHeight(), lineColor, durationColor);
 			
-			String name = getManifestedComponent().getDisplayName();			
+			// Prepare a tool tip
+			AbstractComponent ac = getManifestedComponent();
+			String name = ac.getDisplayName();			
 			String duration = (durationCapability != null) ?
 				DurationFormatter.formatDuration(durationCapability.getEnd() - durationCapability.getStart()) : 
 					"";
 			
 			bg.paintLabels(g2, name, duration, getWidth(), getHeight(), getForeground());
 
-			setToolTipText(name + " " + duration);			
+			String type = "";
+			if (ac instanceof ActivityComponent) {
+				type = ((ActivityComponent) ac).getType();
+			} 
+
+			setToolTipText(name + " " + duration + (type.isEmpty() ? "" : (" [" + type + "]")));			
 		}
 	}
 	
