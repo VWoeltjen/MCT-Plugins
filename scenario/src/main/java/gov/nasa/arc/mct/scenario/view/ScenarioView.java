@@ -30,15 +30,24 @@ import gov.nasa.arc.mct.services.component.ViewInfo;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 
 public class ScenarioView extends AbstractTimelineView {
 	private static final long serialVersionUID = 4734756748449290286L;
 
+	private static final int BORDER_SIZE = 12;
+	private static final int BORDER_GAP  = 6;
+	private static final Color TIMELINE_BACKGROUND = new Color(240, 244, 248);
+	
 	public ScenarioView(AbstractComponent ac, ViewInfo vi) {
 		super(ac, vi);
 		
@@ -73,7 +82,37 @@ public class ScenarioView extends AbstractTimelineView {
 		JComponent container = new CollapsibleContainer(view, label);
 
 		container.setOpaque(true);
-		container.setBackground(Color.LIGHT_GRAY);
+		container.setBackground(TIMELINE_BACKGROUND);
+		container.setBorder(new Border() {
+
+			@Override
+			public void paintBorder(Component c, Graphics g, int x, int y,
+					int width, int height) {
+				g.setColor(getContentPane().getBackground());
+				g.fillRect(x, y , width, BORDER_SIZE + BORDER_GAP/2);
+				g.fillRect(x, y+height-BORDER_SIZE - BORDER_GAP/2, width, BORDER_SIZE + BORDER_GAP/2);
+				
+				if (g instanceof Graphics2D) {
+					Graphics2D g2d = (Graphics2D) g;
+					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				}
+				
+				g.setColor(c.getBackground());
+				g.fillRoundRect(x, y + BORDER_GAP/2, width-1, BORDER_SIZE*2, BORDER_SIZE*2, BORDER_SIZE*2);
+				g.fillRoundRect(x, y+height-BORDER_SIZE*2-BORDER_GAP/2, width-1, BORDER_SIZE*2, BORDER_SIZE*2, BORDER_SIZE*2);
+			}
+
+			@Override
+			public Insets getBorderInsets(Component c) {
+				return new Insets(BORDER_SIZE + BORDER_GAP/2, 0, BORDER_SIZE + BORDER_GAP/2, 0);
+			}
+
+			@Override
+			public boolean isBorderOpaque() {
+				return true;
+			}
+			
+		});
 		
 		return container;
 	}
