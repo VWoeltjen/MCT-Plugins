@@ -41,6 +41,12 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 
+/**
+ * A Scenario View shows multiple Timeline Views with a shared time axis.
+ * 
+ * @author vwoeltje
+ *
+ */
 public class ScenarioView extends AbstractTimelineView {
 	private static final long serialVersionUID = 4734756748449290286L;
 

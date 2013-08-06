@@ -36,16 +36,34 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * A collapsible Swing container for an MCT view. Includes a little triangle 
+ * to control the visibility of the view beneath.
+ * 
+ * @author vwoeltje
+ *
+ */
 public class CollapsibleContainer extends JPanel {
 	private static final long serialVersionUID = -7397365143392342779L;
 	
 	private View view;
 	private Component label;
 
+	/**
+	 * Create a new collapsible container for the specified view. 
+	 * This will be labeled with the view's name.
+	 * @param view
+	 */
 	public CollapsibleContainer(View view) {
 		this(view, new JLabel(view.getInfo().getViewName()));
 	}
 	
+	/**
+	 * Create a new collapsible container for the specified view; 
+	 * this will be labeled by the provided Swing component.
+	 * @param view
+	 * @param label
+	 */
 	public CollapsibleContainer(View view, Component label) {
 		this.view = view;
 		this.label = label;

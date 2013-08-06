@@ -23,6 +23,13 @@ package gov.nasa.arc.mct.scenario.view;
 
 import java.awt.Color;
 
+/**
+ * Serves colors to various views related to Scenarios. Users of this 
+ * class include Cost graphs and colorized Activities in a timeline. 
+ * 
+ * @author vwoeltje
+ *
+ */
 public class ScenarioColorPalette {
 
 	private static final Color GRAPH_PALETTE[] = {
@@ -30,6 +37,15 @@ public class ScenarioColorPalette {
 		new Color(77, 217, 203), new Color(16, 163, 242)
 	};
 	
+	/**
+	 * Get a color for the provided key.
+	 * 
+	 * This key may be arbitrary. This method is guaranteed to return the same 
+	 * color for the same key across different calls to the method.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public static final Color getColor(String key) {
 		return GRAPH_PALETTE[Math.abs(key.hashCode()) % GRAPH_PALETTE.length];
 	}
