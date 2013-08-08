@@ -23,9 +23,12 @@ package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
+import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.TimelineComponent;
 import gov.nasa.arc.mct.services.component.ViewInfo;
+import gov.nasa.arc.mct.services.component.ViewType;
+import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -55,7 +58,10 @@ public class ScenarioView extends AbstractTimelineView {
 	private static final Color TIMELINE_BACKGROUND = new Color(240, 244, 248);
 	
 	public ScenarioView(AbstractComponent ac, ViewInfo vi) {
-		super(ac, vi);
+		super(vi.getViewType().equals(ViewType.EMBEDDED) ?
+				ac :
+				(ac=PlatformAccess.getPlatform().getPersistenceProvider().getComponent(ac.getComponentId())),
+				vi);
 		
 		setOpaque(false);
 		
@@ -72,6 +78,7 @@ public class ScenarioView extends AbstractTimelineView {
 		
 		for (AbstractComponent child : ac.getComponents()) {
 			if (child instanceof TimelineComponent) {
+				child.getCapability(ComponentInitializer.class).setWorkUnitDelegate(getManifestedComponent());
 				upperPanel.add(createTimeline((TimelineComponent) child));
 			}
 		}

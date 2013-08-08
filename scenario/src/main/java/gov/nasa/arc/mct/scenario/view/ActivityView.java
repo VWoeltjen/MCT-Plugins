@@ -14,12 +14,16 @@ import gov.nasa.arc.mct.services.component.ViewType;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.util.List;
+
+import javax.swing.SwingUtilities;
 
 /**
  * A View of an Activity object, specifically for use as an embedded view within a 
@@ -61,13 +65,13 @@ public class ActivityView extends View implements CostOverlay {
 		repaint();
 		
 		// Update parent component views (may include cost graphs)
-		AbstractComponent parent = getManifestedComponent().getWorkUnitDelegate();
-		if (parent != null && parent != getManifestedComponent()) {
-			for (View v : parent.getAllViewManifestations()) {
-				// Repaint and revalidate should be benign for views that don't care
-				v.repaint();
-				v.revalidate();
-			}
+		Container parent;
+		Component child = this;
+		while ( (parent = SwingUtilities.getAncestorOfClass(View.class, child)) != null) {
+				parent.repaint();
+				parent.invalidate();
+				parent.validate();
+				child = parent;		
 		}
 	}
 	
