@@ -58,6 +58,11 @@ public class ScenarioView extends AbstractTimelineView {
 	private static final Color TIMELINE_BACKGROUND = new Color(240, 244, 248);
 	
 	public ScenarioView(AbstractComponent ac, ViewInfo vi) {
+		// When we are a non-embedded view, work with a fresh copy of the 
+		// component direct from persistence. This ensures that we get fresh 
+		// copies of children, meaning we can propagate changes to e.g. 
+		// Activities within managed views (including Timeline Inspector) 
+		// without effecting the rest of the system.
 		super(vi.getViewType().equals(ViewType.EMBEDDED) ?
 				ac :
 				(ac=PlatformAccess.getPlatform().getPersistenceProvider().getComponent(ac.getComponentId())),

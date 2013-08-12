@@ -73,8 +73,11 @@ public class TimelineView extends AbstractTimelineView {
 	
 	
 	public TimelineView(AbstractComponent ac, ViewInfo vi) {
-		// Work with a clone, so that children pulled out using getComponents are all local versions
-		// This supports synchronization of Inspector with views in the Timeline		
+		// When we are a non-embedded view, work with a fresh copy of the 
+		// component direct from persistence. This ensures that we get fresh 
+		// copies of children, meaning we can propagate changes to e.g. 
+		// Activities within managed views (including Timeline Inspector) 
+		// without effecting the rest of the system.
 		super(vi.getViewType().equals(ViewType.EMBEDDED) ?
 				ac :
 				(ac=PlatformAccess.getPlatform().getPersistenceProvider().getComponent(ac.getComponentId())),
