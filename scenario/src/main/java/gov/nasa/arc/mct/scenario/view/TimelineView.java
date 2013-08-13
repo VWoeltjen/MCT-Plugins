@@ -50,6 +50,8 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 
 /**
@@ -100,13 +102,25 @@ public class TimelineView extends AbstractTimelineView {
 		if (costs != null && !costs.isEmpty()) {
 			upperPanel.add(new CollapsibleContainer(GraphView.VIEW_INFO.createView(ac)));
 		}
+		
+		// Refresh on any ancestor changes - these may change time scales
+		this.addAncestorListener(new AncestorListener() {
+			@Override
+			public void ancestorAdded(AncestorEvent arg0) {
+				refreshAll();
+			}
+			@Override
+			public void ancestorMoved(AncestorEvent arg0) {
+				refreshAll();
+			}
+			@Override
+			public void ancestorRemoved(AncestorEvent arg0) {
+				refreshAll();
+			}			
+		});
 	}
 
-	
-	
-	@Override
-	public void stateChanged(ChangeEvent e) {
-		super.stateChanged(e);
+	private void refreshAll() {
 		revalidate();
 		repaint();
 		for (TimelineBlock block : blocks) {
@@ -117,6 +131,13 @@ public class TimelineView extends AbstractTimelineView {
 				row.repaint();
 			}
 		}
+	}
+	
+	
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		super.stateChanged(e);
+		refreshAll();
 	}
 
 
