@@ -135,7 +135,7 @@ public class TimelineView extends AbstractTimelineView {
 		
 		// Restore the selection
 		if (selectedId != null) {
-			searchAndSelect(this, selectedId);
+			selectComponent(selectedId);
 		}
 		
 		// Update cost graph
@@ -146,20 +146,6 @@ public class TimelineView extends AbstractTimelineView {
 		
 		// Finally, ensure time settings are obeyed
 		refreshAll();
-	}
-	
-	private void searchAndSelect(Component comp, String id) {
-		if (comp instanceof View) {
-			if (((View) comp).getManifestedComponent().getComponentId().equals(id)) {
-				select((View) comp);
-				return;
-			}			
-		}
-		if (comp instanceof Container) { //Not found, keep searching
-			for (Component child : ((Container) comp).getComponents()) {
-				searchAndSelect(child, id);
-			}
-		}
 	}
 	
 	private void buildUpperPanel() {

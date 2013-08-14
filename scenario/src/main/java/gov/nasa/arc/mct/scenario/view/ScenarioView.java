@@ -39,6 +39,7 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.RenderingHints;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -92,6 +93,14 @@ public class ScenarioView extends AbstractTimelineView {
 			getManifestedComponent().addViewManifestation(this); // Make sure we get updated
 		}
 		
+		// Cache current selection to restore later
+		Collection<View> selected = getSelectionProvider().getSelectedManifestations();
+		String selectedId = null;
+		if (!selected.isEmpty()) {
+			selectedId = selected.iterator().next().getManifestedComponent().getComponentId();
+			select(null); // TODO: Restore selection to previously-selected component
+		}
+		
 		// Update timelines with our new children
 		for (AbstractComponent child : getManifestedComponent().getComponents()) {
 			//child.getCapability(ComponentInitializer.class).setWorkUnitDelegate(getManifestedComponent());
@@ -102,6 +111,11 @@ public class ScenarioView extends AbstractTimelineView {
 		if (costGraph != null) {
 			costGraph.setManifestedComponent(getManifestedComponent());
 			costGraph.viewPersisted();
+		}
+		
+		// Restore selection
+		if (selectedId != null) {
+			selectComponent(selectedId);
 		}
 	}
 	
