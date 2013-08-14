@@ -56,6 +56,7 @@ public class ScenarioView extends AbstractTimelineView {
 	private static final int BORDER_SIZE = 12;
 	private static final int BORDER_GAP  = 6;
 	private static final Color TIMELINE_BACKGROUND = new Color(240, 244, 248);
+	private JPanel upperPanel = new JPanel();
 	
 	public ScenarioView(AbstractComponent ac, ViewInfo vi) {
 		// When we are a non-embedded view, work with a fresh copy of the 
@@ -68,22 +69,38 @@ public class ScenarioView extends AbstractTimelineView {
 				(ac=PlatformAccess.getPlatform().getPersistenceProvider().getComponent(ac.getComponentId())),
 				vi);
 		
-		setOpaque(false);
+		setOpaque(false);		
 		
-		JPanel upperPanel = new JPanel();
 		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.Y_AXIS));
 		upperPanel.setOpaque(false);
 
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(upperPanel, BorderLayout.NORTH);
-		getContentPane().setBackground(Color.WHITE);
-		//getContentPane().setOpaque(false);
+		getContentPane().setBackground(Color.WHITE);		
 		
-		//TODO: Use clone strategy, set work unit delegate for kids
-		
+		buildUpperPanel();
+	}
+	
+	@Override
+	public void viewPersisted() {
+		// Always get the fresh version from the database, if we're non-embedded
+		if (!getInfo().getViewType().equals(ViewType.EMBEDDED)) {
+			setManifestedComponent(PlatformAccess.getPlatform().getPersistenceProvider().getComponent(getManifestedComponent().getComponentId()));
+		}
+		upperPanel.removeAll();
+		buildUpperPanel();
+	}
+	
+	private void buildUpperPanel() {
+		AbstractComponent ac = getManifestedComponent();
+		 // If we're a clone, this view will be incorrectly NOT included as a manifestation
+		if (!getInfo().getViewType().equals(ViewType.EMBEDDED)) {
+			ac.addViewManifestation(this);
+		}
+
 		for (AbstractComponent child : ac.getComponents()) {
 			if (child instanceof TimelineComponent) {
-				child.getCapability(ComponentInitializer.class).setWorkUnitDelegate(getManifestedComponent());
+				//child.getCapability(ComponentInitializer.class).setWorkUnitDelegate(getManifestedComponent());
 				upperPanel.add(createTimeline((TimelineComponent) child));
 			}
 		}

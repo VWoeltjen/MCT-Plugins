@@ -83,25 +83,16 @@ public class TimelineView extends AbstractTimelineView {
 		super(vi.getViewType().equals(ViewType.EMBEDDED) ?
 				ac :
 				(ac=PlatformAccess.getPlatform().getPersistenceProvider().getComponent(ac.getComponentId())),
-				vi);
+				vi);		
 		
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(upperPanel, BorderLayout.NORTH);
 		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.Y_AXIS));
 		upperPanel.setOpaque(false);
-		upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
 		
 		getContentPane().setBackground(backgroundColor);
 				
-		// Add all children
-		for (AbstractComponent child : ac.getComponents()) {
-			addTopLevelActivity(child);//addActivities(child, 0, new HashSet<String>());
-		}
-		
-		List<CostFunctionCapability> costs = ac.getCapabilities(CostFunctionCapability.class);
-		if (costs != null && !costs.isEmpty()) {
-			upperPanel.add(new CollapsibleContainer(GraphView.VIEW_INFO.createView(ac)));
-		}
+		buildUpperPanel();
 		
 		// Refresh on any ancestor changes - these may change time scales
 		this.addAncestorListener(new AncestorListener() {
@@ -118,6 +109,37 @@ public class TimelineView extends AbstractTimelineView {
 				refreshAll();
 			}			
 		});
+	}
+	
+	@Override
+	public void viewPersisted() {
+		// Always get the fresh version from the database, if we're non-embedded
+		if (!getInfo().getViewType().equals(ViewType.EMBEDDED)) {
+			setManifestedComponent(PlatformAccess.getPlatform().getPersistenceProvider().getComponent(getManifestedComponent().getComponentId()));
+		}
+		blocks.clear();
+		upperPanel.removeAll();
+		select(null); // TODO: Restore selection to previously-selected component
+		buildUpperPanel();
+	}
+	
+	private void buildUpperPanel() {
+		upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
+		
+		AbstractComponent ac = getManifestedComponent();
+		if (!getInfo().getViewType().equals(ViewType.EMBEDDED)) { // If we're a clone, add a view manifestation of "this"
+			ac.addViewManifestation(this);
+		}
+
+		// Add all children
+		for (AbstractComponent child : ac.getComponents()) {
+			addTopLevelActivity(child);//addActivities(child, 0, new HashSet<String>());
+		}
+		
+		List<CostFunctionCapability> costs = ac.getCapabilities(CostFunctionCapability.class);
+		if (costs != null && !costs.isEmpty()) {
+			upperPanel.add(new CollapsibleContainer(GraphView.VIEW_INFO.createView(ac)));
+		}
 	}
 
 	private void refreshAll() {
