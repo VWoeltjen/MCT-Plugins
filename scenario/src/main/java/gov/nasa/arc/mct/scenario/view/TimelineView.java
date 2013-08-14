@@ -40,6 +40,7 @@ import java.awt.Graphics;
 import java.awt.LayoutManager2;
 import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -119,8 +120,39 @@ public class TimelineView extends AbstractTimelineView {
 		}
 		blocks.clear();
 		upperPanel.removeAll();
-		select(null); // TODO: Restore selection to previously-selected component
+
+		// Cache current selection to restore later
+		Collection<View> selected = getSelectionProvider().getSelectedManifestations();
+		String selectedId = null;
+		if (!selected.isEmpty()) {
+			selectedId = selected.iterator().next().getManifestedComponent().getComponentId();
+			select(null); // TODO: Restore selection to previously-selected component
+		}
+		
+		// Rebuild the view
 		buildUpperPanel();
+		
+		// Restore the selection
+		if (selectedId != null) {
+			searchAndSelect(this, selectedId);
+		}
+		
+		// Finally, ensure time settings are obeyed
+		refreshAll();
+	}
+	
+	private void searchAndSelect(Component comp, String id) {
+		if (comp instanceof View) {
+			if (((View) comp).getManifestedComponent().getComponentId().equals(id)) {
+				select((View) comp);
+				return;
+			}			
+		}
+		if (comp instanceof Container) { //Not found, keep searching
+			for (Component child : ((Container) comp).getComponents()) {
+				searchAndSelect(child, id);
+			}
+		}
 	}
 	
 	private void buildUpperPanel() {
