@@ -33,8 +33,10 @@ import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.util.List;
@@ -57,6 +59,7 @@ public class ScenarioView extends AbstractTimelineView {
 	private static final int BORDER_GAP  = 6;
 	private static final Color TIMELINE_BACKGROUND = new Color(240, 244, 248);
 	private JPanel upperPanel = new JPanel();
+	private View   costGraph  = null; 
 	
 	public ScenarioView(AbstractComponent ac, ViewInfo vi) {
 		// When we are a non-embedded view, work with a fresh copy of the 
@@ -73,7 +76,7 @@ public class ScenarioView extends AbstractTimelineView {
 		
 		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.Y_AXIS));
 		upperPanel.setOpaque(false);
-
+		
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(upperPanel, BorderLayout.NORTH);
 		getContentPane().setBackground(Color.WHITE);		
@@ -86,9 +89,35 @@ public class ScenarioView extends AbstractTimelineView {
 		// Always get the fresh version from the database, if we're non-embedded
 		if (!getInfo().getViewType().equals(ViewType.EMBEDDED)) {
 			setManifestedComponent(PlatformAccess.getPlatform().getPersistenceProvider().getComponent(getManifestedComponent().getComponentId()));
+			getManifestedComponent().addViewManifestation(this); // Make sure we get updated
 		}
-		upperPanel.removeAll();
-		buildUpperPanel();
+		
+		// Update timelines with our new children
+		for (AbstractComponent child : getManifestedComponent().getComponents()) {
+			//child.getCapability(ComponentInitializer.class).setWorkUnitDelegate(getManifestedComponent());
+			searchAndReplace(upperPanel, child);
+		}
+		
+		// Create a fresh version of the cost graph
+		if (costGraph != null) {
+			costGraph.setManifestedComponent(getManifestedComponent());
+			costGraph.viewPersisted();
+		}
+	}
+	
+	private void searchAndReplace(Component widget, AbstractComponent comp) {
+		String id = comp.getComponentId();
+		if (widget instanceof View) {
+			if (((View) widget).getManifestedComponent().getComponentId().equals(id)) {
+				((View) widget).setManifestedComponent(comp);
+				((View) widget).viewPersisted();
+			}
+		}  
+		if (widget instanceof Container) {
+			for (Component childWidget : ((Container) widget).getComponents()) {
+				searchAndReplace(childWidget, comp);
+			}
+		}
 	}
 	
 	private void buildUpperPanel() {
@@ -104,10 +133,10 @@ public class ScenarioView extends AbstractTimelineView {
 				upperPanel.add(createTimeline((TimelineComponent) child));
 			}
 		}
-		
+				
 		List<CostFunctionCapability> costs = ac.getCapabilities(CostFunctionCapability.class);
 		if (costs != null && !costs.isEmpty()) {
-			upperPanel.add(new CollapsibleContainer(GraphView.VIEW_INFO.createView(getManifestedComponent())));
+			upperPanel.add(new CollapsibleContainer(costGraph = GraphView.VIEW_INFO.createView(getManifestedComponent())));
 		}
 	}
 	

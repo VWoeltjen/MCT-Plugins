@@ -30,6 +30,7 @@ import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
+import gov.nasa.arc.mct.services.internal.component.Updatable;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -73,7 +74,7 @@ public class TimelineView extends AbstractTimelineView {
 	private List<TimelineBlock> blocks = new ArrayList<TimelineBlock>();
 	private JPanel upperPanel = new JPanel();
 	private Color backgroundColor = Color.WHITE;
-	
+	private View  costGraph = null;
 	
 	public TimelineView(AbstractComponent ac, ViewInfo vi) {
 		// When we are a non-embedded view, work with a fresh copy of the 
@@ -137,6 +138,12 @@ public class TimelineView extends AbstractTimelineView {
 			searchAndSelect(this, selectedId);
 		}
 		
+		// Update cost graph
+		if (costGraph != null) {
+			costGraph.setManifestedComponent(getManifestedComponent());
+			costGraph.viewPersisted();
+		}
+		
 		// Finally, ensure time settings are obeyed
 		refreshAll();
 	}
@@ -170,7 +177,7 @@ public class TimelineView extends AbstractTimelineView {
 		
 		List<CostFunctionCapability> costs = ac.getCapabilities(CostFunctionCapability.class);
 		if (costs != null && !costs.isEmpty()) {
-			upperPanel.add(new CollapsibleContainer(GraphView.VIEW_INFO.createView(ac)));
+			upperPanel.add(new CollapsibleContainer(costGraph = GraphView.VIEW_INFO.createView(ac)));
 		}
 	}
 
