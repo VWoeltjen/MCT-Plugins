@@ -90,7 +90,7 @@ public class TimelineView extends AbstractTimelineView {
 				
 		// Add all children
 		for (AbstractComponent child : ac.getComponents()) {
-			addTopLevelActivity(child);//addActivities(child, 0, new HashSet<String>());
+			addTopLevelActivity(child, new HashSet<String>());//addActivities(child, 0, new HashSet<String>());
 		}
 		
 		List<CostFunctionCapability> costs = ac.getCapabilities(CostFunctionCapability.class);
@@ -117,7 +117,7 @@ public class TimelineView extends AbstractTimelineView {
 	}
 
 
-	private void addTopLevelActivity(AbstractComponent ac) {
+	private void addTopLevelActivity(AbstractComponent ac, Set<String> ignore) {
 		DurationCapability dc = ac.getCapability(DurationCapability.class);
 		if (dc != null) {
 			TimelineBlock block = null;
@@ -144,7 +144,12 @@ public class TimelineView extends AbstractTimelineView {
 				block.maximumTime = dc.getEnd();
 			}
 			addActivities(ac, null, 0, new HashSet<String>(), block);
-		}		
+		} else if (!ignore.contains(ac.getComponentId())){  // Avoid cycles
+			ignore.add(ac.getComponentId());
+			for (AbstractComponent child : ac.getComponents()) {
+				addTopLevelActivity(child, ignore);
+			}
+		}
 	}
 
 	private void addActivities(AbstractComponent ac, AbstractComponent parent, int depth, Set<String> ids, TimelineBlock block) {
