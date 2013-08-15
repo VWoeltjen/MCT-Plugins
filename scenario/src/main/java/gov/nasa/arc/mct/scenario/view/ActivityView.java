@@ -114,24 +114,27 @@ public class ActivityView extends View implements CostOverlay {
 			@Override
 			public void paint(Graphics2D g, int w, int h, Color fg, Color bg) {
 				g.setColor(bg);
-				g.fillRoundRect(1, 1, w-3, h-3, h / 3, h / 3);
+				g.fillRoundRect(1, 1, w-3, h-3, 3*h/4 , 3*h/4 );
 				g.setStroke(SOLID_2PT_LINE_STROKE);
 				g.setColor(fg);
-				g.drawRoundRect(1, 1, w-3, h-3, h / 3, h / 3);	
+				g.drawRoundRect(1, 1, w-3, h-3, 3*h/4 , 3*h/4);	
 			}
 
 			@Override
 			public void paintLabels(Graphics2D g, String name, String duration,
 					int w, int h, Color fg) {
+				Font originalFont = g.getFont();
+				g.setFont(originalFont.deriveFont(originalFont.getSize2D() - 1.0f));
 				FontMetrics metrics = g.getFontMetrics(g.getFont());
 				int charHeight = metrics.getHeight();
 				int baseline   = metrics.getAscent();
 				g.setColor(fg);
-				g.drawString(name, 4, baseline + h / 2 - charHeight / 2);
+				g.drawString(name, 6, baseline + h / 2 - charHeight / 2);
 				int durationWidth = metrics.stringWidth(duration);
-				if (metrics.stringWidth(name) + durationWidth < w) {					
-					g.drawString(duration, w - durationWidth - 4, baseline + h/2 - charHeight/2);
+				if (metrics.stringWidth(name) + durationWidth < w - 12) {					
+					g.drawString(duration, w - durationWidth - 6, baseline + h/2 - charHeight/2);
 				}
+				g.setFont(originalFont);
 			}
 			
 		},
@@ -145,10 +148,10 @@ public class ActivityView extends View implements CostOverlay {
 				g.fillPolygon(x,y,7);				
 
 				// Draw diamond
-				int diamondWidth = w - h / 2;
+				int diamondWidth = Math.min(w - h / 2, h * 4);
 				
 				int dx[] = { w/2 - h/4 - diamondWidth/2, w/2-h/4, w/2 - h/4 + diamondWidth/2, w/2-h/4 };
-				int dy[] = { h/2, h/5, h/2, 4*h/5 };
+				int dy[] = { h/2, h/6, h/2, 5*h/6 + 1 };
 				g.fillPolygon(dx,dy,4);				
 				
 //				g.setStroke(SOLID_2PT_LINE_STROKE);
@@ -160,14 +163,13 @@ public class ActivityView extends View implements CostOverlay {
 			public void paintLabels(Graphics2D g, String name, String duration,
 					int w, int h, Color fg) {	
 				Font originalFont = g.getFont();
-				g.setFont(originalFont.deriveFont(originalFont.getSize2D() - 1.0f));
+				g.setFont(originalFont.deriveFont(Font.ITALIC, originalFont.getSize2D() - 2.0f));
 				int charHeight = g.getFontMetrics(g.getFont()).getHeight();
 				int baseline   = g.getFontMetrics(g.getFont()).getAscent();
 				int charsWidth = g.getFontMetrics(g.getFont()).charsWidth(name.toCharArray(), 0, name.length());
 				
-				// only draw if this fits in the diamond
-				int diamondWidth = w - h / 2 ;
-				if (diamondWidth / 2 >= charsWidth) {
+				// only draw if this fits
+				if (w - h >= charsWidth) {
 					g.setColor(fg);
 					g.drawString(name, w/2 - h/4 - charsWidth/2, baseline + h / 2 - charHeight / 2);
 				}
