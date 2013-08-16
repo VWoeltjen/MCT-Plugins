@@ -38,7 +38,8 @@ public class ActivityView extends View implements CostOverlay {
 	public static final ViewInfo VIEW_INFO = 
 			new ViewInfo(ActivityView.class, ActivityView.VIEW_ROLE_NAME, ViewType.EMBEDDED);
 	private static final BasicStroke SOLID_2PT_LINE_STROKE = new BasicStroke(2f);
-	private static final Color DECISION_COLOR = new Color (220,220,220);
+	private static final Color DECISION_COLOR = new Color (120,120,120);
+	private static final Color DECISION_TEXT_COLOR = Color.WHITE;
 	private Color lineColor = new Color(100, 100, 100);
 	private Color durationColor = new Color(200,200,200, 100);
 	private ActivityBackgroundShape bg = ActivityBackgroundShape.ACTIVITY;
@@ -58,6 +59,7 @@ public class ActivityView extends View implements CostOverlay {
 				lineColor = durationColor.darker();
 			}
 		} else if (ac instanceof DecisionComponent) {
+			setForeground(DECISION_TEXT_COLOR);
 			durationColor = DECISION_COLOR;
 		}
 	}
@@ -143,12 +145,12 @@ public class ActivityView extends View implements CostOverlay {
 			@Override
 			public void paint(Graphics2D g, int w, int h, Color fg, Color bg) {
 				int x[] = {0, w-h/2,  w-h/2, w, w-h/2, w-h/2, 0 };
-				int y[] = {2*h/5, 2*h/5, h/4, h/2, 3*h/4, 3*h/5+1, 3*h/5+1};
+				int y[] = {3*h/7, 3*h/7, h/4, h/2, 3*h/4, 4*h/7+1, 4*h/7+1};
 				g.setColor(bg);
 				g.fillPolygon(x,y,7);				
 
 				// Draw diamond
-				int diamondWidth = Math.min(w - h / 2, h * 4);
+				int diamondWidth = Math.min(2*w/3  - h / 2, h * 4);
 				
 				int dx[] = { w/2 - h/4 - diamondWidth/2, w/2-h/4, w/2 - h/4 + diamondWidth/2, w/2-h/4 };
 				int dy[] = { h/2, h/6, h/2, 5*h/6 + 1 };
@@ -168,8 +170,9 @@ public class ActivityView extends View implements CostOverlay {
 				int baseline   = g.getFontMetrics(g.getFont()).getAscent();
 				int charsWidth = g.getFontMetrics(g.getFont()).charsWidth(name.toCharArray(), 0, name.length());
 				
-				// only draw if this fits
-				if (w - h >= charsWidth) {
+				// only draw text if it fits in diamond
+				int diamondWidth = Math.min(2*w/3  - h / 2, h * 4);
+				if (2 * diamondWidth / 3 >= charsWidth) {
 					g.setColor(fg);
 					g.drawString(name, w/2 - h/4 - charsWidth/2, baseline + h / 2 - charHeight / 2);
 				}
