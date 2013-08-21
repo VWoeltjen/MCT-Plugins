@@ -126,7 +126,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		fields.add(type);
 		fields.add(startTime);
-		//fields.add(endTime); TODO: This is desirable, but must synchronize with Duration
+		fields.add(endTime); //TODO: This is desirable, but must synchronize with Duration
 		fields.add(duration);
 		fields.add(power);
 		fields.add(comm);
