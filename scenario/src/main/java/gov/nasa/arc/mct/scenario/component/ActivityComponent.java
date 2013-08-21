@@ -177,7 +177,18 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			constrainToDuration();
 		}
 	}
-
+	
+	// Don't keep constraining for more than 100ms
+	private static final long TIMEOUT = 100;
+	
+	// Maintain set of components being constrained to avoid cycles
+	private static ThreadLocal<Set<String>> ignoreSet = new ThreadLocal<Set<String>>() {
+		@Override
+		protected Set<String> initialValue() {
+			return new HashSet<String>();
+		}		
+	};
+	
 	/**
 	 * Constrain the duration of this Activity's child objects, based on changes 
 	 * to some other duration. 
@@ -214,6 +225,15 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	 * proportionally. 
 	 */
 	private void constrainToDuration() {
+		Set<String> ignore = ignoreSet.get();
+
+		// Exit early if we have already constrained this component (avoid cycles)
+		if (ignore.contains(getComponentId())) {
+			return;
+		}
+		
+		ignore.add(getComponentId());
+		
 		// Note that durations are in ms
 		long minimum = getStart();
 		long maximum = getEnd();
@@ -268,6 +288,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				constrainActivities(earliest, false);
 				constrainDecisions(false);
 		}
+		
+		ignore.remove(getComponentId());
 	}
 	
 	/**
@@ -325,6 +347,12 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		// Decisions should never have empty space before or after,
 		// but should also maintain consistent duration
 		boolean moved = false;
+		
+		// Normally we just want to constrain until the constraint is satisfied,
+		// but it is possible to construct an unsatisfiable object graph. So, 
+		// set a timeout to avoid getting stuck in an infinite loop.
+		long timeOut = System.currentTimeMillis() + TIMEOUT;
+		
 		do {
 			moved = false;
 			for (AbstractComponent child : getComponents()) {
@@ -375,7 +403,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 					}
 				}
 			}
-		} while (moved); // Repeat until all decision gaps are closed
+		} while (moved && System.currentTimeMillis() < timeOut); // Repeat until all decision gaps are closed, or we've timed out
 	}
 	
 	@Override
