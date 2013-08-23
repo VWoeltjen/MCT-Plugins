@@ -94,6 +94,15 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
         
         return component;
 	}
+	
+	private boolean checkValidity() {
+		try {
+			return DurationFormatter.parse(startTime.getText()) >= 0 && 
+				DurationFormatter.parse(duration.getText()) > 0;
+		} catch (ParseException e) {
+			return false;
+		}
+	}
 
 	@Override
 	public JComponent getUI(final JButton create) {
@@ -194,6 +203,25 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
 		c.weightx = 1;
 		c.gridwidth = 2;
 		UIPanel.add(messagePanel,c);
+				
+		// Enable/disable Create button for valid user input
+		DocumentListener buttonEnabler = new DocumentListener() {
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				create.setEnabled(checkValidity());
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent arg0) {
+				create.setEnabled(checkValidity());				
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent arg0) {
+				create.setEnabled(checkValidity());			}			
+		};
+		startTime.getDocument().addDocumentListener(buttonEnabler);
+		duration.getDocument().addDocumentListener(buttonEnabler);
 				
 		UIPanel.setVisible(true);
 		return UIPanel;
