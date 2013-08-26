@@ -163,12 +163,12 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 	@Override
 	public void setStart(long start) {
-		getData().setStartDate(new Date(start));
+		getData().setStartDate(new Date(start > 0 ? start : 0));
 	}
 
 	@Override
 	public void setEnd(long end) {
-		getData().setEndDate(new Date(end));
+		getData().setEndDate(new Date(end > getStart() ? end : getStart()));
 	}
 
 	
