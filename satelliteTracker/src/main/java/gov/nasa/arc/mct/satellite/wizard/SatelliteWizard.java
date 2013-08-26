@@ -49,7 +49,7 @@ import jsattrak.utilities.TLE;
 public class SatelliteWizard extends CreateWizardUI {
 		
 	/*
-	 * Based from Celestrak.com, this 2D-array represents a satellite category, and all choices within said category 
+	 * Based from Celestrak.com, this 2D-array represents satellite categories, and all choices within said categories
 	 */
 	private static final String[][] SatCat = new String[][] {
 		{""},//initially have the ComboBox blank
@@ -477,16 +477,35 @@ public class SatelliteWizard extends CreateWizardUI {
 	 * 
 	 * This method is called when the 'create' button is hit
 	 * 
+	 * Precondition: the list model containing the chosen satellites to create (lmSatChosen) is not empty
+	 * 
+	 * should we create the sat-spg thing here?
+	 * 
 	 */
 	@Override
 	public AbstractComponent createComp(ComponentRegistry registry,
 			AbstractComponent parentComp) {
 
+		/*
+		 * A big for loop, iterating through each TLE
+		 */
 		
-		SatelliteComponent orbitalComponent = registry.newInstance(SatelliteComponent.class, parentComp);
-		orbitalComponent.setDisplayName(name.getText());
-		orbitalComponent.setOrbitalParameters(new Vector(value(0), value(1), value(2)), new Vector(value(3), value(4),  value(5)), System.currentTimeMillis());
-		orbitalComponent.save();
+		//this line will stay the same
+		SatelliteComponent satelliteComponent = registry.newInstance(SatelliteComponent.class, parentComp);
+		
+		/*
+		 * These two guys are going to change a bit.  Satellite Model will contain the JSatTrak satellite object
+		 *   setDisplay Name: the tle will place the name here: tle.getSatName();
+		 *   setOrbitalParameters: remane this to setSatelliteParameters.
+		 *      -pass in the TLE?   This is good, for this wizard will not need access to jsattrak; just like TLEUtil, the wizard is seperated from the implementation.
+		 *        Yes, this method will take in a single TLE
+		 *        
+		 */
+		satelliteComponent.setDisplayName(name.getText());
+		satelliteComponent.setOrbitalParameters(new Vector(value(0), value(1), value(2)), new Vector(value(3), value(4),  value(5)), System.currentTimeMillis());
+		
+		//this will stay the same
+		satelliteComponent.save();
 	
 		boolean[] truths   = { false,   true };
 		String[]  axisName = { "X", "Y", "Z" };
@@ -494,7 +513,7 @@ public class SatelliteWizard extends CreateWizardUI {
 		for (boolean velocity : truths) {
 			String name = velocity ? "Velocity" : "Position";
 			
-			VectorComponent vectorComponent = registry.newInstance(VectorComponent.class, orbitalComponent);
+			VectorComponent vectorComponent = registry.newInstance(VectorComponent.class, satelliteComponent);
 			vectorComponent.setDisplayName( name );
 			vectorComponent.save();
 			
@@ -502,11 +521,11 @@ public class SatelliteWizard extends CreateWizardUI {
 			for (int axis = 0; axis < 3; axis++) {
 				CoordinateComponent coordinateComponent = registry.newInstance(CoordinateComponent.class, vectorComponent);
 				coordinateComponent.setDisplayName(name + " " + axisName[axis]);
-				coordinateComponent.setModel(new CoordinateModel(axis, velocity, orbitalComponent.getComponentId()));
+				coordinateComponent.setModel(new CoordinateModel(axis, velocity, satelliteComponent.getComponentId()));
 			}			
 		}
 			
-        return orbitalComponent;
+        return satelliteComponent;
         
 	}
 
