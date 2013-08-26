@@ -90,6 +90,14 @@ public class DurationConstraintSystem {
 		return children;
 	}
 	
+	public void changeAll() {
+		for (DurationCapability dc : constraints.keySet()) {
+			for (int i = -1; i <= 1; i += 2) {
+				change(dc, i);
+			}
+		}
+	}
+	
 	public void change(DurationCapability dc, int sign) {
 		List<DurationConstraint> constraints = this.constraints.get(dc);
 		if (constraints != null) {

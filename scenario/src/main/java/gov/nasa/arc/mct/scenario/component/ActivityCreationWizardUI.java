@@ -84,15 +84,6 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		data.setPower(0);
 		data.setComm(0);
 		component.save();
-        
-		if (targetComponent instanceof ActivityComponent) {
-			//TODO - this should be handled by addDelegateComponentsCallback 
-			//       in ActivityComponent, but at the time this is called 
-			//       (comp.newInstance above) there is still no 
-			//       time data associated with this component
-//			((ActivityComponent) targetComponent).constrainChildren(activityComponent, false);
-//			((ActivityComponent) targetComponent).constrainChildren(activityComponent, true);
-		}
 		
         return component;
 	}
