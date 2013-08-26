@@ -168,7 +168,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		getData().setStartDate(new Date(start));
 		//save();		
 		if (old < start) {
-			constrainToDuration();
+			//constrainToDuration();
 		}
 	}
 
@@ -178,7 +178,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		getData().setEndDate(new Date(end));
 		//save();
 		if (old > end) {
-			constrainToDuration();
+			//constrainToDuration();
 		}
 	}
 	
@@ -216,10 +216,10 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	 * @param source the Activity or other child object which has changed
      * @param isStart true if the change in time was toward the start (i.e. negative)
 	 */
-	public void constrainChildren(DurationCapability source, boolean isStart) {
+	public void constarainChildren(DurationCapability source, boolean isStart) {
 		constrainActivities(source, isStart);
 		constrainDecisions(isStart);
-		constrainToDuration();
+		//constrainToDuration();
 	}
 	
 	/**
@@ -228,7 +228,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	 * sub-activities with which to do this, then simply squash them 
 	 * proportionally. 
 	 */
-	private void constrainToDuration() {
+	private void constarainToDuration() {
 		Set<String> ignore = ignoreSet.get();
 
 		// Exit early if we have already constrained this component (avoid cycles)
@@ -415,7 +415,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			Collection<AbstractComponent> childComponents) {
 		// Enforce duration constraints when adding sub-activities
 		super.addDelegateComponentsCallback(childComponents);
-		constrainToDuration();
+		//constarainToDuration();
 	}
 
 	/**

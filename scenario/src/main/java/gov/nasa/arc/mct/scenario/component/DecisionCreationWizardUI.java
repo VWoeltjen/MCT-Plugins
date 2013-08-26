@@ -88,8 +88,8 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
 			//       in ActivityComponent, but at the time this is called 
 			//       (comp.newInstance above) there is still no 
 			//       time data associated with this component
-			((ActivityComponent) targetComponent).constrainChildren(decisionComponent, false);
-			((ActivityComponent) targetComponent).constrainChildren(decisionComponent, true);
+//			((ActivityComponent) targetComponent).constrainChildren(decisionComponent, false);
+//			((ActivityComponent) targetComponent).constrainChildren(decisionComponent, true);
 		}
         
         return component;
