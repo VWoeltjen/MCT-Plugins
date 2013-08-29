@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class DurationConstraintSystem {
+	private Map<DurationCapability, AbstractComponent> components =
+			new HashMap<DurationCapability, AbstractComponent>();
 	private Map<DurationCapability, List<DurationConstraint>> constraints =
 			new HashMap<DurationCapability, List<DurationConstraint>>();
 	private Map<DurationCapability, DurationEdge[]> edges =
@@ -30,10 +32,13 @@ public class DurationConstraintSystem {
 			// Add parent/child constraints
 			if (children.size() > 0) {
 				for (int sign : new int[]{-1, 1}) {
+					AbstractComponent child = 
+							children.get(sign < 0 ? 0 : (children.size()-1));
 					DurationCapability cdc = 
-							children.get(sign < 0 ? 0 : (children.size()-1))
-							.getCapability(DurationCapability.class);
+							child.getCapability(DurationCapability.class);
 					if (cdc != null) {
+						// Permit reverse-lookup of component later
+						components.put(cdc, child);
 						// Parent edge pushes child's same edge
 						addConstraint(pdc, sign, cdc, sign, false, false);
 						// Child edge pushes parent's same edge & causes expansion
@@ -49,6 +54,10 @@ public class DurationConstraintSystem {
 				DurationCapability adc = a.getCapability(DurationCapability.class);
 				DurationCapability bdc = b.getCapability(DurationCapability.class);		
 				if (adc != null && bdc != null) {
+					// Permit reverse-lookup of component later
+					components.put(adc, a);
+					components.put(bdc, b);
+					// Construct appropriate peer constraints (push or pull)
 					boolean pulls = a instanceof DecisionComponent || b instanceof DecisionComponent;
 					addConstraint(adc, 1, bdc, -1, pulls, false);
 					addConstraint(bdc, -1, adc, 1, pulls, false);
@@ -90,36 +99,44 @@ public class DurationConstraintSystem {
 		return children;
 	}
 	
-	public void changeAll(AbstractComponent root) {
-		changeAll (root, new HashSet<String>());
+	public Set<AbstractComponent> changeAll(AbstractComponent root) {
+		Set<AbstractComponent> changed = new HashSet<AbstractComponent>();
+		changeAll (root, new HashSet<String>(), changed);
+		return changed;
 	}
 	
-	private void changeAll(AbstractComponent root, Set<String> ignore) {
+	private void changeAll(AbstractComponent root, Set<String> ignore, Set<AbstractComponent> changed) {
 		if (!ignore.contains(root.getComponentId())) {
 			ignore.add(root.getComponentId());
 
 			for (AbstractComponent child : root.getComponents()) {
-				changeAll(child, ignore);
+				changeAll(child, ignore, changed);
 			}
 			
 			DurationCapability dc = root.getCapability(DurationCapability.class);
 			if (dc != null) {
-				change(dc, -1);
-				change(dc, 1);
+				change(dc, -1, changed);
+				change(dc, 1, changed);
 			}
 			
 		}
 	}
 	
-	public void change(DurationCapability dc, int sign) {
+	public Set<AbstractComponent> change(DurationCapability dc, int sign) {
+		Set<AbstractComponent> changed = new HashSet<AbstractComponent>();
+		change(dc, sign, changed);
+		return changed;
+	}	
+	
+	private void change(DurationCapability dc, int sign, Set<AbstractComponent> changed) {
 		List<DurationConstraint> constraints = this.constraints.get(dc);
 		if (constraints != null) {
 			int sz = constraints.size();
 			for (int i = 0; i < sz; i++) {
-				constraints.get(i).change(sign);
+				constraints.get(i).change(sign, changed);
 			}
 		}
-	}	
+	}
 	
 	public void addConstraint(
 			DurationCapability source, int sourceSign, 
@@ -165,7 +182,7 @@ public class DurationConstraintSystem {
 			this.expands = expands;
 		}
 		
-		public void change(int sign) {
+		public void change(int sign, Set<AbstractComponent> changed) {
 			int cmp = target.compare(source);
 			cmp *= expands ? -1 : 1;
 			boolean violates = pulls ? (cmp != 0) : (cmp < 0);
@@ -176,7 +193,9 @@ public class DurationConstraintSystem {
 					target.set(-1, target.get(-1) + diff);
 				}							
 				target.set(newValue);
-				DurationConstraintSystem.this.change(target.dc, (int)(Math.signum(diff)));
+				// Track changes
+				changed.add(components.get(target.dc));
+				DurationConstraintSystem.this.change(target.dc, (int)(Math.signum(diff)), changed);
 			}
 		}		
 	}

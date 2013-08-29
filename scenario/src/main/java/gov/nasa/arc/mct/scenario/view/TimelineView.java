@@ -237,7 +237,20 @@ public class TimelineView extends AbstractTimelineView {
 				block.maximumTime = dc.getEnd();
 			}
 			DurationConstraintSystem constraints = new DurationConstraintSystem(ac);
-			constraints.changeAll(ac); // Poke all objects to resolve constraints
+			
+			// Poke all objects to resolve constraints
+			Set<AbstractComponent> changes = constraints.changeAll(ac);
+			
+			// Save any that were changed
+			for (AbstractComponent change : changes) {
+				change.save();
+			}
+			
+			// If there were changes, also save top-level timeline
+			if (!changes.isEmpty()) {
+				getManifestedComponent().save();
+			}
+			
 			addActivities(ac, null, 0, new HashSet<String>(), block, constraints);
 		} else if (!ignore.contains(ac.getComponentId())){  // Avoid cycles
 			ignore.add(ac.getComponentId());

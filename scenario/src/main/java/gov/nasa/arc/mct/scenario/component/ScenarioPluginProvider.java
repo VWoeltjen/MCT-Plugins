@@ -1,7 +1,6 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.policy.PolicyInfo;
-import gov.nasa.arc.mct.scenario.policy.ScenarioContainmentPolicy;
 import gov.nasa.arc.mct.scenario.policy.TimelineFilterViewPolicy;
 import gov.nasa.arc.mct.scenario.view.ScenarioView;
 import gov.nasa.arc.mct.scenario.view.TimelineInspector;
@@ -53,11 +52,6 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(), 
 			TimelineFilterViewPolicy.class);
 	
-	private static final PolicyInfo compositionPolicy = new PolicyInfo(
-			PolicyInfo.CategoryType.COMPOSITION_POLICY_CATEGORY.getKey(), 
-			ScenarioContainmentPolicy.class
-			);
-	
 	@Override
 	public Collection<ComponentTypeInfo> getComponentTypes() {
 		// return the component types provided
@@ -85,8 +79,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 	@Override
 	public Collection<PolicyInfo> getPolicyInfos() {
 		return Arrays.asList(
-				timelinePolicy,
-				compositionPolicy
+				timelinePolicy
 				);
 	}
 	
