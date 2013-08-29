@@ -98,6 +98,10 @@ public class TimelineView extends AbstractTimelineView {
 				
 		buildUpperPanel();
 		
+		updateMasterDuration();
+		
+		refreshAll();
+		
 		// Refresh on any ancestor changes - these may change time scales
 		this.addAncestorListener(new AncestorListener() {
 			@Override
@@ -153,7 +157,7 @@ public class TimelineView extends AbstractTimelineView {
 		// Restore the selection
 		if (selectedId != null) {
 			selectComponent(selectedId);
-		}
+		}		
 	}
 	
 	private void buildUpperPanel() {
@@ -173,6 +177,7 @@ public class TimelineView extends AbstractTimelineView {
 		if (costs != null && !costs.isEmpty()) {
 			upperPanel.add(new CollapsibleContainer(costGraph = GraphView.VIEW_INFO.createView(ac)));
 		}
+
 	}
 
 	private void refreshAll() {
@@ -200,7 +205,9 @@ public class TimelineView extends AbstractTimelineView {
 		super.save();
 		if (detectOverlappingComponents()) {
 			rebuildUpperPanel();
-		}		
+		}	
+		updateMasterDuration();
+		refreshAll();
 	}
 
 	private void addTopLevelActivity(AbstractComponent ac, Set<String> ignore) {
@@ -229,7 +236,9 @@ public class TimelineView extends AbstractTimelineView {
 			if (dc.getEnd() > block.maximumTime) {
 				block.maximumTime = dc.getEnd();
 			}
-			addActivities(ac, null, 0, new HashSet<String>(), block, new DurationConstraintSystem(ac));
+			DurationConstraintSystem constraints = new DurationConstraintSystem(ac);
+			constraints.changeAll(ac); // Poke all objects to resolve constraints
+			addActivities(ac, null, 0, new HashSet<String>(), block, constraints);
 		} else if (!ignore.contains(ac.getComponentId())){  // Avoid cycles
 			ignore.add(ac.getComponentId());
 			for (AbstractComponent child : ac.getComponents()) {

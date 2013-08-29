@@ -90,11 +90,24 @@ public class DurationConstraintSystem {
 		return children;
 	}
 	
-	public void changeAll() {
-		for (DurationCapability dc : constraints.keySet()) {
-			for (int i = -1; i <= 1; i += 2) {
-				change(dc, i);
+	public void changeAll(AbstractComponent root) {
+		changeAll (root, new HashSet<String>());
+	}
+	
+	private void changeAll(AbstractComponent root, Set<String> ignore) {
+		if (!ignore.contains(root.getComponentId())) {
+			ignore.add(root.getComponentId());
+
+			for (AbstractComponent child : root.getComponents()) {
+				changeAll(child, ignore);
 			}
+			
+			DurationCapability dc = root.getCapability(DurationCapability.class);
+			if (dc != null) {
+				change(dc, -1);
+				change(dc, 1);
+			}
+			
 		}
 	}
 	

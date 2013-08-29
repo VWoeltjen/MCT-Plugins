@@ -56,7 +56,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
 		// Note: Don't report self as capability until initialized.
-		if (capability.isAssignableFrom(getClass()) && getData().getEndTime() != null) {
+		if (capability.isAssignableFrom(getClass())) {
 			return capability.cast(this);
 		}
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
