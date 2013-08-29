@@ -10,6 +10,14 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class CoordinateComponent extends AbstractComponent implements FeedProvider {
+	
+	private final String FEED_SEPERATOR = "/";
+	
+	private AtomicReference<CoordinateModel> model = new AtomicReference<CoordinateModel>();
+	
+	/*
+	 * the time service for the satellite objects is just the current system time
+	 */
 	private static final TimeService TIME_SERVICE = new TimeService() {
 
 		@Override
@@ -17,10 +25,8 @@ public class CoordinateComponent extends AbstractComponent implements FeedProvid
 			return System.currentTimeMillis();
 		}
 		
-	};
+	};	
 	
-	private AtomicReference<CoordinateModel> model = new AtomicReference<CoordinateModel>();
-
 	public void setModel(CoordinateModel m) {
 		model.set(m);
 	}
@@ -55,12 +61,19 @@ public class CoordinateComponent extends AbstractComponent implements FeedProvid
 		
 		return null;
 	}
-	
+	/*
+	 * (non-Javadoc)
+	 * @see gov.nasa.arc.mct.components.FeedProvider#getSubscriptionId()
+	 * the data provider will see this as a FeedID
+	 */
 	@Override
 	public String getSubscriptionId() {
-		return "orbit:" + model.get().getParent() + "/" + model.get().getParameterKey();
+		return "SatOrbit:" + model.get().getTLE().getSatName() +FEED_SEPERATOR
+		                + model.get().getTLE().getLine1() + FEED_SEPERATOR
+		                + model.get().getTLE().getLine2() + FEED_SEPERATOR
+		                + model.get().getParameterKey();
 	}
-
+	
 	@Override
 	public TimeService getTimeService() {
 		return TIME_SERVICE;

@@ -2,6 +2,7 @@ package gov.nasa.arc.mct.satellite.wizard;
 
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.collection.CollectionComponent;
 import gov.nasa.arc.mct.satellite.Vector;
 import gov.nasa.arc.mct.satellite.component.CoordinateComponent;
 import gov.nasa.arc.mct.satellite.component.CoordinateModel;
@@ -15,26 +16,31 @@ import gov.nasa.arc.mct.satellite.utilities.TLEUtility;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
 import gov.nasa.arc.mct.services.component.CreateWizardUI;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -43,6 +49,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import jsattrak.utilities.TLE;
 
@@ -91,16 +99,15 @@ public class SatelliteWizard extends CreateWizardUI {
 	private JButton jbRemoveAllSat;
 	private JButton jbUpdateTLEs;
 	
+	private JCheckBox jchkbMakeCollection;
+	private JTextField jtfCollectionName;
+	
 	private JLabel lblChooseSat;
 	private JLabel lblChoiceSat;
 	private JLabel lblChosenSat;
+	private JLabel lblCollectionName;
 	
-	///junk
-	private JTextField[] boxes = new JTextField[6];
-	private JTextField   name  = new JTextField();
-	private static final String[] DEFAULTS = { "5013", "2270", "-3970", "-5.1", "4.1", "-3.9", "0", "1", "2", "3", "4", "5", "6", "7", "8" };
-	//----------end junk
-	
+
 	@Override
 	public JComponent getUI(final JButton jbCreate) {
 		
@@ -118,13 +125,22 @@ public class SatelliteWizard extends CreateWizardUI {
 		lblChooseSat = new JLabel("Satellite Group:");
 		lblChoiceSat = new JLabel("Choices in Satellite Group");
 		lblChosenSat = new JLabel("My Chosen Satellites");
+		lblCollectionName = new JLabel("Collection name:");
 		
-		//--initially all buttons are disabled
+		jchkbMakeCollection = new JCheckBox("Create as a Collection");
+		jtfCollectionName = new JTextField("", 10);
+		
+		
+		//--initially buttons and checkbox and text field are disabled
 		jbAddSat.setEnabled(false);
 		jbAddAllSat.setEnabled(false);
 		jbRemoveSat.setEnabled(false);
 		jbRemoveAllSat.setEnabled(false);
 		jbCreate.setEnabled(false);
+		jchkbMakeCollection.setSelected(false);
+		jchkbMakeCollection.setEnabled(false);
+		jtfCollectionName.setEnabled(false);
+		lblCollectionName.setEnabled(false);
 			
 		
 		JPanel rootPanel = new JPanel();
@@ -139,6 +155,12 @@ public class SatelliteWizard extends CreateWizardUI {
 		JPanel bodyPanel = new JPanel();
 		bodyPanel.setLayout(new BoxLayout(bodyPanel, BoxLayout.LINE_AXIS));
 		
+		JPanel footPanel = new JPanel();
+		footPanel.setLayout(new BorderLayout());
+		
+		
+		
+		
 		JPanel satChoicePanel = new JPanel();
 		satChoicePanel.setLayout(new BoxLayout(satChoicePanel, BoxLayout.Y_AXIS));
 		
@@ -151,6 +173,13 @@ public class SatelliteWizard extends CreateWizardUI {
 		JPanel removeBtnsPanel = new JPanel();
 		removeBtnsPanel.setLayout(new GridBagLayout());
 		
+		JPanel makeCollectionPanel = new JPanel();
+		makeCollectionPanel.setLayout(new BoxLayout(makeCollectionPanel, BoxLayout.Y_AXIS));
+		
+		JPanel nameCollectionPanel = new JPanel();
+		nameCollectionPanel.setLayout(new BoxLayout(nameCollectionPanel, BoxLayout.X_AXIS));
+		
+		
 		GridBagConstraints cAdd = new GridBagConstraints();
 		cAdd.fill = GridBagConstraints.BOTH;
         cAdd.weightx = 1.0;
@@ -159,12 +188,15 @@ public class SatelliteWizard extends CreateWizardUI {
 		cRemove.fill = GridBagConstraints.BOTH;
         cRemove.weightx = 1.0;
         
+        
+        
 		
-		List<Object> jcbElements = new ArrayList<Object>();
-		/* ComboBox:
+        /* ComboBox:
 		 * create all of the elements in the combo-box, but Disable the Prime Categories,
 		 * like 'Special Interest', 'Weather & Earth Resources', etc
 		 */
+		List<Object> jcbElements = new ArrayList<Object>();
+	
 		for( int i=0; i< SatCat.length; i++) {
 			jcbElements.add(new ComboItem(SatCat[i][0], false));
 			for(int j=1; j< SatCat[i].length; j++) {
@@ -242,10 +274,10 @@ public class SatelliteWizard extends CreateWizardUI {
 				
 				jbRemoveSat.setEnabled(true);
 				jbRemoveAllSat.setEnabled(true);
+				jchkbMakeCollection.setEnabled(true);
 				jbCreate.setEnabled(true);
 				
 				//add the Satellites in the order as they appear in the SatChoice list, 
-				//TODO: do not add repeats
 				for(int i=0; i< len; i++) {
 					Object chosen = lmSatChoices.get(selected[i]);
 					if( !satAlreadyAdded((TLE)chosen)) {
@@ -290,6 +322,7 @@ public class SatelliteWizard extends CreateWizardUI {
 				
 				jbRemoveSat.setEnabled(true);
 				jbRemoveAllSat.setEnabled(true);
+				jchkbMakeCollection.setEnabled(true);
 				jbCreate.setEnabled(true);
 			}
 		});
@@ -316,6 +349,7 @@ public class SatelliteWizard extends CreateWizardUI {
 				if(lmSatChosen.isEmpty()) {
 					jbRemoveSat.setEnabled(false);
 					jbRemoveAllSat.setEnabled(false);
+					jchkbMakeCollection.setEnabled(false);
 					jbCreate.setEnabled(false);
 					jcbSatCategories.requestFocus();  //since no elements in the Chosen list, set focus to comboBox
 				}
@@ -334,10 +368,60 @@ public class SatelliteWizard extends CreateWizardUI {
 				chosenSats.clear();
 				jbRemoveSat.setEnabled(false);
 				jbRemoveAllSat.setEnabled(false);
+				jchkbMakeCollection.setEnabled(false);
 				jbCreate.setEnabled(false);
 			}
 		});
 		
+		/*Check Box
+		 * 
+		 */
+		jchkbMakeCollection.addItemListener(new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if( e.getStateChange()==ItemEvent.SELECTED ) {
+					lblCollectionName.setEnabled(true);
+					jtfCollectionName.setEnabled(true);
+					jtfCollectionName.requestFocusInWindow();
+					jtfCollectionName.setText("Satellite Collection");
+					jtfCollectionName.selectAll();
+				}
+				else {
+					lblCollectionName.setEnabled(false);
+					jtfCollectionName.setText("");
+					jtfCollectionName.setEnabled(false);
+				}
+			}
+		});
+		
+		/*TextField
+		 * 
+		 */
+		jtfCollectionName.getDocument().addDocumentListener(new DocumentListener() {
+			
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				if(jtfCollectionName.getText().isEmpty() && jchkbMakeCollection.isSelected()) 
+					jbCreate.setEnabled(false);
+				else
+					jbCreate.setEnabled(true);
+			}
+			
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				jbCreate.setEnabled(true);
+			}
+			
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				if(jtfCollectionName.getText().isEmpty() && jchkbMakeCollection.isSelected()) {
+					jbCreate.setEnabled(false);
+				}
+				else
+					jbCreate.setEnabled(true);
+			}
+		});
 		
 		
 		//--populate JLists from the listModels
@@ -387,7 +471,6 @@ public class SatelliteWizard extends CreateWizardUI {
 		cRemove.insets = new Insets(5, 0, 0, 0);
 		removeBtnsPanel.add(jbRemoveAllSat, cRemove);
 		
-		
 		bodyPanel.add(satChoicePanel);
 		bodyPanel.add(Box.createRigidArea(new Dimension(20, 0)));
 		bodyPanel.add(addBtnsPanel);
@@ -395,6 +478,19 @@ public class SatelliteWizard extends CreateWizardUI {
 		bodyPanel.add(SatChosenPanel);
 		bodyPanel.add(Box.createRigidArea(new Dimension(20, 0)));
 		bodyPanel.add(removeBtnsPanel);
+	
+		/*
+		 * Panel containing check box and text field 
+		 */
+		makeCollectionPanel.add(jchkbMakeCollection);
+		jchkbMakeCollection.setAlignmentX(Component.LEFT_ALIGNMENT);
+		nameCollectionPanel.add(lblCollectionName);
+		nameCollectionPanel.add(jtfCollectionName);
+		//jtfCollectionName.setPreferredSize(new Dimension(200, (int)jtfCollectionName.getSize().getHeight()));
+		nameCollectionPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		makeCollectionPanel.add(nameCollectionPanel);
+		
+		footPanel.add(makeCollectionPanel, BorderLayout.EAST);
 		
 		//Here you can turn on the boarders to all of the panels
 		//		headPanel.setBorder(BorderFactory.createTitledBorder("Head Panel"));
@@ -405,17 +501,10 @@ public class SatelliteWizard extends CreateWizardUI {
 		motherPanel.add(headPanel);
 		motherPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 		motherPanel.add(bodyPanel);
-		
-		
+		motherPanel.add(footPanel);
+	
 		
 		rootPanel.add(motherPanel, Component.CENTER_ALIGNMENT);
-		
-		
-		//----------------------------------------
-		name.setText("untitled orbit");
-		for (int i = 0; i < 6; i++) {
-			boxes[i] = new JTextField(DEFAULTS[i]);
-		}
 		
 		
 		return rootPanel;
@@ -423,7 +512,7 @@ public class SatelliteWizard extends CreateWizardUI {
 	}
 	
 	/*
-	 * Determine whether the satellite TLE being added has already been added
+	 * Determine whether the satellite TLE being added is already contained in the Chosen list.
 	 * 
 	 * Note: the satellite number (which is actually a NORAD catalog number) in a TLE is a unique key 
 	 *    ref: Celestrak:: "The NORAD Catalog Number is a unique identifier assigned by
@@ -462,107 +551,63 @@ public class SatelliteWizard extends CreateWizardUI {
 		String SatNum = tle.getLine2().split("\\s+")[1];
 		chosenSats.remove(SatNum);
 	}
-	
-	private double value(int i) {
-		try {
-			return Double.parseDouble(boxes[i].getText());
-		} catch (Exception e) {
-			return 0.0; // TODO : log ?
-		}
-	}
 
 	/*
-	 * (non-Javadoc)
-	 * @see gov.nasa.arc.mct.services.component.CreateWizardUI#createComp(gov.nasa.arc.mct.services.component.ComponentRegistry, gov.nasa.arc.mct.components.AbstractComponent)
-	 * 
 	 * This method is called when the 'create' button is hit
 	 * 
 	 * Precondition: the list model containing the chosen satellites to create (lmSatChosen) is not empty
-	 * 
-	 * should we create the sat-spg thing here?
-	 * 
 	 */
 	@Override
 	public AbstractComponent createComp(ComponentRegistry registry,
 			AbstractComponent parentComp) {
 
-		/*
-		 * A big for loop, iterating through each TLE
-		 */
+		Collection<AbstractComponent> chosenSats = new ArrayList<AbstractComponent>();
+
+		//all satellites will have this as their parent; root may either be a collection (if selected) or will be the
+		AbstractComponent rootComponent;
 		
-		//this line will stay the same
-		SatelliteComponent satelliteComponent = registry.newInstance(SatelliteComponent.class, parentComp);
-		
-		/*
-		 * These two guys are going to change a bit.  Satellite Model will contain the JSatTrak satellite object
-		 *   setDisplay Name: the tle will place the name here: tle.getSatName();
-		 *   setOrbitalParameters: remane this to setSatelliteParameters.
-		 *      -pass in the TLE?   This is good, for this wizard will not need access to jsattrak; just like TLEUtil, the wizard is seperated from the implementation.
-		 *        Yes, this method will take in a single TLE
-		 *        
-		 */
-		satelliteComponent.setDisplayName(name.getText());
-		satelliteComponent.setOrbitalParameters(new Vector(value(0), value(1), value(2)), new Vector(value(3), value(4),  value(5)), System.currentTimeMillis());
-		
-		//this will stay the same
-		satelliteComponent.save();
-	
-		boolean[] truths   = { false,   true };
-		String[]  axisName = { "X", "Y", "Z" };
-		
-		for (boolean velocity : truths) {
-			String name = velocity ? "Velocity" : "Position";
-			
-			VectorComponent vectorComponent = registry.newInstance(VectorComponent.class, satelliteComponent);
-			vectorComponent.setDisplayName( name );
-			vectorComponent.save();
-			
-			//make x, y, z
-			for (int axis = 0; axis < 3; axis++) {
-				CoordinateComponent coordinateComponent = registry.newInstance(CoordinateComponent.class, vectorComponent);
-				coordinateComponent.setDisplayName(name + " " + axisName[axis]);
-				coordinateComponent.setModel(new CoordinateModel(axis, velocity, satelliteComponent.getComponentId()));
-			}			
+		if(jchkbMakeCollection.isSelected()) {
+			rootComponent = registry.newInstance(registry.newInstance("gov.nasa.arc.mct.components.collection.CollectionComponent").getClass(), parentComp);
+			rootComponent.setDisplayName(jtfCollectionName.getText());
+			rootComponent.save();
 		}
+		else
+			rootComponent = parentComp;
+
+		
+		int createSize = lmSatChosen.getSize();
+
+		for(int i=0; i<createSize; i++) {
+			//here we are creating new instances and adding them the the parent component (which may be a collection or the given parentComp)
+			SatelliteComponent satComponent = registry.newInstance(SatelliteComponent.class, rootComponent);
+			TLE currentTLE = (TLE)lmSatChosen.get(i);
+			satComponent.setDisplayName(currentTLE.getSatName());
+			satComponent.setOrbitalParameters(currentTLE);
+			satComponent.save();
+			chosenSats.add(satComponent);
 			
-        return satelliteComponent;
+			boolean[] truths   = { false,   true };
+			String[]  axisName = { "X", "Y", "Z" };
+			
+			for (boolean velocity : truths) {
+				String name = velocity ? "Velocity" : "Position";
+				
+				VectorComponent vectorComponent = registry.newInstance(VectorComponent.class, satComponent);
+				vectorComponent.setDisplayName( name );
+				vectorComponent.save();
+				
+				//make x, y, z
+				for (int axis = 0; axis < 3; axis++) {
+					CoordinateComponent coordinateComponent = registry.newInstance(CoordinateComponent.class, vectorComponent);
+					coordinateComponent.setDisplayName(name + " " + axisName[axis]);
+					coordinateComponent.setModel(new CoordinateModel(axis, velocity, satComponent.getComponentId(), currentTLE));
+					coordinateComponent.save();
+				}
+			}
+		}
+
+		return rootComponent;
         
 	}
-
+	
 }
-/*
-
-JList tmp = new JList(lmSatChoices);
-tmp.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-tmp.setCellRenderer(new DefaultListCellRenderer() {
-	public Component
-		getListCellRendererComponent
-		( JList list, Object value, 
-	  int index,   
-      boolean isSelected,  
-      boolean cellHasFocus)
-	{
-		  if (isSelected) {
-	        setBackground(list.getSelectionBackground());
-	        setForeground(list.getSelectionForeground());
-	      } else {
-	        setBackground(list.getBackground());
-	        setForeground(list.getForeground());
-	      }
-			setText(((TLE)value).getSatName());  
-			setOpaque(true);  
-			return this;  
-	}//--end getListCellRendererComponent  
-});//--end custom cell renderer
-
-
-
-		/*
-		 * Update the TLE files if they are old
-		 */
-		/*if( !(tleUtil.haveRecentTLEs())) {
-			tleUtil.updateTLEs();
-		}
-		*/
-		//tleUtil.readFile("src/main/resources/data/tle/stations.txt");

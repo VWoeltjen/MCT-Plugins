@@ -3,6 +3,7 @@
  */
 package test;
 
+import gov.nasa.arc.mct.satellite.component.CoordinateModel;
 import gov.nasa.arc.mct.satellite.utilities.TLEDownloader;
 import gov.nasa.arc.mct.satellite.utilities.TLEUtility;
 
@@ -46,11 +47,29 @@ public class Sandbox {
 		}
 	};
 		
-		
+	private static void testMe(TLE tle) {
+		TLE mine = tle;
+		System.out.println("mine: " + mine.getSatName());
+	}
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		
+		TLE newTLE = new TLE("ISS","1 25544U 98067A   13206.80459653  .00005545  00000-0  10495-3 0  2592","2 25544  51.6506 276.9831 0004200 223.2207 236.6555 15.50032004840694");
+		
+		TLE mine = newTLE;
+		
+		System.out.println("newTLE: " + newTLE.getSatName());
+		
+		testMe(newTLE);
+		
+		CoordinateModel cm = new CoordinateModel(1, true, "", newTLE);
+		
+		TLE test = cm.getTLE();
+		System.out.println("From CordinateModel: " + test.getSatName());
+		
+		
 		// TODO Auto-generated method stub
 /*
 		String result  = FileLookup.get("BREEZE-M R/B Breakup (2012-044C)");

@@ -61,8 +61,11 @@ public class EarthView extends FeedView implements RenderingCallback, ViewChange
 			}
 			// This restricts view to UserOrbitalComponent for demo purposes. In principle could
 			// work for any appropriate set of three data points
-			if (UserOrbitalComponent.class.isAssignableFrom(candidate.getClass()) && 
-			    i > 3) { // Did we find enough feeds to plot the course of this object?
+			/*
+			 * HarleighSatTrack
+			 *     UserOrbitalComponent.class.isAssignableFrom(candidate.getClass()) && 
+			 */
+			if ( i > 3) { // Did we find enough feeds to plot the course of this object?
 				trajectories.put(TinyView.VIEW_INFO.createView(candidate), tp);
 			}
 		}
@@ -96,7 +99,7 @@ public class EarthView extends FeedView implements RenderingCallback, ViewChange
 				try {
 					field.set(Double.parseDouble(ri.getValueText()));
 				} catch (NumberFormatException nfe) {
-					//TODO: Just ignore or show some kind of status?
+					nfe.printStackTrace();  //TODO: Just ignore or show some kind of status?
 				}
 			}
 		}

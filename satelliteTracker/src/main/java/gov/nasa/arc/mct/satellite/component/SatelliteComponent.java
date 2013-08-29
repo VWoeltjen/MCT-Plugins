@@ -14,41 +14,54 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import jsattrak.utilities.TLE;
+
 /*
  * used to be UserOrbitalComponent
  */
 
 public class SatelliteComponent extends AbstractComponent {
-	private AtomicReference<OrbitalModel> model = new AtomicReference<OrbitalModel>();
+	private AtomicReference<SatelliteModel> model = new AtomicReference<SatelliteModel>();
 	
+	/*
+	 * change this name to setSatelliteParameters, or setSatellite.  This method will take a TLE,
+	 * create a SatelliteModel and pass the TLE to the model.  The model will build the satellite
+	 * based on the TLE
+	 */
 	public void setOrbitalParameters(Vector position, Vector velocity,long start) {
-		OrbitalModel m = new OrbitalModel();
+		SatelliteModel m = new SatelliteModel();
 		m.set(position, velocity, start);
-		model.set(m);
+		model.set(m); //this line will stay the same
+	}
+	public void setOrbitalParameters(TLE curTLE ) {
+		SatelliteModel m = new SatelliteModel();
+		m.set(curTLE);
+		model.set(m); //this line will stay the same
 	}
 	
-	public OrbitalModel getModel() {
+	
+	public SatelliteModel getModel() {
 		return model.get();
 	}
 	
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
 		if (ModelStatePersistence.class.isAssignableFrom(capability)) {
-		    JAXBModelStatePersistence<OrbitalModel> persistence = new JAXBModelStatePersistence<OrbitalModel>() {
+		    JAXBModelStatePersistence<SatelliteModel> persistence = new JAXBModelStatePersistence<SatelliteModel>() {
 
 				@Override
-				protected OrbitalModel getStateToPersist() {
+				protected SatelliteModel getStateToPersist() {
 					return model.get();
 				}
 
 				@Override
-				protected void setPersistentState(OrbitalModel modelState) {
+				protected void setPersistentState(SatelliteModel modelState) {
 					model.set(modelState);
 				}
 
 				@Override
-				protected Class<OrbitalModel> getJAXBClass() {
-					return OrbitalModel.class;
+				protected Class<SatelliteModel> getJAXBClass() {
+					return SatelliteModel.class;
 				}
 		        
 			};
@@ -58,80 +71,5 @@ public class SatelliteComponent extends AbstractComponent {
 		
 		return null;
 	}
-	
-	@Override
-	public List<PropertyDescriptor> getFieldDescriptors()  {
-		
-        List<PropertyDescriptor> values = new ArrayList<PropertyDescriptor>();
-        
-        String axisName[] = { "X" , "Y" , "Z" };
-        boolean truths[]  = { false  ,   true };
-        for (boolean velocity : truths) {
-        	for (int axis = 0; axis < 3; axis++) {
-        		values.add(new PropertyDescriptor( (velocity ? "Velocity " : "Position ") + axisName[axis],
-        				new VectorComponentEditor(axis, velocity), VisualControlDescriptor.TextField));
-        	}
-        }
-        
-        for (PropertyDescriptor value : values) {
-        	value.setFieldMutable(true);
-        }
-        
-		return values;
-	}
 
-	private class VectorComponentEditor implements PropertyEditor<String> {
-		private int axis;
-		private boolean velocity;
-		
-		public VectorComponentEditor (int axis, boolean velocity) {
-			this.axis = axis;
-			this.velocity = velocity;
-		}
-
-		@Override
-		public String getAsText() {
-			Trajectory t = model.get().getInitialTrajectory();
-			Vector     v = velocity ? t.getVelocity() : t.getPosition();
-			double[]   values = { v.getX(), v.getY(), v.getZ() };
-			return Double.toString(values[axis]);
-		}
-
-		@Override
-		public void setAsText(String text) throws IllegalArgumentException {
-			try {
-				Trajectory t = model.get().getInitialTrajectory();
-				Vector vel = t.getVelocity();
-				Vector pos = t.getPosition();
-				Vector     v = velocity ? vel : pos;
-				double[]   values = { v.getX(), v.getY(), v.getZ() };
-				values[axis] = Double.parseDouble(text);
-				v = new Vector(values[0], values[1], values[2]);
-				if (velocity) {
-					vel = v;
-				} else {
-					pos = v;
-				}
-				model.get().set(pos, vel, System.currentTimeMillis());
-			} catch (Exception e) {
-				throw new IllegalArgumentException(e);
-			}
-		}
-
-		@Override
-		public String getValue() {
-			return getAsText();
-		}
-
-		@Override
-		public void setValue(Object value) throws IllegalArgumentException {
-			setAsText(value.toString());
-		}
-
-		@Override
-		public List<String> getTags() {
-			return Arrays.asList("");
-		}
-	
-	}
 }

@@ -18,3 +18,4 @@ Service-Component: OSGI-INF/services.xml
 Bundle-ClassPath: .,
  joda-time-2.3.jar,
  JSatTrak.jar
+Require-Bundle: gov.nasa.arc.mct
