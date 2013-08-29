@@ -148,7 +148,7 @@ public class TimelineView extends AbstractTimelineView {
 		String selectedId = null;
 		if (!selected.isEmpty()) {
 			selectedId = selected.iterator().next().getManifestedComponent().getComponentId();
-			select(null); // TODO: Restore selection to previously-selected component
+			select(null);
 		}
 		
 		// Rebuild the view
