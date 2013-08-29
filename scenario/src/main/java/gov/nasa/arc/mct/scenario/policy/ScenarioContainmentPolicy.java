@@ -50,6 +50,7 @@ public class ScenarioContainmentPolicy implements Policy {
 		
 		if (parent instanceof TimelineComponent) {
 			return !(child instanceof DecisionComponent ||
+					child instanceof TimelineComponent ||
 					child instanceof ScenarioComponent) &&
 				   (child.getCapability(DurationCapability.class) != null  || // Activities
 				   child.getCapability(FeedProvider.class) != null ||         // Telemetry
