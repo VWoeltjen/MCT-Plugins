@@ -29,6 +29,7 @@ import javax.swing.Timer;
 
 public class TimelineLayout implements LayoutManager2 {
 	private int rowHeight = 24;
+	private int rowPadding = 6;
 	private TimelineContext context;
 	private Map<Component, DurationCapability> durationInfo = new HashMap<Component, DurationCapability>();
 	
@@ -70,6 +71,8 @@ public class TimelineLayout implements LayoutManager2 {
 
 	@Override
 	public void layoutContainer(final Container parent) {
+		int fullRowHeight = rowHeight + rowPadding;
+		
 		// Fix row assignments
 		for (List<Component> row : rows) {
 			Collections.sort(row, comparator);
@@ -93,9 +96,9 @@ public class TimelineLayout implements LayoutManager2 {
 				
 				int animationOffset = 0;
 				if (animation.containsKey(child)) {
-					animationOffset = (int) (rowHeight * animation.get(child));
+					animationOffset = (int) (fullRowHeight * animation.get(child));
 				}
-				child.setBounds(x, getRow(child) * rowHeight + animationOffset, width, rowHeight);					
+				child.setBounds(x, getRow(child) * fullRowHeight + animationOffset + rowPadding/2, width, rowHeight);					
 			}
 		}
 		
@@ -176,7 +179,7 @@ public class TimelineLayout implements LayoutManager2 {
 	}
 	
 	private int getHeight() {
-		return rowHeight * rows.size();
+		return (rowHeight + rowPadding) * rows.size();
 	}
 	
 	private int getRow(Component comp) {
@@ -310,9 +313,9 @@ public class TimelineLayout implements LayoutManager2 {
 		layout.context = layout.mouseAdapter;
 		
 		final JPanel panel = new JPanel(layout);
-		for (int i = 0; i < 2000; i++) {
+		for (int i = 0; i < 1000; i++) {
 			int start = (int) (Math.random() * 1150.0);
-			int end   = start + 3 + (int) (Math.random() * 5.0);
+			int end   = start + 5 + (100 - i/10) * (int) (1.0 + Math.random());
 			DurationThing thing = layout.new DurationThing(start,end);
 			panel.add(thing,thing);
 		}
