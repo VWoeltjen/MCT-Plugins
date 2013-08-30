@@ -168,7 +168,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		getData().setStartDate(new Date(start));
 		//save();		
 		if (old < start) {
-			constrainToDuration();
+//			constrainToDuration();
 		}
 	}
 
@@ -178,7 +178,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		getData().setEndDate(new Date(end));
 		//save();
 		if (old > end) {
-			constrainToDuration();
+//			constrainToDuration();
 		}
 	}
 	
@@ -217,9 +217,9 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
      * @param isStart true if the change in time was toward the start (i.e. negative)
 	 */
 	public void constrainChildren(DurationCapability source, boolean isStart) {
-		constrainActivities(source, isStart);
-		constrainDecisions(isStart);
-		constrainToDuration();
+//		constrainActivities(source, isStart);
+//		constrainDecisions(isStart);
+//		constrainToDuration();
 	}
 	
 	/**

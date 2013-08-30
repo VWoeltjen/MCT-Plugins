@@ -61,7 +61,7 @@ public class TimelineLayout implements LayoutManager2 {
 
 	@Override
 	public Dimension preferredLayoutSize(Container parent) {			
-		return new Dimension(1200, getHeight());
+		return new Dimension(0, getHeight());
 	}
 
 	@Override

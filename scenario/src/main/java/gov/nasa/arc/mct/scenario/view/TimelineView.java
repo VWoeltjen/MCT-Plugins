@@ -27,6 +27,7 @@ import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
+import gov.nasa.arc.mct.scenario.view.TimelineLayout.TimelineContext;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
@@ -64,7 +65,7 @@ import javax.swing.event.ChangeEvent;
  * @author vwoeltje
  *
  */
-public class TimelineView extends AbstractTimelineView {
+public class TimelineView extends AbstractTimelineView implements TimelineContext {
 	static final ViewInfo VIEW_INFO = new ViewInfo(TimelineView.class, "Timeline", ViewType.EMBEDDED);
 	
 	private static final int TIMELINE_ROW_HEIGHT = 24;
@@ -72,7 +73,6 @@ public class TimelineView extends AbstractTimelineView {
 	private static final long serialVersionUID = -5039383350178424964L;
 
 	
-	private List<TimelineBlock> blocks = new ArrayList<TimelineBlock>();
 	private JPanel upperPanel = new JPanel();
 	private Color backgroundColor = Color.WHITE;
 	private View  costGraph = null;
@@ -135,7 +135,6 @@ public class TimelineView extends AbstractTimelineView {
 	}
 	
 	private void rebuildUpperPanel() {
-		blocks.clear();
 		upperPanel.removeAll();
 
 		// Cache current selection to restore later
@@ -177,13 +176,14 @@ public class TimelineView extends AbstractTimelineView {
 	private void refreshAll() {
 		revalidate();
 		repaint();
-		for (TimelineBlock block : blocks) {
-			block.revalidate();
-			block.repaint();
-			for (JComponent row : block.rows) {
-				row.revalidate();
-				row.repaint();
-			}
+		for (Component c : upperPanel.getComponents()) {
+			c.invalidate();
+			c.validate();
+			c.repaint();
+//			for (JComponent row : block.rows) {
+//				row.revalidate();
+//				row.repaint();
+//			}
 		}
 	}
 	
@@ -206,21 +206,23 @@ public class TimelineView extends AbstractTimelineView {
 		DurationCapability dc = ac.getCapability(DurationCapability.class);
 		if (dc != null) {
 			TimelineBlock block = null;
-			for (TimelineBlock b : blocks) {
-				if (b.maximumTime <= dc.getStart() || b.minimumTime >= dc.getEnd()) {
-					block = b;
-					break;
+			for (Component c : upperPanel.getComponents()) {
+				if (c instanceof TimelineBlock) {
+					TimelineBlock b = (TimelineBlock) c;			
+					if (b.maximumTime <= dc.getStart()
+							|| b.minimumTime >= dc.getEnd()) {
+						block = b;
+						break;
+					}
 				}
 			}
 			if (block == null) {
 				block = new TimelineBlock();
-				block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
 				block.setOpaque(false);				
 				//block.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
 				block.setAlignmentX(0.5f);
 				upperPanel.add(block);
-				upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
-				blocks.add(block);
+				upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));	
 			}			
 			if (dc.getStart() < block.minimumTime) {
 				block.minimumTime = dc.getStart();
@@ -255,36 +257,37 @@ public class TimelineView extends AbstractTimelineView {
 	}
 	
 	private void addViewToRow(DurationCapability dc, AbstractComponent ac, ActivityComponent parent, TimelineBlock block, int row) {
-		while (row >= block.rows.size()) {
-			block.rows.add(new JPanel(new TimelineRowLayout()));
-			block.rows.get(block.rows.size() - 1).setOpaque(false);
-			block.add(block.rows.get(block.rows.size() - 1));
-			block.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
-		}
+//		while (row >= block.rows.size()) {
+//			block.rows.add(new JPanel(new TimelineRowLayout()));
+//			block.rows.get(block.rows.size() - 1).setOpaque(false);
+//			block.add(block.rows.get(block.rows.size() - 1));
+//			block.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
+//		}
 
 		View activityView = ActivityView.VIEW_INFO.createView(ac);
 		
 		MouseAdapter controller = new TimelineDurationController(parent, dc, this);
-		block.rows.get(row).add(activityView, dc);
+		block.add(activityView, dc);
+		//block.rows.get(row).add(activityView, dc);
 		activityView.addMouseListener(controller);
 		activityView.addMouseMotionListener(controller);
 	}
 	
 	private boolean detectOverlappingComponents() {
-		for (TimelineBlock block : blocks) {
-			if (block.rows.size() > 0) {
-				JComponent row = block.rows.get(0); // Top-level activities are in first row
-				List<DurationCapability> durations = getSortedVisibleDurations(row);
-				
-				// These are sorted, so check for some case where one duration's end
-				// is greater than the next duration's start.
-				for (int i = 0; i < durations.size() - 1; i++) {
-					if (durations.get(i).getEnd() > durations.get(i+1).getStart()) {
-						return true;
-					}
-				}
-			}
-		}
+//		for (TimelineBlock block : blocks) {
+//			if (block.rows.size() > 0) {
+//				JComponent row = block.rows.get(0); // Top-level activities are in first row
+//				List<DurationCapability> durations = getSortedVisibleDurations(row);
+//				
+//				// These are sorted, so check for some case where one duration's end
+//				// is greater than the next duration's start.
+//				for (int i = 0; i < durations.size() - 1; i++) {
+//					if (durations.get(i).getEnd() > durations.get(i+1).getStart()) {
+//						return true;
+//					}
+//				}
+//			}
+//		}
 		return false;
 	}	
 	
@@ -386,11 +389,21 @@ public class TimelineView extends AbstractTimelineView {
 		private static final long serialVersionUID = 3461668344855752107L;
 		public long maximumTime = Long.MIN_VALUE;
 		public long minimumTime = Long.MAX_VALUE;
-		public List<JComponent> rows = new ArrayList<JComponent>();
+		//public List<JComponent> rows = new ArrayList<JComponent>();
+		
+		public TimelineBlock() {
+			super(new TimelineLayout(TimelineView.this));
+		}
 		
 		public void paintComponent(Graphics g) {
+			super.paintComponent(g);
 			g.drawLine(getLeftPadding(), getHeight()-1, getWidth() - getRightPadding(), getHeight()-1);
 		}
+	}
+
+	@Override
+	public Set<Component> getActiveViews() {		
+		return Collections.emptySet();
 	}
 
 }
