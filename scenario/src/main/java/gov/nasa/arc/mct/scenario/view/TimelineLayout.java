@@ -7,6 +7,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager2;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 public class TimelineLayout implements LayoutManager2 {
 	private int rowHeight = 24;
@@ -31,8 +34,9 @@ public class TimelineLayout implements LayoutManager2 {
 	
 	private List<List<Component>> rows = new ArrayList<List<Component>>();
 	private Map<Component, Integer> rowMap = new HashMap<Component, Integer>();
-	
-	
+	private Map<Component, Float> animation = new HashMap<Component, Float>();
+
+	private Timer animator = null;
 	
 	public TimelineLayout(TimelineContext context) {
 		super();
@@ -65,7 +69,7 @@ public class TimelineLayout implements LayoutManager2 {
 	}
 
 	@Override
-	public void layoutContainer(Container parent) {
+	public void layoutContainer(final Container parent) {
 		// Fix row assignments
 		for (List<Component> row : rows) {
 			Collections.sort(row, comparator);
@@ -86,8 +90,33 @@ public class TimelineLayout implements LayoutManager2 {
 			if (duration != null) {
 				int x = context.getLeftPadding() + (int) (context.getPixelScale() * (double) (duration.getStart() - context.getTimeOffset()));
 				int width = (int) (context.getPixelScale() * (double) (duration.getEnd() - duration.getStart())) + 1;
-				child.setBounds(x, getRow(child) * rowHeight, width, rowHeight);					
+				
+				int animationOffset = 0;
+				if (animation.containsKey(child)) {
+					animationOffset = (int) (rowHeight * animation.get(child));
+				}
+				child.setBounds(x, getRow(child) * rowHeight + animationOffset, width, rowHeight);					
 			}
+		}
+		
+		// Start animating if needed
+		if (!animation.isEmpty() && animator == null) {
+			animator = new Timer(25, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					Map<Component, Float> nextAnimation = new HashMap<Component, Float>();
+					for (Entry<Component, Float> entry : animation.entrySet()) {
+						if (Math.abs(entry.getValue()) > 1.0f / ((float)rowHeight)) {
+							nextAnimation.put(entry.getKey(), entry.getValue() * 0.75f);							
+						}
+					}		
+					animation = nextAnimation;
+					parent.invalidate();
+					parent.validate();
+					parent.repaint();
+				}				
+			});
+			animator.start();
 		}
 	}
 
@@ -111,7 +140,7 @@ public class TimelineLayout implements LayoutManager2 {
 					row++;
 				}
 			}
-			setRow(comp, row); // Will get sorted during layout
+			setRow(comp, row, false); // Will get sorted during layout
 		} else {
 			throw new IllegalArgumentException("Only valid constraint for " + getClass().getName() + 
 					" is " + DurationCapability.class.getName());
@@ -155,8 +184,11 @@ public class TimelineLayout implements LayoutManager2 {
 		return row == null ? 0 : row;
 	}
 	
-	private void setRow(Component comp, int row) {
+	private void setRow(Component comp, int row, boolean animated) {
+		int original = -1; // Used to distinguish if there WAS an original row
+		
 		if (rowMap.containsKey(comp)) {
+			original = rowMap.get(comp);
 			rows.get(rowMap.get(comp)).remove(comp);
 		}
 		rowMap.put(comp, row);
@@ -165,6 +197,14 @@ public class TimelineLayout implements LayoutManager2 {
 			rows.add(new ArrayList<Component>());
 		}
 		rows.get(row).add(comp);
+		
+		if (original >= 0 && original != row) {
+			float diff = (float) (original - row);
+			if (animation.containsKey(comp)) {
+				diff += animation.get(comp);
+			}
+			animation.put(comp, diff);
+		}
 	}
 	
 	private List<Component> fixList = new ArrayList<Component>();
@@ -192,7 +232,7 @@ public class TimelineLayout implements LayoutManager2 {
 		
 		// Push them
 		for (Component c : fixList) {
-			setRow(c, row + 1);
+			setRow(c, row + 1, true);
 		}
 		
 		// Clear out the list to reuse later
@@ -229,7 +269,7 @@ public class TimelineLayout implements LayoutManager2 {
 		}
 
 		for (Entry<Component, Integer> fix : fixMap.entrySet()) {
-			setRow(fix.getKey(), fix.getValue());
+			setRow(fix.getKey(), fix.getValue(), true);
 		}
 		fixMap.clear();
 
@@ -270,9 +310,9 @@ public class TimelineLayout implements LayoutManager2 {
 		layout.context = layout.mouseAdapter;
 		
 		final JPanel panel = new JPanel(layout);
-		for (int i = 0; i < 1000; i++) {
-			int start = (int) (Math.random() * 1100.0);
-			int end   = start + (100 - i / 10) + (int) (Math.random() * 20.0);
+		for (int i = 0; i < 2000; i++) {
+			int start = (int) (Math.random() * 1150.0);
+			int end   = start + 3 + (int) (Math.random() * 5.0);
 			DurationThing thing = layout.new DurationThing(start,end);
 			panel.add(thing,thing);
 		}
