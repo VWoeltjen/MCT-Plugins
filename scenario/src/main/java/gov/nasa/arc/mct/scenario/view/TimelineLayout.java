@@ -95,7 +95,23 @@ public class TimelineLayout implements LayoutManager2 {
 	public void addLayoutComponent(Component comp, Object constraints) {
 		if (constraints instanceof DurationCapability) {
 			durationInfo.put(comp, (DurationCapability) constraints);
-			setRow(comp, 0); // Will get sorted during layout
+			// Find a row with room for this component
+			int row = 0;
+			while (row < rows.size()) {
+				boolean fits = true;
+				for (Component c : rows.get(row)) {
+					if (overlaps(c,comp)) {
+						fits = false;
+						break;
+					}
+				}
+				if (fits) {
+					break;
+				} else {
+					row++;
+				}
+			}
+			setRow(comp, row); // Will get sorted during layout
 		} else {
 			throw new IllegalArgumentException("Only valid constraint for " + getClass().getName() + 
 					" is " + DurationCapability.class.getName());
@@ -256,7 +272,7 @@ public class TimelineLayout implements LayoutManager2 {
 		final JPanel panel = new JPanel(layout);
 		for (int i = 0; i < 1000; i++) {
 			int start = (int) (Math.random() * 1100.0);
-			int end   = start + (int) (Math.random() * 100.0);
+			int end   = start + (100 - i / 10) + (int) (Math.random() * 20.0);
 			DurationThing thing = layout.new DurationThing(start,end);
 			panel.add(thing,thing);
 		}
