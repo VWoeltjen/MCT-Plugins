@@ -16,9 +16,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -184,39 +183,40 @@ public class TimelineLayout implements LayoutManager2 {
 		fixList.clear();
 	}
 	
+	private Map<Component, Integer> fixMap = new HashMap<Component, Integer>();
+	
 	/*
 	 * We assume cleanupRow has already been called for all rows, 
 	 * such that any two components on same row don't overlap
 	 */
 	private void packRow(int row) {
-
 		Set<Component> active = context.getActiveViews();
-		if (row > 0) {
-			List<Component> above  = rows.get(row - 1);
-			List<Component> current = rows.get(row);
-			for (Component c1 : current) {
-				if (!active.contains(c1)) {
+		List<Component> current = rows.get(row);
+		for (Component c1 : current) {
+			if (!active.contains(c1)) {
+				for (int other = 0; other < row; other++) {
+					List<Component> above = rows.get(other);
+
 					boolean fits = true;
 					for (Component c2 : above) {
-						if (c1 != c2 && overlaps(c1,c2)) {
+						if (c1 != c2 && overlaps(c1, c2)) {
 							fits = false;
 							break;
 						}
 					}
 					if (fits) {
-						fixList.add(c1);
+						fixMap.put(c1, other);
+						break;
 					}
 				}
 			}
 		}
-		
-		// Pull them up
-		for (Component c : fixList) {
-			setRow(c, row - 1);
-		}	
-		
-		// Clear out to reuse later
-		fixList.clear();
+
+		for (Entry<Component, Integer> fix : fixMap.entrySet()) {
+			setRow(fix.getKey(), fix.getValue());
+		}
+		fixMap.clear();
+
 	}
 	
 	private boolean overlaps(Component c1, Component c2) {
