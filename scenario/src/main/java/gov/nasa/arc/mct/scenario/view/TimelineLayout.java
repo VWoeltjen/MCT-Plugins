@@ -254,7 +254,7 @@ public class TimelineLayout implements LayoutManager2 {
 		List<Component> current = rows.get(row);
 		for (Component c1 : current) {
 			if (!active.contains(c1)) {
-				for (int other = 0; other < row; other++) {
+				for (int other = row - 1; other >= 0; other--) {
 					List<Component> above = rows.get(other);
 
 					boolean fits = true;
@@ -266,6 +266,7 @@ public class TimelineLayout implements LayoutManager2 {
 					}
 					if (fits) {
 						fixMap.put(c1, other);
+					} else {
 						break;
 					}
 				}
