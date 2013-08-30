@@ -10,6 +10,7 @@ import java.awt.LayoutManager2;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +30,7 @@ public class TimelineLayout implements LayoutManager2 {
 	private TimelineContext context;
 	private Map<Component, DurationCapability> durationInfo = new HashMap<Component, DurationCapability>();
 	
-	private List<SortedSet<Component>> rows = new ArrayList<SortedSet<Component>>();
+	private List<List<Component>> rows = new ArrayList<List<Component>>();
 	private Map<Component, Integer> rowMap = new HashMap<Component, Integer>();
 	
 	
@@ -56,7 +57,7 @@ public class TimelineLayout implements LayoutManager2 {
 
 	@Override
 	public Dimension preferredLayoutSize(Container parent) {			
-		return new Dimension(1000, getHeight());
+		return new Dimension(1200, getHeight());
 	}
 
 	@Override
@@ -67,20 +68,17 @@ public class TimelineLayout implements LayoutManager2 {
 	@Override
 	public void layoutContainer(Container parent) {
 		// Fix row assignments
+		for (List<Component> row : rows) {
+			Collections.sort(row, comparator);
+		}
 		for (int i = 0 ; i < rows.size() ; i++) {
 			cleanupRow(i);
 		}
-		for (int i = 1 ; i < rows.size() ; i++) {
+		for (int i = rows.size() - 1 ; i > 0 ; i--) {
 			packRow(i);
 		}
-		
-		// DEBUG: Check rows
-		for (int i = 0; i < rows.size(); i++) {
-			for (Component c : rows.get(i)) {
-				if (rowMap.get(c) != i) {
-					System.err.println("???" + i + "," + rowMap.get(c));
-				}
-			}
+		for (int i = 1 ; i < rows.size() ; i++) {
+			packRow(i);
 		}
 		
 		// Lay out components temporally
@@ -102,6 +100,9 @@ public class TimelineLayout implements LayoutManager2 {
 		} else {
 			throw new IllegalArgumentException("Only valid constraint for " + getClass().getName() + 
 					" is " + DurationCapability.class.getName());
+		}
+		for (List<Component> row : rows) {
+			Collections.sort(row, comparator);
 		}
 		for (int i = 0 ; i < rows.size() ; i++) {
 			cleanupRow(i);
@@ -146,7 +147,7 @@ public class TimelineLayout implements LayoutManager2 {
 		rowMap.put(comp, row);
 		
 		while (rows.size() <= row) {
-			rows.add(new TreeSet<Component>(comparator));
+			rows.add(new ArrayList<Component>());
 		}
 		rows.get(row).add(comp);
 	}
@@ -155,11 +156,13 @@ public class TimelineLayout implements LayoutManager2 {
 	
 	private void cleanupRow(int row) {
 		Set<Component> active = context.getActiveViews();
-		SortedSet<Component> comps = rows.get(row);
+		List<Component> comps = rows.get(row);
 		
 		// Identify comps which should be pushed down a row
-		for (Component c1 : comps) {
-			for (Component c2 : comps.headSet(c1)) {
+		for (int i = 0; i < comps.size(); i++) {
+			Component c1 = comps.get(i);
+			for (int j = i + 1; j < comps.size(); j++) {
+				Component c2 = comps.get(j);
 				if (!c1.equals(c2) && overlaps(c1, c2)) {
 					if (active.contains(c1)) {
 						if (!active.contains(c2)) {
@@ -189,8 +192,8 @@ public class TimelineLayout implements LayoutManager2 {
 
 		Set<Component> active = context.getActiveViews();
 		if (row > 0) {
-			Set<Component> above  = rows.get(row - 1);
-			Set<Component> current = rows.get(row);
+			List<Component> above  = rows.get(row - 1);
+			List<Component> current = rows.get(row);
 			for (Component c1 : current) {
 				if (!active.contains(c1)) {
 					boolean fits = true;
@@ -251,9 +254,9 @@ public class TimelineLayout implements LayoutManager2 {
 		layout.context = layout.mouseAdapter;
 		
 		final JPanel panel = new JPanel(layout);
-		for (int i = 0; i < 20; i++) {
-			int start = (int) (Math.random() * 400.0);
-			int end   = start + (int) (Math.random() * 60.0);
+		for (int i = 0; i < 1000; i++) {
+			int start = (int) (Math.random() * 800.0);
+			int end   = start + (int) (Math.random() * 100.0);
 			DurationThing thing = layout.new DurationThing(start,end);
 			panel.add(thing,thing);
 		}
