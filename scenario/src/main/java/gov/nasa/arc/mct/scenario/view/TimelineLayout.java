@@ -73,9 +73,9 @@ public class TimelineLayout implements LayoutManager2 {
 		for (int i = 0 ; i < rows.size() ; i++) {
 			cleanupRow(i);
 		}
-		for (int i = rows.size() - 1 ; i > 0 ; i--) {
-			packRow(i);
-		}
+//		for (int i = rows.size() - 1 ; i > 0 ; i--) {
+//			packRow(i);
+//		}
 		for (int i = 1 ; i < rows.size() ; i++) {
 			packRow(i);
 		}
@@ -255,7 +255,7 @@ public class TimelineLayout implements LayoutManager2 {
 		
 		final JPanel panel = new JPanel(layout);
 		for (int i = 0; i < 1000; i++) {
-			int start = (int) (Math.random() * 800.0);
+			int start = (int) (Math.random() * 1100.0);
 			int end   = start + (int) (Math.random() * 100.0);
 			DurationThing thing = layout.new DurationThing(start,end);
 			panel.add(thing,thing);
