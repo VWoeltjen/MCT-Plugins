@@ -149,12 +149,34 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 	@Override
 	public long getStart() {
-		return getData().getStartTime().getTime();
+		long start = getData().getStartTime().getTime();
+		ignoreSet.get().add(getComponentId());
+		for (AbstractComponent child : getComponents()) {
+			if (!ignoreSet.get().contains(child.getComponentId())) {
+				DurationCapability dc = child.getCapability(DurationCapability.class);
+				if (dc != null) {			
+					start = Math.min(start, dc.getStart());
+				}
+			}
+		}
+		ignoreSet.get().remove(getComponentId());
+		return start;
 	}
 
 	@Override
 	public long getEnd() {
-		return getData().getEndTime().getTime();
+		long end = getData().getEndTime().getTime();
+		ignoreSet.get().add(getComponentId());
+		for (AbstractComponent child : getComponents()) {
+			if (!ignoreSet.get().contains(child.getComponentId())) {
+				DurationCapability dc = child.getCapability(DurationCapability.class);
+				if (dc != null) {			
+					end = Math.max(end, dc.getEnd());
+				}
+			}
+		}
+		ignoreSet.get().remove(getComponentId());
+		return end;
 	}	
 	
 	public void setType(String type) {
