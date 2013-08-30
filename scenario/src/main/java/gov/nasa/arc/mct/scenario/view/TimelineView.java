@@ -28,6 +28,7 @@ import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.view.TimelineLayout.TimelineContext;
+import gov.nasa.arc.mct.scenario.component.DurationConstraintSystem;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
@@ -97,6 +98,10 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 				
 		buildUpperPanel();
 		
+		updateMasterDuration();
+		
+		refreshAll();
+		
 		// Refresh on any ancestor changes - these may change time scales
 		this.addAncestorListener(new AncestorListener() {
 			@Override
@@ -142,7 +147,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		String selectedId = null;
 		if (!selected.isEmpty()) {
 			selectedId = selected.iterator().next().getManifestedComponent().getComponentId();
-			select(null); // TODO: Restore selection to previously-selected component
+			select(null);
 		}
 		
 		// Rebuild the view
@@ -151,7 +156,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		// Restore the selection
 		if (selectedId != null) {
 			selectComponent(selectedId);
-		}
+		}		
 	}
 	
 	private void buildUpperPanel() {
@@ -171,6 +176,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		if (costs != null && !costs.isEmpty()) {
 			upperPanel.add(new CollapsibleContainer(costGraph = GraphView.VIEW_INFO.createView(ac)));
 		}
+
 	}
 
 	private void refreshAll() {
@@ -199,7 +205,9 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		super.save();
 		if (detectOverlappingComponents()) {
 			rebuildUpperPanel();
-		}		
+		}	
+		updateMasterDuration();
+		refreshAll();
 	}
 
 	private void addTopLevelActivity(AbstractComponent ac, Set<String> ignore) {
@@ -230,7 +238,22 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 			if (dc.getEnd() > block.maximumTime) {
 				block.maximumTime = dc.getEnd();
 			}
-			addActivities(ac, null, 0, new HashSet<String>(), block);
+			DurationConstraintSystem constraints = new DurationConstraintSystem(ac);
+			
+			// Poke all objects to resolve constraints
+			Set<AbstractComponent> changes = constraints.changeAll(ac);
+			
+			// Save any that were changed
+			for (AbstractComponent change : changes) {
+				change.save();
+			}
+			
+			// If there were changes, also save top-level timeline
+			if (!changes.isEmpty()) {
+				getManifestedComponent().save();
+			}
+			
+			addActivities(ac, null, 0, new HashSet<String>(), block, constraints);
 		} else if (!ignore.contains(ac.getComponentId())){  // Avoid cycles
 			ignore.add(ac.getComponentId());
 			for (AbstractComponent child : ac.getComponents()) {
@@ -239,7 +262,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		}
 	}
 
-	private void addActivities(AbstractComponent ac, AbstractComponent parent, int depth, Set<String> ids, TimelineBlock block) {
+	private void addActivities(AbstractComponent ac, AbstractComponent parent, int depth, Set<String> ids, TimelineBlock block, DurationConstraintSystem constraints) {
 		DurationCapability dc = ac.getCapability(DurationCapability.class);		
 		if (dc != null && !ids.contains(ac.getComponentId())) {
 			// Using workunitdelegate means these views will sync with inspector
@@ -248,15 +271,15 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 			AbstractComponent manifestedComponent = getManifestedComponent();
 			AbstractComponent workDelegate = manifestedComponent.getWorkUnitDelegate();
 			ac.getCapability(ComponentInitializer.class).setWorkUnitDelegate(workDelegate != null ? workDelegate : manifestedComponent);
-			addViewToRow(dc, ac, (ActivityComponent) (parent instanceof ActivityComponent ? parent : null), block, depth);
+			addViewToRow(dc, ac, (ActivityComponent) (parent instanceof ActivityComponent ? parent : null), block, depth, constraints);
 			ids.add(ac.getComponentId()); // Prevent infinite loops in case of cycle
 			for (AbstractComponent child : ac.getComponents()) {
-				addActivities(child, ac, depth + 1, ids, block);
+				addActivities(child, ac, depth + 1, ids, block, constraints);
 			}			
 		}
 	}
 	
-	private void addViewToRow(DurationCapability dc, AbstractComponent ac, ActivityComponent parent, TimelineBlock block, int row) {
+private void addViewToRow(DurationCapability dc, AbstractComponent ac, ActivityComponent parent, TimelineBlock block, int row, DurationConstraintSystem constraints) {
 //		while (row >= block.rows.size()) {
 //			block.rows.add(new JPanel(new TimelineRowLayout()));
 //			block.rows.get(block.rows.size() - 1).setOpaque(false);
@@ -266,9 +289,9 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 
 		View activityView = ActivityView.VIEW_INFO.createView(ac);
 		
-		MouseAdapter controller = new TimelineDurationController(parent, dc, this);
+		MouseAdapter controller = new TimelineDurationController(dc, this, constraints);
 		block.add(activityView, dc);
-		//block.rows.get(row).add(activityView, dc);
+
 		activityView.addMouseListener(controller);
 		activityView.addMouseMotionListener(controller);
 	}
