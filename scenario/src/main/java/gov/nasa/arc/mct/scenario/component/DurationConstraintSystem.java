@@ -53,17 +53,17 @@ public class DurationConstraintSystem {
 			// Add parent/child constraints
 			if (children.size() > 0) {
 				for (int sign : new int[]{-1, 1}) {
-					AbstractComponent child = 
-							children.get(sign < 0 ? 0 : (children.size()-1));
-					DurationCapability cdc = 
-							child.getCapability(DurationCapability.class);
-					if (cdc != null) {
-						// Permit reverse-lookup of component later
-						components.put(cdc, child);
-						// Parent edge pushes child's same edge
-						addConstraint(pdc, sign, cdc, sign, false, false);
-						// Child edge pushes parent's same edge & causes expansion
-						addConstraint(cdc, sign, pdc, sign, false, true);
+					for (AbstractComponent child : children) {
+						DurationCapability cdc = 
+								child.getCapability(DurationCapability.class);
+						if (cdc != null) {
+							// Permit reverse-lookup of component later
+							components.put(cdc, child);
+							// Parent edge pushes child's same edge
+							addConstraint(pdc, sign, cdc, sign, false, false);
+							// Child edge pushes parent's same edge & causes expansion
+							addConstraint(cdc, sign, pdc, sign, false, true);
+						}
 					}
 				}
 			}			
@@ -80,8 +80,10 @@ public class DurationConstraintSystem {
 					components.put(bdc, b);
 					// Construct appropriate peer constraints (push or pull)
 					boolean pulls = a instanceof DecisionComponent || b instanceof DecisionComponent;
-					addConstraint(adc, 1, bdc, -1, pulls, false);
-					addConstraint(bdc, -1, adc, 1, pulls, false);
+					if (pulls) { // Activities do not constrain each other
+						addConstraint(adc, 1, bdc, -1, pulls, false);
+						addConstraint(bdc, -1, adc, 1, pulls, false);
+					}
 				}
 			}
 			

@@ -146,45 +146,15 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	public String getType() {
 		return getData().getActivityType();
 	}
-
-	// Maintain set of components being constrained to avoid cycles
-	private static ThreadLocal<Set<String>> ignoreSet = new ThreadLocal<Set<String>>() {
-		@Override
-		protected Set<String> initialValue() {
-			return new HashSet<String>();
-		}		
-	};
 	
 	@Override
 	public long getStart() {
-		long start = getData().getStartTime().getTime();
-		ignoreSet.get().add(getComponentId());
-		for (AbstractComponent child : getComponents()) {
-			if (!ignoreSet.get().contains(child.getComponentId())) {
-				DurationCapability dc = child.getCapability(DurationCapability.class);
-				if (dc != null) {			
-					start = Math.min(start, dc.getStart());
-				}
-			}
-		}
-		ignoreSet.get().remove(getComponentId());
-		return start;
+		return getData().getStartTime().getTime();
 	}
 
 	@Override
 	public long getEnd() {
-		long end = getData().getEndTime().getTime();
-		ignoreSet.get().add(getComponentId());
-		for (AbstractComponent child : getComponents()) {
-			if (!ignoreSet.get().contains(child.getComponentId())) {
-				DurationCapability dc = child.getCapability(DurationCapability.class);
-				if (dc != null) {			
-					end = Math.max(end, dc.getEnd());
-				}
-			}
-		}
-		ignoreSet.get().remove(getComponentId());
-		return end;
+		return getData().getEndTime().getTime();
 	}	
 	
 	public void setType(String type) {
