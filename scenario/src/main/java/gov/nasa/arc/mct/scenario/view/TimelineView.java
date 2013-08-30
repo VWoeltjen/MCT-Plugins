@@ -27,8 +27,8 @@ import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.CostFunctionCapability;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
-import gov.nasa.arc.mct.scenario.view.TimelineLayout.TimelineContext;
 import gov.nasa.arc.mct.scenario.component.DurationConstraintSystem;
+import gov.nasa.arc.mct.scenario.view.TimelineLayout.TimelineContext;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
@@ -36,22 +36,16 @@ import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.LayoutManager2;
 import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -68,9 +62,7 @@ import javax.swing.event.ChangeEvent;
  */
 public class TimelineView extends AbstractTimelineView implements TimelineContext {
 	static final ViewInfo VIEW_INFO = new ViewInfo(TimelineView.class, "Timeline", ViewType.EMBEDDED);
-	
-	private static final int TIMELINE_ROW_HEIGHT = 24;
-	private static final int TIMELINE_ROW_SPACING = 6;
+
 	private static final long serialVersionUID = -5039383350178424964L;
 
 	
@@ -160,7 +152,6 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 	}
 	
 	private void buildUpperPanel() {
-		upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
 		
 		AbstractComponent ac = getManifestedComponent();
 		if (!getInfo().getViewType().equals(ViewType.EMBEDDED)) { // If we're a clone, add a view manifestation of "this"
@@ -186,10 +177,6 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 			c.invalidate();
 			c.validate();
 			c.repaint();
-//			for (JComponent row : block.rows) {
-//				row.revalidate();
-//				row.repaint();
-//			}
 		}
 	}
 	
@@ -203,9 +190,6 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 	@Override
 	public void save() {
 		super.save();
-		if (detectOverlappingComponents()) {
-			rebuildUpperPanel();
-		}	
 		updateMasterDuration();
 		refreshAll();
 	}
@@ -230,7 +214,6 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 				//block.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
 				block.setAlignmentX(0.5f);
 				upperPanel.add(block);
-				upperPanel.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));	
 			}			
 			if (dc.getStart() < block.minimumTime) {
 				block.minimumTime = dc.getStart();
@@ -280,12 +263,6 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 	}
 	
 private void addViewToRow(DurationCapability dc, AbstractComponent ac, ActivityComponent parent, TimelineBlock block, int row, DurationConstraintSystem constraints) {
-//		while (row >= block.rows.size()) {
-//			block.rows.add(new JPanel(new TimelineRowLayout()));
-//			block.rows.get(block.rows.size() - 1).setOpaque(false);
-//			block.add(block.rows.get(block.rows.size() - 1));
-//			block.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
-//		}
 
 		View activityView = ActivityView.VIEW_INFO.createView(ac);
 		
@@ -296,23 +273,7 @@ private void addViewToRow(DurationCapability dc, AbstractComponent ac, ActivityC
 		activityView.addMouseMotionListener(controller);
 	}
 	
-	private boolean detectOverlappingComponents() {
-//		for (TimelineBlock block : blocks) {
-//			if (block.rows.size() > 0) {
-//				JComponent row = block.rows.get(0); // Top-level activities are in first row
-//				List<DurationCapability> durations = getSortedVisibleDurations(row);
-//				
-//				// These are sorted, so check for some case where one duration's end
-//				// is greater than the next duration's start.
-//				for (int i = 0; i < durations.size() - 1; i++) {
-//					if (durations.get(i).getEnd() > durations.get(i+1).getStart()) {
-//						return true;
-//					}
-//				}
-//			}
-//		}
-		return false;
-	}	
+
 	
 	private List<DurationCapability> getSortedVisibleDurations(JComponent row) {
 		List<DurationCapability> durations = new ArrayList<DurationCapability>();
@@ -341,72 +302,6 @@ private void addViewToRow(DurationCapability dc, AbstractComponent ac, ActivityC
 		return durations;
 	}
 
-	private class TimelineRowLayout implements LayoutManager2 {
-		private Map<Component, DurationCapability> durationInfo = new HashMap<Component, DurationCapability>();
-		
-		@Override
-		public void addLayoutComponent(String name, Component comp) {
-		}
-
-		@Override
-		public void removeLayoutComponent(Component comp) {
-			durationInfo.remove(comp);
-		}
-
-		@Override
-		public Dimension preferredLayoutSize(Container parent) {			
-			return new Dimension(0, TIMELINE_ROW_HEIGHT);
-		}
-
-		@Override
-		public Dimension minimumLayoutSize(Container parent) {
-			return new Dimension(0, TIMELINE_ROW_HEIGHT);
-		}
-
-		@Override
-		public void layoutContainer(Container parent) {
-			for (Component child : parent.getComponents()) {
-				DurationCapability duration = durationInfo.get(child);
-				if (duration != null) {
-					int x = getLeftPadding() + (int) (getPixelScale() * (duration.getStart() - getTimeOffset()));
-					int width = (int) (getPixelScale() * (duration.getEnd() - duration.getStart())) + 1;
-					child.setBounds(x, 0, width, TIMELINE_ROW_HEIGHT);					
-				}
-			}
-		}
-
-		@Override
-		public void addLayoutComponent(Component comp, Object constraints) {
-			if (constraints instanceof DurationCapability) {
-				durationInfo.put(comp, (DurationCapability) constraints);
-			} else {
-				throw new IllegalArgumentException("Only valid constraint for " + getClass().getName() + 
-						" is " + DurationCapability.class.getName());
-			}
-		}
-
-		@Override
-		public Dimension maximumLayoutSize(Container parent) {
-			return new Dimension(Integer.MAX_VALUE, TIMELINE_ROW_HEIGHT);
-		}
-
-		@Override
-		public float getLayoutAlignmentX(Container target) {
-			// TODO Auto-generated method stub
-			return 0.5f;
-		}
-
-		@Override
-		public float getLayoutAlignmentY(Container target) {
-			// TODO Auto-generated method stub
-			return 0.5f;
-		}
-
-		@Override
-		public void invalidateLayout(Container target) {
-		}
-		
-	}
 	
 	private class TimelineBlock extends JPanel {
 		private static final long serialVersionUID = 3461668344855752107L;
