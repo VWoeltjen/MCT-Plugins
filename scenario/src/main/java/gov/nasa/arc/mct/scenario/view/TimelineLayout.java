@@ -221,13 +221,14 @@ public class TimelineLayout implements LayoutManager2 {
 			Component c1 = comps.get(i);
 			for (int j = i + 1; j < comps.size(); j++) {
 				Component c2 = comps.get(j);
-				if (!c1.equals(c2) && overlaps(c1, c2)) {
-					if (active.contains(c1)) {
-						if (!active.contains(c2)) {
-							fixList.add(c2);
+				if (!c1.equals(c2)) {
+					Component toMove = toMove(c1, c2);
+					if (toMove != null) {
+						if (!active.contains(toMove)) {
+							fixList.add(toMove);
+						} else {
+							fixList.add(toMove.equals(c1) ? c2 : c1);
 						}
-					} else {
-						fixList.add(c1);
 					}
 				}
 			}
@@ -276,6 +277,19 @@ public class TimelineLayout implements LayoutManager2 {
 		}
 		fixMap.clear();
 
+	}
+	
+	private Component toMove(Component c1, Component c2) {
+		DurationCapability d1 = durationInfo.get(c1);
+		DurationCapability d2 = durationInfo.get(c2);
+		if (d1 != null && d2 != null) {
+			if (d1.getEnd() > d2.getStart() && d2.getEnd() > d1.getStart()) {
+				// Suggest that the smaller one be moved
+				return (d1.getEnd() - d1.getStart() > d2.getEnd() - d2.getStart()) ?
+						c2 : c1;
+			}
+		}		
+		return null;
 	}
 	
 	private boolean overlaps(Component c1, Component c2) {
