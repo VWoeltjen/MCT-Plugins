@@ -206,22 +206,38 @@ public class TimelineLayout implements LayoutManager2 {
 			while (!rows.isEmpty() && rows.get(rows.size() - 1).isEmpty()) {
 				rows.remove(rows.size() - 1);
 			}
+			
+			rowAssignmentsHandled = true;
 		}
 	}
 	
 	private int getHeight() {
+		int fullRowHeight = rowHeight + rowPadding;
+		
 		// TODO: Compute this only on changes?
 		handleRowAssignments();
-		int desiredHeight = 0;
-		int fullRowHeight = rowHeight + rowPadding;
-		for (Entry<Component, Integer> entry : rowMap.entrySet()) {
-			int necessaryHeight = entry.getValue() * fullRowHeight + fullRowHeight;
-			if (animation.containsKey(entry.getKey())) {
-				necessaryHeight += (int) (fullRowHeight * animation.get(entry.getKey()));
-			}
+		
+		// Find maximum row that is not being animated to
+		int bestRow = rows.size() - 1;
+		while (bestRow > 0 && !containsUnanimatedComponents(bestRow)) {
+			bestRow--;
+		}
+		int desiredHeight = (bestRow + 1) * fullRowHeight;
+		for (Entry<Component, Float> entry : animation.entrySet()) {
+			int necessaryHeight = 
+					(int) (((float) rowMap.get(entry.getKey()) + entry.getValue() + 1) * fullRowHeight);   
 			desiredHeight = Math.max(desiredHeight, necessaryHeight);
 		}		
 		return desiredHeight;
+	}
+	
+	private boolean containsUnanimatedComponents(int row) {
+		for (Component c : rows.get(row)) {
+			if (!animation.containsKey(c)) {
+				return true;
+			}				
+		}
+		return false;
 	}
 		
 	private int getRow(Component comp) {
@@ -323,6 +339,7 @@ public class TimelineLayout implements LayoutManager2 {
 	}
 	
 	private Component toMove(Component c1, Component c2) {
+		// Prefer to move the most recently-added component downward
 		Integer o1 = orderAdded.get(c1);
 		Integer o2 = orderAdded.get(c2);
 		if (o1 < o2) {
@@ -380,7 +397,7 @@ public class TimelineLayout implements LayoutManager2 {
 		layout.context = layout.mouseAdapter;
 		
 		final JPanel panel = new JPanel(layout);
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 200; i++) {
 			int start = (int) (Math.random() * 1150.0);
 			int end   = start + 5 + (100 - i/10) * (int) (1.0 + Math.random());
 			DurationThing thing = layout.new DurationThing(start,end);
