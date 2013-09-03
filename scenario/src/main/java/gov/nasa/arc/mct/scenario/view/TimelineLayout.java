@@ -31,12 +31,14 @@ public class TimelineLayout implements LayoutManager2 {
 	private int rowHeight = 24;
 	private int rowPadding = 6;
 	private TimelineContext context;
-	private Map<Component, DurationCapability> durationInfo = new HashMap<Component, DurationCapability>();
-	
 	private List<List<Component>> rows = new ArrayList<List<Component>>();
+	
+	// TODO: Maybe scrunch some/all of these together into same data structure?
+	private Map<Component, DurationCapability> durationInfo = new HashMap<Component, DurationCapability>();
 	private Map<Component, Integer> rowMap = new HashMap<Component, Integer>();
 	private Map<Component, Float> animation = new HashMap<Component, Float>();
-
+	private Map<Component, Integer> orderAdded = new HashMap<Component, Integer>();
+	
 	private Timer animator = null;
 	
 	public TimelineLayout(TimelineContext context) {
@@ -50,12 +52,20 @@ public class TimelineLayout implements LayoutManager2 {
 
 	@Override
 	public void removeLayoutComponent(Component comp) {
-		durationInfo.remove(comp);
+		if (durationInfo.containsKey(comp)) {
+			durationInfo.remove(comp);
+		}
+		if (rowMap.containsKey(comp)) {
+			rows.get(rowMap.get(comp)).remove(comp);
+		}
 		for (int i = 0 ; i < rows.size() ; i++) {
 			cleanupRow(i);
 		}
 		for (int i = 1 ; i < rows.size() ; i++) {
 			packRow(i);
+		}
+		if (orderAdded.containsKey(comp)) {
+			orderAdded.remove(comp);
 		}
 	}
 
@@ -143,6 +153,7 @@ public class TimelineLayout implements LayoutManager2 {
 					row++;
 				}
 			}
+			orderAdded.put(comp, orderAdded.size());
 			setRow(comp, row, false); // Will get sorted during layout
 		} else {
 			throw new IllegalArgumentException("Only valid constraint for " + getClass().getName() + 
@@ -281,6 +292,16 @@ public class TimelineLayout implements LayoutManager2 {
 	}
 	
 	private Component toMove(Component c1, Component c2) {
+		Integer o1 = orderAdded.get(c1);
+		Integer o2 = orderAdded.get(c2);
+		if (o1 < o2) {
+			return c2;
+		} else if (o2 < o1) {
+			return c1;
+		}
+		
+		// Probably unreachable, but fall back to moving larger activities
+		// if that is necessary
 		DurationCapability d1 = durationInfo.get(c1);
 		DurationCapability d2 = durationInfo.get(c2);
 		if (d1 != null && d2 != null) {
