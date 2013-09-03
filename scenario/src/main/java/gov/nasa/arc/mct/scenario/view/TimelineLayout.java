@@ -37,9 +37,11 @@ public class TimelineLayout implements LayoutManager2 {
 	private Map<Component, DurationCapability> durationInfo = new HashMap<Component, DurationCapability>();
 	private Map<Component, Integer> rowMap = new HashMap<Component, Integer>();
 	private Map<Component, Float> animation = new HashMap<Component, Float>();
-	private Map<Component, Integer> orderAdded = new HashMap<Component, Integer>();
+	private Map<Component, Integer> orderAdded = new HashMap<Component, Integer>();	
 	
 	private Timer animator = null;
+	
+	private boolean rowAssignmentsHandled = false;
 	
 	public TimelineLayout(TimelineContext context) {
 		super();
@@ -83,19 +85,7 @@ public class TimelineLayout implements LayoutManager2 {
 	public void layoutContainer(final Container parent) {
 		int fullRowHeight = rowHeight + rowPadding;
 		
-		// Fix row assignments
-		for (List<Component> row : rows) {
-			Collections.sort(row, comparator);
-		}
-		for (int i = 0 ; i < rows.size() ; i++) {
-			cleanupRow(i);
-		}
-//		for (int i = rows.size() - 1 ; i > 0 ; i--) {
-//			packRow(i);
-//		}
-		for (int i = 1 ; i < rows.size() ; i++) {
-			packRow(i);
-		}
+		handleRowAssignments();
 		
 		// Lay out components temporally
 		for (Component child : parent.getComponents()) {
@@ -104,10 +94,10 @@ public class TimelineLayout implements LayoutManager2 {
 				int x = context.getLeftPadding() + (int) (context.getPixelScale() * (double) (duration.getStart() - context.getTimeOffset()));
 				int width = (int) (context.getPixelScale() * (double) (duration.getEnd() - duration.getStart())) + 1;
 				
-				int animationOffset = 0;
-				if (animation.containsKey(child)) {
-					animationOffset = (int) (fullRowHeight * animation.get(child));
-				}
+				// Vertical offset due to row change animation
+				int animationOffset = animation.containsKey(child) ? 
+							(int) (fullRowHeight * animation.get(child)) : 0;
+				
 				child.setBounds(x, getRow(child) * fullRowHeight + animationOffset + rowPadding/2, width, rowHeight);					
 			}
 		}
@@ -120,17 +110,27 @@ public class TimelineLayout implements LayoutManager2 {
 					Map<Component, Float> nextAnimation = new HashMap<Component, Float>();
 					for (Entry<Component, Float> entry : animation.entrySet()) {
 						if (Math.abs(entry.getValue()) > 1.0f / ((float)rowHeight)) {
-							nextAnimation.put(entry.getKey(), entry.getValue() * 0.75f);							
+							float next = entry.getValue() * 0.75f;
+							nextAnimation.put(entry.getKey(), next);							
 						}
 					}		
 					animation = nextAnimation;
-					parent.invalidate();
-					parent.validate();
-					parent.repaint();
+					
+					// Update layout for parents, since height may have changed
+					// TODO: Only do this if height will change?
+					Container p = parent;
+					while (p != null) {
+						p.invalidate();
+						p.validate();
+						p.repaint();
+						p = p.getParent();
+					}
 				}				
 			});
 			animator.start();
 		}
+		
+		rowAssignmentsHandled = false;
 	}
 
 	@Override
@@ -189,10 +189,41 @@ public class TimelineLayout implements LayoutManager2 {
 	public void invalidateLayout(Container target) {
 	}
 	
-	private int getHeight() {
-		return (rowHeight + rowPadding) * rows.size();
+	private void handleRowAssignments() {
+		if (!rowAssignmentsHandled) {
+			// Fix row assignments
+			for (List<Component> row : rows) {
+				Collections.sort(row, comparator);
+			}
+			for (int i = 0; i < rows.size(); i++) {
+				cleanupRow(i);
+			}
+			for (int i = 1; i < rows.size(); i++) {
+				packRow(i);
+			}
+	
+			// Remove empty rows
+			while (!rows.isEmpty() && rows.get(rows.size() - 1).isEmpty()) {
+				rows.remove(rows.size() - 1);
+			}
+		}
 	}
 	
+	private int getHeight() {
+		// TODO: Compute this only on changes?
+		handleRowAssignments();
+		int desiredHeight = 0;
+		int fullRowHeight = rowHeight + rowPadding;
+		for (Entry<Component, Integer> entry : rowMap.entrySet()) {
+			int necessaryHeight = entry.getValue() * fullRowHeight + fullRowHeight;
+			if (animation.containsKey(entry.getKey())) {
+				necessaryHeight += (int) (fullRowHeight * animation.get(entry.getKey()));
+			}
+			desiredHeight = Math.max(desiredHeight, necessaryHeight);
+		}		
+		return desiredHeight;
+	}
+		
 	private int getRow(Component comp) {
 		Integer row = rowMap.get(comp);
 		return row == null ? 0 : row;
