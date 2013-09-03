@@ -114,7 +114,6 @@ public class TimelineDurationController extends MouseAdapter {
 			((View) src).getManifestedComponent().save();
 			parentView.select(null);			
 			parentView.select((View) src);	// Should no longer be needed after InfoView refresh
-			parentView.save();
 		}
 	}
 

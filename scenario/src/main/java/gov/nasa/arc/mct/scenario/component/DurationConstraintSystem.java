@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class DurationConstraintSystem {
+	private AbstractComponent root;
 	private Map<DurationCapability, AbstractComponent> components =
 			new HashMap<DurationCapability, AbstractComponent>();
 	private Map<DurationCapability, List<DurationConstraint>> constraints =
@@ -41,6 +42,7 @@ public class DurationConstraintSystem {
 			new HashMap<DurationCapability, DurationEdge[]>();
 	
 	public DurationConstraintSystem ( AbstractComponent root ) {
+		this.root = root;
 		addConstraintsFor(root, new HashSet<String>());
 	}
 	
@@ -120,6 +122,10 @@ public class DurationConstraintSystem {
 		});
 		
 		return children;
+	}
+	
+	public Set<AbstractComponent> changeAll() {
+		return changeAll(root);
 	}
 	
 	public Set<AbstractComponent> changeAll(AbstractComponent root) {

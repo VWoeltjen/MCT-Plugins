@@ -69,6 +69,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 	private JPanel upperPanel = new JPanel();
 	private Color backgroundColor = Color.WHITE;
 	private View  costGraph = null;
+	private List<DurationConstraintSystem> constraints = new ArrayList<DurationConstraintSystem>();
 	
 	public TimelineView(AbstractComponent ac, ViewInfo vi) {
 		// When we are a non-embedded view, work with a fresh copy of the 
@@ -189,8 +190,19 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 
 	@Override
 	public void save() {
+		// Should be called whenever something in this view has been saved
 		super.save();
+		
+		// Make sure constraints still apply
+		// (for instance, to reflect changes from Timeline Inspector)
+		for (DurationConstraintSystem constraint : constraints) {
+			constraint.changeAll();
+		}
+		
+		// Expand visible bounds if necessary
 		updateMasterDuration();
+		
+		// Force layout, re-display
 		refreshAll();
 	}
 
@@ -221,10 +233,11 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 			if (dc.getEnd() > block.maximumTime) {
 				block.maximumTime = dc.getEnd();
 			}
-			DurationConstraintSystem constraints = new DurationConstraintSystem(ac);
+			DurationConstraintSystem constraint = new DurationConstraintSystem(ac);
+			constraints.add(constraint);
 			
 			// Poke all objects to resolve constraints
-			Set<AbstractComponent> changes = constraints.changeAll(ac);
+			Set<AbstractComponent> changes = constraint.changeAll(ac);
 			
 			// Save any that were changed
 			for (AbstractComponent change : changes) {
@@ -236,7 +249,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 				getManifestedComponent().save();
 			}
 			
-			addActivities(ac, null, 0, new HashSet<String>(), block, constraints);
+			addActivities(ac, null, 0, new HashSet<String>(), block, constraint);
 		} else if (!ignore.contains(ac.getComponentId())){  // Avoid cycles
 			ignore.add(ac.getComponentId());
 			for (AbstractComponent child : ac.getComponents()) {
@@ -262,7 +275,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		}
 	}
 	
-private void addViewToRow(DurationCapability dc, AbstractComponent ac, ActivityComponent parent, TimelineBlock block, int row, DurationConstraintSystem constraints) {
+	private void addViewToRow(DurationCapability dc, AbstractComponent ac, ActivityComponent parent, TimelineBlock block, int row, DurationConstraintSystem constraints) {
 
 		View activityView = ActivityView.VIEW_INFO.createView(ac);
 		
