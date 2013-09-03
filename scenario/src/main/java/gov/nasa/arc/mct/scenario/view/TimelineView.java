@@ -273,35 +273,6 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		activityView.addMouseListener(controller);
 		activityView.addMouseMotionListener(controller);
 	}
-	
-
-	
-	private List<DurationCapability> getSortedVisibleDurations(JComponent row) {
-		List<DurationCapability> durations = new ArrayList<DurationCapability>();
-		
-		// Assemble all durations associated with Views where expected in Swing hierarchy
-		for (Component c : row.getComponents()) {
-			if (c instanceof View) {
-				View v = (View) c;
-				DurationCapability dc = v.getManifestedComponent().getCapability(DurationCapability.class);
-				if (dc != null) {
-					durations.add(dc);
-				}
-			}
-		}
-
-		// Sort by start times
-		Collections.sort(durations, new Comparator<DurationCapability>() {
-			@Override
-			public int compare(DurationCapability a, DurationCapability b) {
-				long diff = (a.getStart() - b.getStart());				
-				// Diff could conceivably be more than MAX_INT, so reduce to 1 or -1
-				return (int) (Math.signum((double)diff));
-			}
-		});
-		
-		return durations;
-	}
 
 	
 	private class TimelineBlock extends JPanel {
