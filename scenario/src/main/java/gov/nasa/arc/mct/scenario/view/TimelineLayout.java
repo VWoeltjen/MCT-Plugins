@@ -362,10 +362,39 @@ public class TimelineLayout implements LayoutManager2 {
 		
 	};
 	
+	/**
+	 * Used to convey start/end times etc to a timeline layout
+	 *
+	 */
 	public interface TimelineContext {
+		/**
+		 * Get the number of pixels to pad the left edge of the layout with
+		 * @return left padding, in pixels
+		 */
 		public int getLeftPadding();
+		
+		/**
+		 * Get the scale at which to draw/layout the timeline, in 
+		 * milliseconds per pixel.
+		 * @return the scale of the visible area, in ms/pixel
+		 */
 		public double getPixelScale();
+		
+		/**
+		 * Get the time offset of the displayable area. That is, 
+		 * how many milliseconds does the left edge correspond 
+		 * to?
+		 * @return time offset, in pixels, of this area
+		 */
 		public long getTimeOffset();
+		
+		/**
+		 * Get any "active" views, such as those being moved by the 
+		 * user. The layout will treat these specially and avoid 
+		 * changing their row, to keep the object that a user is 
+		 * manipulating from bouncing around.
+		 * @return the set of actively-manipulated components
+		 */
 		public Set<Component> getActiveViews();
 	}
 
