@@ -209,30 +209,14 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 	private void addTopLevelActivity(AbstractComponent ac, Set<String> ignore) {
 		DurationCapability dc = ac.getCapability(DurationCapability.class);
 		if (dc != null) {
-			TimelineBlock block = null;
-			for (Component c : upperPanel.getComponents()) {
-				if (c instanceof TimelineBlock) {
-					TimelineBlock b = (TimelineBlock) c;			
-					if (b.maximumTime <= dc.getStart()
-							|| b.minimumTime >= dc.getEnd()) {
-						block = b;
-						break;
-					}
-				}
-			}
-			if (block == null) {
-				block = new TimelineBlock();
-				block.setOpaque(false);				
-				//block.add(Box.createVerticalStrut(TIMELINE_ROW_SPACING));
-				block.setAlignmentX(0.5f);
-				upperPanel.add(block);
-			}			
-			if (dc.getStart() < block.minimumTime) {
-				block.minimumTime = dc.getStart();
-			}
-			if (dc.getEnd() > block.maximumTime) {
-				block.maximumTime = dc.getEnd();
-			}
+			// Every top-level activity gets its own block
+			TimelineBlock block = new TimelineBlock();
+			block.setOpaque(false);				
+			block.setAlignmentX(0.5f);
+			upperPanel.add(block);
+						
+			// Each top-level activity also has its own constraint system
+			// (for dealing with changes to child activities)
 			DurationConstraintSystem constraint = new DurationConstraintSystem(ac);
 			constraints.add(constraint);
 			
@@ -249,9 +233,13 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 				getManifestedComponent().save();
 			}
 			
+			// Populate the block with activities
 			addActivities(ac, null, 0, new HashSet<String>(), block, constraint);
 		} else if (!ignore.contains(ac.getComponentId())){  // Avoid cycles
 			ignore.add(ac.getComponentId());
+			
+			// Since there is no DurationCapability, must be collection 
+			// or similar, so probe down for other activities (treat as top-level)
 			for (AbstractComponent child : ac.getComponents()) {
 				addTopLevelActivity(child, ignore);
 			}
@@ -318,9 +306,6 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 	
 	private class TimelineBlock extends JPanel {
 		private static final long serialVersionUID = 3461668344855752107L;
-		public long maximumTime = Long.MIN_VALUE;
-		public long minimumTime = Long.MAX_VALUE;
-		//public List<JComponent> rows = new ArrayList<JComponent>();
 		
 		public TimelineBlock() {
 			super(new TimelineLayout(TimelineView.this));
