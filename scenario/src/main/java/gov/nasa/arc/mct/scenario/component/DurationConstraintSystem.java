@@ -32,6 +32,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Represents a system of constraints for durations of activities and 
+ * sub-activities. 
+ * 
+ * Parents must expand to fit children; decisions must span the 
+ * gap between two activities, and push/pull activities as necessary
+ * to retain this relationship.
+ * 
+ * @author vwoeltje
+ *
+ */
 public class DurationConstraintSystem {
 	private AbstractComponent root;
 	private Map<DurationCapability, AbstractComponent> components =
@@ -41,6 +52,19 @@ public class DurationConstraintSystem {
 	private Map<DurationCapability, DurationEdge[]> edges =
 			new HashMap<DurationCapability, DurationEdge[]>();
 	
+			
+	/**
+	 * Create a new system of constraints around the specified component.
+	 * Any objects "above" the component in the user object graph 
+	 * (that is, referencing components) will not be considered. 
+	 * Duplicate references to components will not be considered (only 
+	 * the first instance of a component encountered will be considered.)
+	 * This ensures that the constraint system sees a tree structure, 
+	 * with no ambiguity about how desired constraints should be 
+	 * enforeced.
+	 * 
+	 * @param root the component at the top of the hierarchy
+	 */
 	public DurationConstraintSystem ( AbstractComponent root ) {
 		this.root = root;
 		addConstraintsFor(root, new HashSet<String>());
@@ -50,6 +74,8 @@ public class DurationConstraintSystem {
 		ignore.add(parent.getComponentId());
 		DurationCapability pdc = parent.getCapability(DurationCapability.class);
 		if (pdc != null) {
+			// Get a sorted list of children of this component
+			// This also filters out duplicates
 			List<AbstractComponent> children = getChildren(parent, ignore);
 			
 			// Add parent/child constraints
@@ -90,6 +116,7 @@ public class DurationConstraintSystem {
 			}
 			
 			// Recursively build remaining constraint hierarchy
+			// (base case: When children is empty.)
 			for (AbstractComponent child : children) {
 				addConstraintsFor(child, ignore);
 			}
@@ -101,7 +128,7 @@ public class DurationConstraintSystem {
 		
 		// Assemble all children who offer a durationcapability
 		for (AbstractComponent child : parent.getComponents()) {
-			if (!ignore.contains(child.getComponentId())) {
+			if (!ignore.contains(child.getComponentId())) { // Filter out duplicates
 				if (child.getCapability(DurationCapability.class) != null){
 					children.add(child);
 					ignore.add(child.getComponentId());
@@ -124,10 +151,26 @@ public class DurationConstraintSystem {
 		return children;
 	}
 	
+	/**
+	 * Enforce all constraints in the system. This should only 
+	 * be invoked when there is not a specific component initiating 
+	 * the change (as desired behavior varies depending on the 
+	 * change to the component in those cases.)
+	 * @return all objects changed
+	 */
 	public Set<AbstractComponent> changeAll() {
 		return changeAll(root);
 	}
-	
+
+	/**
+	 * Enforce all constraints in the system, starting at the 
+	 * specified component and proceeding down the tree. 
+	 * This should only be invoked when there is not a specific 
+	 * component initiating the change (as desired behavior varies 
+	 * depending on the change to the component in those cases.)
+	 * @param root the top of the sub-hierarchy to change
+	 * @return all objects changed
+	 */
 	public Set<AbstractComponent> changeAll(AbstractComponent root) {
 		Set<AbstractComponent> changed = new HashSet<AbstractComponent>();
 		changeAll (root, new HashSet<String>(), changed);
@@ -135,13 +178,16 @@ public class DurationConstraintSystem {
 	}
 	
 	private void changeAll(AbstractComponent root, Set<String> ignore, Set<AbstractComponent> changed) {
-		if (!ignore.contains(root.getComponentId())) {
+		if (!ignore.contains(root.getComponentId())) { // Filter out already-changed components
 			ignore.add(root.getComponentId());
 
+			// Trigger changes in children first
 			for (AbstractComponent child : root.getComponents()) {
 				changeAll(child, ignore, changed);
 			}
 			
+			// Act as though the top of the sub-hierarchy got "wiggled"
+			// (moved left, then right)
 			DurationCapability dc = root.getCapability(DurationCapability.class);
 			if (dc != null) {
 				change(dc, -1, changed);
@@ -151,6 +197,12 @@ public class DurationConstraintSystem {
 		}
 	}
 	
+	/**
+	 * Enforce constraints based on the specified change. 
+	 * @param dc the object which changed
+	 * @param sign the direction of the change (-1 = backward in time, +1 = forward)
+	 * @return all objects changed by constraints
+	 */
 	public Set<AbstractComponent> change(DurationCapability dc, int sign) {
 		Set<AbstractComponent> changed = new HashSet<AbstractComponent>();
 		change(dc, sign, changed);
@@ -158,7 +210,10 @@ public class DurationConstraintSystem {
 	}	
 	
 	private void change(DurationCapability dc, int sign, Set<AbstractComponent> changed) {
+		// Get all constraints associated with the object that changed
 		List<DurationConstraint> constraints = this.constraints.get(dc);
+		
+		// Enforce those constraints
 		if (constraints != null) {
 			int sz = constraints.size();
 			for (int i = 0; i < sz; i++) {
@@ -167,6 +222,15 @@ public class DurationConstraintSystem {
 		}
 	}
 	
+	/**
+	 * Add a constraint between the two objects.
+	 * @param source the object which might change
+	 * @param sourceSign the relevant edge which may change (-1 is start, 1 is end)
+	 * @param target the object effected by the constraint
+	 * @param targetSign the relevant edge which may change (-1 is start, 1 is end)
+	 * @param pulls true if the constraint should have a "pulls" behavior (false only pushes)
+	 * @param expands true if the constraint should expand a container
+	 */
 	public void addConstraint(
 			DurationCapability source, int sourceSign, 
 			DurationCapability target, int targetSign,
@@ -181,10 +245,13 @@ public class DurationConstraintSystem {
 	
 	private DurationEdge getEdge(DurationCapability dc, int sign) {
 		addDurationCapability(dc);
+		
+		// Get an appropriate edge (start or end)
 		return edges.get(dc)[sign < 0 ? 0 : 1];
 	}
 	
 	private void addDurationCapability(DurationCapability dc) {
+		// Store default values for this edge in maps
 		if (!edges.containsKey(dc)) {
 			edges.put(dc, new DurationEdge[] {
 				new DurationEdge(dc, -1), new DurationEdge(dc, 1)	
@@ -212,9 +279,18 @@ public class DurationConstraintSystem {
 		}
 		
 		public void change(int sign, Set<AbstractComponent> changed) {
+			// Get the difference between specified edges
 			int cmp = target.compare(source);
+			
+			// "Expands" implies same edge is changed, so flip sign
 			cmp *= expands ? -1 : 1;
+			
+			// Negative comparison implies that edge has been violated
+			// (positive comparison implies there is a gap, so consider
+			//  and non-zero comparison is a "violation")
 			boolean violates = pulls ? (cmp != 0) : (cmp < 0);
+			
+			// If there is a violation, set the time of the edge
 			if (violates) {
 				long newValue = source.get();
 				long diff = source.get() - target.get();
@@ -236,24 +312,49 @@ public class DurationConstraintSystem {
 		private DurationCapability dc;
 		private int sign;
 		
+		/**
+		 * Create a new object describing the start or end edge 
+		 * of the specified duration capability.
+		 * @param dc the duration whose edge will be described
+		 * @param sign the edge (-1 = start, 1 = end) to describe
+		 */
 		public DurationEdge(DurationCapability dc, int sign) {
 			super();
 			this.dc = dc;
 			this.sign = sign;
 		}
 		
+		/**
+		 * Get the value associated with this edge
+		 * @return the time associated with this edge
+		 */
 		public long get() {
 			return get(1);
 		}
 		
+		/**
+		 *  Get the value associated with this edge, or a related edge
+		 * @param s the edge to get (1 for this edge, -1 for the opposite edge)
+		 * @return the time for the specified edge
+		 */
 		public long get(int s) {
 			return sign * s< 0 ? dc.getStart() : dc.getEnd();
 		}
 		
+		/**
+		 * Set the time associated with this edge
+		 * 
+		 * @param value the new time for this edge
+		 */
 		public void set(long value) {
 			set(1, value);
 		}
 		
+		/**
+		 * Set the time associated with this edge, or a related edge
+		 * @param s the edge to set (1 for this edge, -1 for opposite edge)
+		 * @param value the new time for the specified edge
+		 */
 		public void set(int s, long value) {
 			if (sign * s < 0) {
 				dc.setStart(value);
