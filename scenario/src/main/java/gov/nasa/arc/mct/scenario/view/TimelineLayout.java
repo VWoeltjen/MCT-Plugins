@@ -2,15 +2,12 @@ package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager2;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,10 +19,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class TimelineLayout implements LayoutManager2 {
@@ -375,134 +368,5 @@ public class TimelineLayout implements LayoutManager2 {
 		public long getTimeOffset();
 		public Set<Component> getActiveViews();
 	}
-	
-	/* TEST */
-	public static void main(String[] args) {
-		TimelineLayout layout = new TimelineLayout(null);
-		layout.context = layout.mouseAdapter;
-		
-		final JPanel panel = new JPanel(layout);
-		for (int i = 0; i < 1000; i++) {
-			int start = (int) (Math.random() * 1150.0);
-			int end   = start + 5 + (100 - i/10) * (int) (1.0 + Math.random());
-			DurationThing thing = layout.new DurationThing(start,end);
-			panel.add(thing,thing);
-		}
-		
-		final JFrame frame = new JFrame();
-		frame.getContentPane().add(panel);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.pack();
-		frame.setVisible(true);
-		
-//		new Timer(25, new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				panel.revalidate();
-//				panel.repaint();
-//				frame.pack();
-//			}			
-//		}).start();
-	}
-	
-	private DurationAdapter mouseAdapter = new DurationAdapter(); 
-	
-	private class DurationAdapter extends MouseAdapter implements TimelineContext {
-		private Set<Component> activeView = new HashSet<Component>();
-		
-		private int lastX;
-		
-		@Override
-		public void mouseDragged(MouseEvent event) {
-			int d = event.getXOnScreen() - lastX;
-			//System.out.println(event.getX());
-			lastX = event.getXOnScreen();
-			Object source = event.getSource();
-			if (source instanceof DurationCapability) {
-				long s = ((DurationCapability) source).getStart();
-				long e = ((DurationCapability) source).getEnd();
-				((DurationCapability) source).setStart(s + d);
-				((DurationCapability) source).setEnd  (e + d);
-			}
-			if (source instanceof Component) {
-				((Component) source).getParent().invalidate();
-				((Component) source).getParent().validate();
-				((Component) source).getParent().repaint();
-			}
-		}
 
-		@Override
-		public void mousePressed(MouseEvent event) {
-			Object source = event.getSource();
-			if (source instanceof Component) {
-				lastX = event.getXOnScreen();
-				activeView.add((Component) source);
-			}
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent event) {
-			activeView.clear();
-			Object source = event.getSource();
-			if (source instanceof Component) {
-				((Component) source).getParent().invalidate();
-				((Component) source).getParent().validate();
-				((Component) source).getParent().repaint();
-			}
-		}
-
-		@Override
-		public int getLeftPadding() {
-			return 0;
-		}
-
-		@Override
-		public double getPixelScale() {
-			return 1.0;
-		}
-
-		@Override
-		public long getTimeOffset() {		
-			return 0;
-		}
-
-		@Override
-		public Set<Component> getActiveViews() {
-			return activeView;
-		}		
-	};
-
-	static int i = 0;
-	private class DurationThing extends JLabel implements DurationCapability {
-		long start, end;
-		public DurationThing(long start, long end) {
-			super("THING " + i++);
-			setBorder(BorderFactory.createLineBorder(Color.BLUE));
-			this.start = start;
-			this.end = end;
-			addMouseListener(mouseAdapter);
-			addMouseMotionListener(mouseAdapter);
-		}
-
-		@Override
-		public long getStart() {
-			return start;
-		}
-
-		@Override
-		public long getEnd() {
-			return end;
-		}
-
-		@Override
-		public void setStart(long start) {
-			this.start = start;
-		}
-
-		@Override
-		public void setEnd(long end) {
-			this.end = end;
-		}
-		
-	}
 }
