@@ -179,7 +179,6 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		} else {
 			start = Math.min(start, masterDuration.getStart());
 			end = Math.max(end, masterDuration.getEnd());
-			centerTime = (start + end) / 2;
 			stateChanged(null);
 		}
 	}
