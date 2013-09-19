@@ -76,7 +76,13 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			ScenarioComponent.class,
 			true,
 			new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_scenario.png")));
+
 	
+	private static final ComponentTypeInfo tagComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_tag"),  
+			bundle.getString("description_tag"), 
+			TagComponent.class);
+
 	
 	private static final PolicyInfo timelineViewPolicy = new PolicyInfo(
 			PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(), 
@@ -89,7 +95,13 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 	@Override
 	public Collection<ComponentTypeInfo> getComponentTypes() {
 		// return the component types provided
-		return Arrays.asList(activityComponentType, timelineComponentType, decisionComponentType , scenarioComponentType );
+		return Arrays.asList(
+				activityComponentType, 
+				timelineComponentType, 
+				decisionComponentType, 
+				scenarioComponentType,
+				tagComponentType
+				);
 	}
 
 	@Override
