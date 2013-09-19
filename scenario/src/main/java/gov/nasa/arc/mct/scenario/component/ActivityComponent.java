@@ -89,6 +89,29 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		return modified;
 	}
 
+	@SuppressWarnings("unchecked") // Is checked, not recognized during compile
+	@Override
+	protected <T> List<T> handleGetCapabilities(Class<T> capability) {
+		if (capability.isAssignableFrom(TagCapability.class)) {
+			List<T> tagCapabilities = null;
+			for (AbstractComponent child : getComponents()) {
+				if (!(child instanceof ActivityComponent)) {
+					List<TagCapability> childTags = child.getCapabilities(TagCapability.class);
+					if (childTags != null && !childTags.isEmpty()) {
+						if (tagCapabilities == null) {
+							tagCapabilities = new ArrayList<T>();
+							tagCapabilities.addAll((Collection<? extends T>) childTags);
+						}
+					}
+				}
+			}
+			if (tagCapabilities != null) {
+				return tagCapabilities;
+			}
+		}
+		return super.handleGetCapabilities(capability);
+	}
+
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
 		// Note: Don't report self as capability until initialized.
