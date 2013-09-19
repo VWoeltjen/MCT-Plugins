@@ -9,7 +9,11 @@ import gov.nasa.arc.mct.scenario.component.TagCapability;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.Arc2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,7 +62,7 @@ public class SummaryView extends View {
 		chart = new PieChart(summary);
 		
 		add(chart, BorderLayout.CENTER);
-				
+		setBackground(Color.DARK_GRAY);	
 	}
 		
 	
@@ -139,14 +143,32 @@ public class SummaryView extends View {
 		@Override
 		public void paintComponent (Graphics g) {
 			if (slices != null && !slices.isEmpty()) {
+				Arc2D arc2D = null;
 				double start = 0;
 				int size = Math.min(getWidth(), getHeight()) - 10;
 				int x    = getWidth() / 2 - size / 2;
 				int y    = getHeight() / 2 - size / 2;
+				if (g instanceof Graphics2D) {
+					arc2D = new Arc2D.Double(Arc2D.PIE);
+					arc2D.setFrame(x, y, size, size);
+					((Graphics2D) g).setRenderingHint(
+							RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				}
 				for (PieSlice slice : slices) {
 					double arc = (slice.cost / total) * 360.0;
-					g.setColor(ScenarioColorPalette.getColor(slice.string));
-					g.fillArc(x, y, size, size, (int) start, (int) arc);
+					if (g instanceof Graphics2D) {
+						arc2D.setAngleStart(start);
+						arc2D.setAngleExtent(arc);
+						g.setColor(ScenarioColorPalette.getColor(slice.string));
+						((Graphics2D) g).fill(arc2D);
+						g.setColor(Color.BLACK);
+						((Graphics2D) g).draw(arc2D);
+					} else {
+						g.setColor(ScenarioColorPalette.getColor(slice.string));
+						g.fillArc(x, y, size, size, (int) start, (int) arc);
+						g.setColor(Color.BLACK);
+						g.drawArc(x, y, size, size, (int) start, (int) arc);
+					}
 					start += arc;
 				}
 				g.setColor(ScenarioColorPalette.getColor("Untagged"));
