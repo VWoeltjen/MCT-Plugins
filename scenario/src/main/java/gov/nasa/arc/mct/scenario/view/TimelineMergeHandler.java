@@ -82,11 +82,12 @@ public class TimelineMergeHandler {
 	 * (as observed during the constructor call).
 	 * @param otherParent the component to which unsaved changes will be transferred
 	 */
-	public void update(AbstractComponent otherParent) {
-		update(otherParent, new HashSet<String>());
+	public boolean update(AbstractComponent otherParent) {
+		return update(otherParent, new HashSet<String>());
 	}
 	
-	private void update(AbstractComponent component, Set<String> ignore) {
+	private boolean update(AbstractComponent component, Set<String> ignore) {
+		boolean updated = false;
 		String id = component.getComponentId();
 		if (!ignore.contains(id)) {
 			ignore.add(id);
@@ -106,13 +107,18 @@ public class TimelineMergeHandler {
 						clean.setStart(dirty.getStart());
 						clean.setEnd(dirty.getEnd());						
 					}
+					// Make sure the component still appears dirty
+					component.save();
+					// Report that we did update a component
+					updated = true;
 				}
 			}
 			
 			// Visit children
 			for (AbstractComponent child : component.getComponents()) {
-				update(child, ignore);
+				updated |= update(child, ignore);
 			}
 		}
+		return updated;
 	}
 }
