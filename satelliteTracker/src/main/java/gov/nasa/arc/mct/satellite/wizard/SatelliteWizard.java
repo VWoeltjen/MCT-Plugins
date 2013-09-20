@@ -1,9 +1,28 @@
+/*******************************************************************************
+ * Mission Control Technologies, Copyright (c) 2009-2012, United States Government
+ * as represented by the Administrator of the National Aeronautics and Space 
+ * Administration. All rights reserved.
+ *
+ * The MCT platform is licensed under the Apache License, Version 2.0 (the 
+ * "License"); you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+ * License for the specific language governing permissions and limitations under 
+ * the License.
+ *
+ * MCT includes source code licensed under additional open source licenses. See 
+ * the MCT Open Source Licenses file included with this distribution or the About 
+ * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
+ * information. 
+ *******************************************************************************/
 package gov.nasa.arc.mct.satellite.wizard;
 
 
 import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.components.collection.CollectionComponent;
-import gov.nasa.arc.mct.satellite.Vector;
 import gov.nasa.arc.mct.satellite.component.CoordinateComponent;
 import gov.nasa.arc.mct.satellite.component.CoordinateModel;
 import gov.nasa.arc.mct.satellite.component.SatelliteComponent;
@@ -28,12 +47,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Box;
@@ -54,6 +72,18 @@ import javax.swing.event.DocumentListener;
 
 import jsattrak.utilities.TLE;
 
+/*
+ * This wizard populates MCT with the satellite-objects chosen by the user
+ *   Note: to see the how the classes of this plug-in are associated with one-another,
+ *         see the createComp method (which uses the classes made in this plug-in to create
+ *         satellite objects)
+ * 
+ * Note: SatelliteComponentProvider tells MCT to call this wizard when the user right-clicks
+ * and selects 'Create->Satellite'
+ * 
+ * Note: 'createComp' creates the satellite objects and populates the satellite objects into MCT
+ * 
+ */
 public class SatelliteWizard extends CreateWizardUI {
 		
 	/*
@@ -80,14 +110,25 @@ public class SatelliteWizard extends CreateWizardUI {
 		     "Miscellaneous Military",	"Radar Calibration", 	 "CubeSats",	"Other"},		
 	};//--end of 2D array of satellite categories
 	
+	/*
+	 * this provides the functionality: don't keep requesting the same TLE file.  We the program
+	 * are going to download it once, and then store it in memory
+	 *   String: this is the Celestrak satellite-category name (as defined in our 2D array above).
+	 *           Note that the Celestrak satellite category name IS UNIQUE
+	 */
+	private static final Map<String, List<TLE>> storedSatCats= new HashMap<String, List<TLE>>();
 	
-	private TLEUtility tleUtil;
-	private Set<String> chosenSats;
+	private final String DEFAULT_COLLECTION_NAME = "My Satellite Collection";
+	private final int TEXT_FIELD_COL_SIZE = 12;	//size of the text box which names a satellite collection
 	
-	private JComboBox jcbSatCategories;
+	private TLEUtility tleUtil;		//provides access to TLE data on the web
+	private Set<String> chosenSats;	//this provides the functionality: don't allow duplicates in the satellite-chosen list
+	
+	private JComboBox jcbSatCategories;	//drop down box to contain all of the Satellite Categories
 
-	private DefaultListModel lmSatChoices;
-	private DefaultListModel lmSatChosen;
+	
+	private DefaultListModel lmSatChoices;	//model stores what the user can choose
+	private DefaultListModel lmSatChosen;	//model stores what the user has chosen
 	private JList jlSatChoices;
 	private JList jlSatChosen;
 	private JScrollPane jscrlpSatChoices;
@@ -97,7 +138,6 @@ public class SatelliteWizard extends CreateWizardUI {
 	private JButton jbAddAllSat;
 	private JButton jbRemoveSat;
 	private JButton jbRemoveAllSat;
-	private JButton jbUpdateTLEs;
 	
 	private JCheckBox jchkbMakeCollection;
 	private JTextField jtfCollectionName;
@@ -107,11 +147,20 @@ public class SatelliteWizard extends CreateWizardUI {
 	private JLabel lblChosenSat;
 	private JLabel lblCollectionName;
 	
+	
+	
 
+	/*
+	 * SatelliteComponentProvider tells MCT that this method should be called when creating
+	 * a satellite (when the user right clicks and selects Create->satellite)
+	 * 
+	 * This method creates the GUI's look and functionality
+	 */
 	@Override
 	public JComponent getUI(final JButton jbCreate) {
 		
 		tleUtil = new TLEUtility();
+		
 		chosenSats = new HashSet<String>();
 		lmSatChoices = new DefaultListModel();
 		lmSatChosen  = new DefaultListModel();
@@ -120,7 +169,6 @@ public class SatelliteWizard extends CreateWizardUI {
 		jbAddAllSat = new JButton("Add All -->");
 		jbRemoveSat = new JButton("Remove <--");
 		jbRemoveAllSat = new JButton("Remove All <--");
-		jbUpdateTLEs = new JButton("Update TLEs");
 		
 		lblChooseSat = new JLabel("Satellite Group:");
 		lblChoiceSat = new JLabel("Choices in Satellite Group");
@@ -128,7 +176,7 @@ public class SatelliteWizard extends CreateWizardUI {
 		lblCollectionName = new JLabel("Collection name:");
 		
 		jchkbMakeCollection = new JCheckBox("Create as a Collection");
-		jtfCollectionName = new JTextField("", 10);
+		jtfCollectionName = new JTextField("", TEXT_FIELD_COL_SIZE);
 		
 		
 		//--initially buttons and checkbox and text field are disabled
@@ -137,10 +185,12 @@ public class SatelliteWizard extends CreateWizardUI {
 		jbRemoveSat.setEnabled(false);
 		jbRemoveAllSat.setEnabled(false);
 		jbCreate.setEnabled(false);
-		jchkbMakeCollection.setSelected(false);
-		jchkbMakeCollection.setEnabled(false);
-		jtfCollectionName.setEnabled(false);
-		lblCollectionName.setEnabled(false);
+		jchkbMakeCollection.setSelected(true);
+		jchkbMakeCollection.setEnabled(true);
+		jtfCollectionName.setEnabled(true);
+		lblCollectionName.setEnabled(true);
+		jtfCollectionName.setText(DEFAULT_COLLECTION_NAME);
+		jtfCollectionName.selectAll();
 			
 		
 		JPanel rootPanel = new JPanel();
@@ -217,6 +267,7 @@ public class SatelliteWizard extends CreateWizardUI {
 		/*ActionListener for JComboBox that holds the satellite categories
 		 * 
 		 *    When the user selects a satellite grouping
+		 *      -save all of the TLEs (so we don't have to access the TLE file again
 		 *      -populate the SatChoices List
 		 *      -Enable the Add/AddAll buttons
 		 *      -Set the focus to the SatChoices List
@@ -231,7 +282,14 @@ public class SatelliteWizard extends CreateWizardUI {
 					lmSatChoices.clear();
 					
 					String choice = jcbSatCategories.getSelectedItem().toString();
-					List<TLE> userSatChoices = tleUtil.getTLEs(choice);
+					List<TLE> userSatChoices;
+					if(storedSatCats.containsKey(choice)) {
+						userSatChoices = storedSatCats.get(choice);
+					}
+					else {
+						userSatChoices = tleUtil.getTLEs(choice);	//this operation is expensive!
+						storedSatCats.put(choice, userSatChoices);
+					}
 					
 					//TODO: mark the TLEs already in the Chosen list as '**already added**'?
 					for(int i=0; i < userSatChoices.size(); i++)
@@ -246,13 +304,6 @@ public class SatelliteWizard extends CreateWizardUI {
 			}//--end actionPerformed
 		});
 		
-		jbUpdateTLEs.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				tleUtil.updateTLEs();
-			}
-		});
 		
 		/*ActionListener for Add button:
 		 *     add TLEs from list SatChoice to list SatChosen,
@@ -384,7 +435,7 @@ public class SatelliteWizard extends CreateWizardUI {
 					lblCollectionName.setEnabled(true);
 					jtfCollectionName.setEnabled(true);
 					jtfCollectionName.requestFocusInWindow();
-					jtfCollectionName.setText("Satellite Collection");
+					jtfCollectionName.setText(DEFAULT_COLLECTION_NAME);
 					jtfCollectionName.selectAll();
 				}
 				else {
@@ -395,8 +446,9 @@ public class SatelliteWizard extends CreateWizardUI {
 			}
 		});
 		
-		/*TextField
-		 * 
+		/*TextField associated with the satellite-collection name:
+		 *  If the user wants to create their satellites in a collection, we do not allow
+		 *  the user to have an empty name for the collection. 
 		 */
 		jtfCollectionName.getDocument().addDocumentListener(new DocumentListener() {
 			
@@ -440,8 +492,8 @@ public class SatelliteWizard extends CreateWizardUI {
 		headPanel.add(lblChooseSat);
 		headPanel.add(Box.createRigidArea(new Dimension(20, 0)));
 		headPanel.add(jcbSatCategories);
-		headPanel.add(Box.createRigidArea(new Dimension(40, 0)));
-		headPanel.add(jbUpdateTLEs);
+		headPanel.add(Box.createRigidArea(new Dimension(200, 0)));
+
 		
 		satChoicePanel.add(lblChoiceSat);
 		lblChoiceSat.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -486,13 +538,12 @@ public class SatelliteWizard extends CreateWizardUI {
 		jchkbMakeCollection.setAlignmentX(Component.LEFT_ALIGNMENT);
 		nameCollectionPanel.add(lblCollectionName);
 		nameCollectionPanel.add(jtfCollectionName);
-		//jtfCollectionName.setPreferredSize(new Dimension(200, (int)jtfCollectionName.getSize().getHeight()));
 		nameCollectionPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		makeCollectionPanel.add(nameCollectionPanel);
 		
 		footPanel.add(makeCollectionPanel, BorderLayout.EAST);
 		
-		//Here you can turn on the boarders to all of the panels
+		//Here you can turn on the boarders to all of the panels if you want:
 		//		headPanel.setBorder(BorderFactory.createTitledBorder("Head Panel"));
 		//		bodyPanel.setBorder(BorderFactory.createTitledBorder("Body Panel"));
 		//		motherPanel.setBorder(BorderFactory.createTitledBorder("Mother Panel"));
@@ -511,6 +562,7 @@ public class SatelliteWizard extends CreateWizardUI {
 		
 	}
 	
+	
 	/*
 	 * Determine whether the satellite TLE being added is already contained in the Chosen list.
 	 * 
@@ -518,7 +570,7 @@ public class SatelliteWizard extends CreateWizardUI {
 	 *    ref: Celestrak:: "The NORAD Catalog Number is a unique identifier assigned by
 	 *                      NORAD for each earth-orbiting artificial satellite in their
 	 *                      SATCAT (Satellite Catalog)."
-     * Part of satAlreadyAdded to include the functionality: Do not allow multiple copies of satellites
+     * Reason for satAlreadyAdded: Do not allow multiple copies of satellites
 	 * into the 'SatChosen' list.
 	 */
 	private boolean
@@ -552,20 +604,35 @@ public class SatelliteWizard extends CreateWizardUI {
 		chosenSats.remove(SatNum);
 	}
 
+	
 	/*
-	 * This method is called when the 'create' button is hit
+	 * This method is called when the 'create' button is clicked within the GUI (for creating satellites)
 	 * 
 	 * Precondition: the list model containing the chosen satellites to create (lmSatChosen) is not empty
+	 * 
+	 * An example: if the user decided to create only one satellite (the International Space Station), at the
+	 * completion of this method, the following is stored in MCT (with their associated classes in parenthesis)
+	 *        
+	 *          ISS                 (This is a SatelliteComponet)
+	 *            Position             (This is a VectorComponent)
+	 *                x                     (This is a CoordinateComponent)
+	 *                y                     (This is a CoordinateComponent)
+	 *                z                     (This is a CoordinateComponent)
+	 *            Velocity          (This is a VectorComponent)
+	 *                x                  (This is a CoordinateComponent)
+	 *                y                  (This is a CoordinateComponent)
+	 *                z                  (This is a CoordinateComponent)
 	 */
 	@Override
 	public AbstractComponent createComp(ComponentRegistry registry,
 			AbstractComponent parentComp) {
 
-		Collection<AbstractComponent> chosenSats = new ArrayList<AbstractComponent>();
-
-		//all satellites will have this as their parent; root may either be a collection (if selected) or will be the
+		//all satellites will have this as their parent; root may either be a collection (if selected) or will be
+		//whatever component the user is creating from; e.g., they right-clicked 'MySandbox' and chose to create
+		//a satellite.
 		AbstractComponent rootComponent;
 		
+		//determine whether or not we need to make a collection.
 		if(jchkbMakeCollection.isSelected()) {
 			rootComponent = registry.newInstance(registry.newInstance("gov.nasa.arc.mct.components.collection.CollectionComponent").getClass(), parentComp);
 			rootComponent.setDisplayName(jtfCollectionName.getText());
@@ -577,26 +644,26 @@ public class SatelliteWizard extends CreateWizardUI {
 		
 		int createSize = lmSatChosen.getSize();
 
+		//here we are creating new instances of mct objects and adding them the the parent component (which may be a collection or the
+		//given parentComp--an example of this is if the user right-clicked 'MySandbox')
 		for(int i=0; i<createSize; i++) {
-			//here we are creating new instances and adding them the the parent component (which may be a collection or the given parentComp)
 			SatelliteComponent satComponent = registry.newInstance(SatelliteComponent.class, rootComponent);
 			TLE currentTLE = (TLE)lmSatChosen.get(i);
 			satComponent.setDisplayName(currentTLE.getSatName());
 			satComponent.setOrbitalParameters(currentTLE);
 			satComponent.save();
-			chosenSats.add(satComponent);
-			
+
+			//the following makes the position and velocity components where the SatelliteComponent is their parent
 			boolean[] truths   = { false,   true };
 			String[]  axisName = { "X", "Y", "Z" };
-			
 			for (boolean velocity : truths) {
-				String name = velocity ? "Velocity" : "Position";
+				String name = velocity ? "Velocity (in m/s)" : "Position (in ECEF)";
 				
 				VectorComponent vectorComponent = registry.newInstance(VectorComponent.class, satComponent);
 				vectorComponent.setDisplayName( name );
 				vectorComponent.save();
 				
-				//make x, y, z
+				//make x, y, z components, where position/velocity is their parent
 				for (int axis = 0; axis < 3; axis++) {
 					CoordinateComponent coordinateComponent = registry.newInstance(CoordinateComponent.class, vectorComponent);
 					coordinateComponent.setDisplayName(name + " " + axisName[axis]);

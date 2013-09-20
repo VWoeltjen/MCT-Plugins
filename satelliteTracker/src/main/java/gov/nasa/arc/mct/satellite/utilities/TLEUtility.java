@@ -1,11 +1,30 @@
+/*******************************************************************************
+ * Mission Control Technologies, Copyright (c) 2009-2012, United States Government
+ * as represented by the Administrator of the National Aeronautics and Space 
+ * Administration. All rights reserved.
+ *
+ * The MCT platform is licensed under the Apache License, Version 2.0 (the 
+ * "License"); you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+ * License for the specific language governing permissions and limitations under 
+ * the License.
+ *
+ * MCT includes source code licensed under additional open source licenses. See 
+ * the MCT Open Source Licenses file included with this distribution or the About 
+ * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
+ * information. 
+ *******************************************************************************/
 package gov.nasa.arc.mct.satellite.utilities;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,27 +32,18 @@ import java.util.Map;
 
 import jsattrak.utilities.TLE;
 
-import gov.nasa.arc.mct.satellite.utilities.TLEDownloader;
-
-//import org.joda.time.DateTime;
-//import org.joda.time.Days;
-
 /*
- * A small class to handle accessing TLE files and collecting TLE data
+ * A small class to handle the accessing-of TLE files.  This class does not store
+ * the TLE files in memory, rather: you give this class a Celestrak name and
+ * it downloads a fresh copy right off of Celestrak's website.
+ * 
+ * This class is used in the satellite wizard; its purpose: to download the TLEs
+ * that the user has reqested.  See the only public method, 'getTLEs'
  */
 public class TLEUtility {	
 	
-
-	/*
-	 * Note these files will be in the "Startup" project of MCT
-	 */
-	private final String localPathTLEData = "tmpDir/data/tle/";
-	private final String pathToTLEAge = "tmpDir/data/tleAge.txt";
-	//private final String localPathTLEUpdate    = "tmpDir/data/tle/";//"src/main/resources/data/tle/";
-	
-	private String absolutePath = ""; 
-	
-	private final int MAX_AGE_OF_TLES = 2; //in days
+	//Used to access TLEs on Celestrak's website
+	private static final String urlTLELocation = "http://celestrak.com/NORAD/elements/";
 	
 	/*
 	 * Given a Celestrak TLE group-name (like 'Space Stations' for example) return the
@@ -96,28 +106,17 @@ public class TLEUtility {
 		}
 	};
 	
-	public
-	TLEUtility() {
-		absolutePath = new File(".").getAbsolutePath();
-		absolutePath = absolutePath.substring(0, absolutePath.length()-1);
-	}
-	
-	
-	
 	/*
 	 * Given the full path to a file containing TLE data, e.g.: "stations.txt", this method returns
 	 * a list of strings, each string is a line of the TLE file
 	 */
 	private  List<String>
-	readFile(String filePath)
+	readFile(URL tleLoc)
 	{
-		//System.out.println("File Location: " + filePath);
 	    List<String> records = new ArrayList<String>();
 	  try
 	  {
-		  BufferedReader reader = new BufferedReader(new FileReader(filePath));
-		  //BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/tmpDir/data/tle/stations.txt")));
-		  
+		  BufferedReader reader = new BufferedReader(new InputStreamReader(tleLoc.openStream()));
 	      String line;
 	    while ((line = reader.readLine()) != null)
 	    {
@@ -128,70 +127,22 @@ public class TLEUtility {
 	  }
 	  catch (Exception e)
 	  {
-	    System.err.format("Exception occurred trying to read '%s'.", filePath);
+	    System.err.format("Exception occurred trying to read '%s'.", tleLoc.toString());
 	    e.printStackTrace();
 	    return null;
 	  }
 	}//--end readFile
 	
-	/*
-	 * This method determines the age of the TLEs we have on secondary storage
-	 * If this method retuns false, an update to the TLEs is recomended (by calling
-	 * method updateTLEs
-	 */
-	/*
-	public	boolean
-	haveRecentTLEs() {
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(pathToTLEAge));
-			String str_dateOnFile = reader.readLine();
-			reader.close();
-			DateTime joda_dateOnFile = new DateTime(str_dateOnFile);
-			Days days = Days.daysBetween(DateTime.now(), joda_dateOnFile);
-			int daysOld = days.getDays();
-			
-			if(daysOld > MAX_AGE_OF_TLES )
-				return false;
-			else
-				return true;
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}		
-		//due to scoping issues with try/catch we add this return value; code will never reach here
-		//either an exception will be thrown, or the if/else will return a value.
-		return false;
-	}*/
-	
-	/*
-	 * This method updates all TLEs; fairly computationally heavy; first check if we need to do
-	 * an update by calling method haveRecentTLEs.
-	 * TODO: make a pretty progress bar :D
-	 * returns true if all TLEs were downloaded successfully, otherwise returns false.
-	 */
-	public boolean
-	updateTLEs() {
-		
-		TLEDownloader td = new TLEDownloader();
-		td.setLocalPath(localPathTLEData);
-		boolean wasSuccessfull = td.downloadAllTLEs();
-		System.out.println("Path to TLEs: " + td.getTleFilePath(0));
-		return wasSuccessfull;
-		
-	}
-	
-	
 	/**
 	 * Grab all the TLEs from a given TLE-file (from Celestrak) and return them as a List of TLEs
 	 * 
-	 * @param filename: file containing TLE data
-	 * @return: list of TLE objects in the order given in the given TLE file
+	 * @param filename file containing TLE data
+	 * @return list of TLE objects in the order given in the given TLE file
 	 */
 	private List<TLE>
-	grab_tles(String fileLoc){
+	grab_tles(URL tleLoc){
 		
-		List<String> raw_tle_data = readFile(fileLoc);
+		List<String> raw_tle_data = readFile(tleLoc);
 		/*
 		 * all tle data are in three-line increments, so the size of raw_tle_data is 3 times the number
 		 * of tle's in the file
@@ -202,7 +153,7 @@ public class TLEUtility {
 		List<TLE> tle_recs = new ArrayList<TLE>();
 		//grab each tle:  lines 0 1 2 is the first tle, then lines 3 4 5 is the second tle, ... etc 
 		for(int i = 0; i<num_lines; i =i+3) {
-			TLE data = new TLE(raw_tle_data.get(i), raw_tle_data.get(i+1), raw_tle_data.get(i+2));
+			TLE data = new TLE(raw_tle_data.get(i).trim(), raw_tle_data.get(i+1), raw_tle_data.get(i+2)); //why trim()? Well, we need to trim the trailing whitespace from the satellite name
 			tle_recs.add(data);
 		}//end for loop
 		
@@ -210,37 +161,58 @@ public class TLEUtility {
 	}
 	
 	/*
-	 * Given a , return the file where said TLE data is located; for example, if we want the "FENGYUN 1C Debris" TLE
-	 * data, then we return 1999-025.txt
+	 * Given a Celestrak satellite category, return the URL where the said TLE data is located; for example,
+	 * if we want the "FENGYUN 1C Debris" TLE data, then we return "http://celestrak.com/NORAD/elements/1999-025.txt"
 	 */
 	private
 	String
-	getFileName(String RequestedTLEData) {
+	getTLEurl(String RequestedTLEData){
 		String fileName = FileLookup.get(RequestedTLEData);
 		if(fileName==null)
-			return null;
+			try {
+				Exception up = new Exception("Celestrak Satellite Category \""+ RequestedTLEData +"\" Not Found."); 
+				throw up;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		else
-			return absolutePath + localPathTLEData + fileName;
+			return urlTLELocation + fileName;
+		return "";
 	}
 	
 	
 	
-	/*
-	 * Get all of the TLEs associated to the 'TLErequest'
-	 *   e.g. request is for TLEs associated with "Last 30 Days' Launches" then
-	 *        we return a list that contains all TLE's associated with "Last 30 Days' Launches"
-	 * Preconditions: request must be a Celestrak satellite category
-	 * Postconditions: returned list contains all TLE's associated with the TLE request
+	/**
+	 * 
+	 * @param CelestrakCategory The Satellite Category as defined from 'http://celestrak.com/NORAD/elements/'
+	 * @return A list of TLE objects associated with the Celestrak satellite category (in order as they appear
+	 *         on Celestrak
 	 */
 	public
 	List<TLE>
-	getTLEs (String TLErequest) {
+	getTLEs(String CelestrakCategory) {
 		
-		String tle_file = getFileName(TLErequest);
+		String tleLoc = getTLEurl(CelestrakCategory);
 		
-		List<TLE> tles =  grab_tles(tle_file);
+		try {
+			URL urlTLE = new URL(tleLoc);
+			List<TLE> tles =  grab_tles(urlTLE);
+			return tles;
+		} catch (MalformedURLException e) {
+			return null;
+		}
 		
-		return tles;
+	}
+	
+	
+	/*
+	 * Simple main for testing purposes :)
+	 */
+	public static void main(String[] args) {
+		TLEUtility tUtil = new TLEUtility();
+		List<TLE> myTLEs = tUtil.getTLEs("Space Stations");
+		System.out.println("Size of TLE list: " + myTLEs.size());
+		System.out.println("Done");
 	}
 	
 }
