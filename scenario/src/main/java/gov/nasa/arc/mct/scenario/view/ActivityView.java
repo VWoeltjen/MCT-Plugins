@@ -1,3 +1,24 @@
+/*******************************************************************************
+ * Mission Control Technologies, Copyright (c) 2009-2012, United States Government
+ * as represented by the Administrator of the National Aeronautics and Space 
+ * Administration. All rights reserved.
+ *
+ * The MCT platform is licensed under the Apache License, Version 2.0 (the 
+ * "License"); you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+ * License for the specific language governing permissions and limitations under 
+ * the License.
+ *
+ * MCT includes source code licensed under additional open source licenses. See 
+ * the MCT Open Source Licenses file included with this distribution or the About 
+ * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
+ * information. 
+ *******************************************************************************/
 package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
@@ -38,6 +59,8 @@ public class ActivityView extends View implements CostOverlay {
 	public static final ViewInfo VIEW_INFO = 
 			new ViewInfo(ActivityView.class, ActivityView.VIEW_ROLE_NAME, ViewType.EMBEDDED);
 	private static final BasicStroke SOLID_2PT_LINE_STROKE = new BasicStroke(2f);
+	private static final Color DECISION_COLOR = new Color (120,120,120);
+	private static final Color DECISION_TEXT_COLOR = Color.WHITE;
 	private Color lineColor = new Color(100, 100, 100);
 	private Color durationColor = new Color(200,200,200, 100);
 	private ActivityBackgroundShape bg = ActivityBackgroundShape.ACTIVITY;
@@ -56,6 +79,9 @@ public class ActivityView extends View implements CostOverlay {
 				durationColor = ScenarioColorPalette.getColorMixed(type, durationColor, 0.75f);
 				lineColor = durationColor.darker();
 			}
+		} else if (ac instanceof DecisionComponent) {
+			setForeground(DECISION_TEXT_COLOR);
+			durationColor = DECISION_COLOR;
 		}
 	}
 	
@@ -72,6 +98,9 @@ public class ActivityView extends View implements CostOverlay {
 				parent.invalidate();
 				parent.validate();
 				child = parent;		
+				if (parent instanceof AbstractTimelineView) {
+					((AbstractTimelineView) parent).save();
+				}
 		}
 	}
 	
@@ -111,24 +140,27 @@ public class ActivityView extends View implements CostOverlay {
 			@Override
 			public void paint(Graphics2D g, int w, int h, Color fg, Color bg) {
 				g.setColor(bg);
-				g.fillRoundRect(1, 1, w-3, h-3, h / 3, h / 3);
+				g.fillRoundRect(1, 1, w-3, h-3, 3*h/4 , 3*h/4 );
 				g.setStroke(SOLID_2PT_LINE_STROKE);
 				g.setColor(fg);
-				g.drawRoundRect(1, 1, w-3, h-3, h / 3, h / 3);	
+				g.drawRoundRect(1, 1, w-3, h-3, 3*h/4 , 3*h/4);	
 			}
 
 			@Override
 			public void paintLabels(Graphics2D g, String name, String duration,
 					int w, int h, Color fg) {
+				Font originalFont = g.getFont();
+				g.setFont(originalFont.deriveFont(originalFont.getSize2D() - 1.0f));
 				FontMetrics metrics = g.getFontMetrics(g.getFont());
 				int charHeight = metrics.getHeight();
 				int baseline   = metrics.getAscent();
 				g.setColor(fg);
-				g.drawString(name, 4, baseline + h / 2 - charHeight / 2);
+				g.drawString(name, 6, baseline + h / 2 - charHeight / 2);
 				int durationWidth = metrics.stringWidth(duration);
-				if (metrics.stringWidth(name) + durationWidth < w) {					
-					g.drawString(duration, w - durationWidth - 4, baseline + h/2 - charHeight/2);
+				if (metrics.stringWidth(name) + durationWidth < w - 12) {					
+					g.drawString(duration, w - durationWidth - 6, baseline + h/2 - charHeight/2);
 				}
+				g.setFont(originalFont);
 			}
 			
 		},
@@ -137,9 +169,17 @@ public class ActivityView extends View implements CostOverlay {
 			@Override
 			public void paint(Graphics2D g, int w, int h, Color fg, Color bg) {
 				int x[] = {0, w-h/2,  w-h/2, w, w-h/2, w-h/2, 0 };
-				int y[] = {1*h/3, 1*h/3, h/4, h/2, 3*h/4, 2*h/3, 2*h/3};
+				int y[] = {3*h/7, 3*h/7, h/4, h/2, 3*h/4, 4*h/7+1, 4*h/7+1};
 				g.setColor(bg);
-				g.fillPolygon(x,y,7);
+				g.fillPolygon(x,y,7);				
+
+				// Draw diamond
+				int diamondWidth = Math.min(2*w/3  - h / 2, h * 4);
+				
+				int dx[] = { w/2 - h/4 - diamondWidth/2, w/2-h/4, w/2 - h/4 + diamondWidth/2, w/2-h/4 };
+				int dy[] = { h/2, h/6, h/2, 5*h/6 + 1 };
+				g.fillPolygon(dx,dy,4);				
+				
 //				g.setStroke(SOLID_2PT_LINE_STROKE);
 //				g.setColor(fg);
 //				g.drawPolygon(x,y,7);
@@ -149,13 +189,17 @@ public class ActivityView extends View implements CostOverlay {
 			public void paintLabels(Graphics2D g, String name, String duration,
 					int w, int h, Color fg) {	
 				Font originalFont = g.getFont();
-				g.setFont(originalFont.deriveFont(originalFont.getSize2D() - 1.0f));
+				g.setFont(originalFont.deriveFont(Font.ITALIC, originalFont.getSize2D() - 2.0f));
 				int charHeight = g.getFontMetrics(g.getFont()).getHeight();
 				int baseline   = g.getFontMetrics(g.getFont()).getAscent();
 				int charsWidth = g.getFontMetrics(g.getFont()).charsWidth(name.toCharArray(), 0, name.length());
-
-				g.setColor(fg);
-				g.drawString(name, w/2 - charsWidth/2, baseline + h / 2 - charHeight / 2 - 1);
+				
+				// only draw text if it fits in diamond
+				int diamondWidth = Math.min(2*w/3  - h / 2, h * 4);
+				if (2 * diamondWidth / 3 >= charsWidth) {
+					g.setColor(fg);
+					g.drawString(name, w/2 - h/4 - charsWidth/2, baseline + h / 2 - charHeight / 2);
+				}
 				
 				g.setFont(originalFont);
 			}

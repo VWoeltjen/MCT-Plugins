@@ -1,3 +1,24 @@
+/*******************************************************************************
+ * Mission Control Technologies, Copyright (c) 2009-2012, United States Government
+ * as represented by the Administrator of the National Aeronautics and Space 
+ * Administration. All rights reserved.
+ *
+ * The MCT platform is licensed under the Apache License, Version 2.0 (the 
+ * "License"); you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+ * License for the specific language governing permissions and limitations under 
+ * the License.
+ *
+ * MCT includes source code licensed under additional open source licenses. See 
+ * the MCT Open Source Licenses file included with this distribution or the About 
+ * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
+ * information. 
+ *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
@@ -14,7 +35,6 @@ import java.awt.Insets;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.ParseException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.ResourceBundle;
 
@@ -82,17 +102,17 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
 		data.setStartDate(startDate);
 		data.setEndDate(endDate);
 		component.save();
-
-		if (targetComponent instanceof ActivityComponent) {
-			//TODO - this should be handled by addDelegateComponentsCallback 
-			//       in ActivityComponent, but at the time this is called 
-			//       (comp.newInstance above) there is still no 
-			//       time data associated with this component
-			((ActivityComponent) targetComponent).constrainChildren(decisionComponent, false);
-			((ActivityComponent) targetComponent).constrainChildren(decisionComponent, true);
-		}
         
         return component;
+	}
+	
+	private boolean checkValidity() {
+		try {
+			return DurationFormatter.parse(startTime.getText()) >= 0 && 
+				DurationFormatter.parse(duration.getText()) > 0;
+		} catch (ParseException e) {
+			return false;
+		}
 	}
 
 	@Override
@@ -194,6 +214,25 @@ public class DecisionCreationWizardUI  extends CreateWizardUI {
 		c.weightx = 1;
 		c.gridwidth = 2;
 		UIPanel.add(messagePanel,c);
+				
+		// Enable/disable Create button for valid user input
+		DocumentListener buttonEnabler = new DocumentListener() {
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				create.setEnabled(checkValidity());
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent arg0) {
+				create.setEnabled(checkValidity());				
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent arg0) {
+				create.setEnabled(checkValidity());			}			
+		};
+		startTime.getDocument().addDocumentListener(buttonEnabler);
+		duration.getDocument().addDocumentListener(buttonEnabler);
 				
 		UIPanel.setVisible(true);
 		return UIPanel;

@@ -1,3 +1,24 @@
+/*******************************************************************************
+ * Mission Control Technologies, Copyright (c) 2009-2012, United States Government
+ * as represented by the Administrator of the National Aeronautics and Space 
+ * Administration. All rights reserved.
+ *
+ * The MCT platform is licensed under the Apache License, Version 2.0 (the 
+ * "License"); you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+ * License for the specific language governing permissions and limitations under 
+ * the License.
+ *
+ * MCT includes source code licensed under additional open source licenses. See 
+ * the MCT Open Source Licenses file included with this distribution or the About 
+ * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
+ * information. 
+ *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
@@ -5,6 +26,7 @@ import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
+import gov.nasa.arc.mct.scenario.component.TimePropertyEditor.TimeProperty;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -82,14 +104,22 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
 		PropertyDescriptor startTime = new PropertyDescriptor("Start Time", 
-				new DecisionStartTimePropertyEditor(this),  VisualControlDescriptor.TextField);
+				new TimePropertyEditor(this, TimeProperty.START),  VisualControlDescriptor.TextField);
 		startTime.setFieldMutable(true);
 		PropertyDescriptor endTime = new PropertyDescriptor("End Time", 
-				new DecisionEndTimePropertyEditor(this),  VisualControlDescriptor.TextField);
+				new TimePropertyEditor(this, TimeProperty.END),  VisualControlDescriptor.TextField);
 		endTime.setFieldMutable(true);
-
+		PropertyDescriptor duration = new PropertyDescriptor("Duration",
+				new TimePropertyEditor(this, TimeProperty.DURATION), VisualControlDescriptor.TextField);
+		duration.setFieldMutable(true);
+		PropertyDescriptor notes = new PropertyDescriptor("Notes", 
+				new NotesPropertyEditor(this),  VisualControlDescriptor.TextArea);
+		notes.setFieldMutable(true);
+		
 		fields.add(startTime);
 		fields.add(endTime);
+		fields.add(duration);
+		fields.add(notes);
 
 		return fields;
 	}
@@ -107,13 +137,11 @@ public class DecisionComponent extends AbstractComponent implements DurationCapa
 	@Override
 	public void setStart(long start) {
 		getData().setStartDate(new Date(start));
-		//save();
 	}
 
 	@Override
 	public void setEnd(long end) {
 		getData().setEndDate(new Date(end));
-		//save();
 	}
 
 	@Override

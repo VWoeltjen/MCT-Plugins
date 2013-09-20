@@ -20,7 +20,6 @@
  * information. 
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
-
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyEditor;
 
@@ -28,20 +27,30 @@ import java.util.List;
 
 
 /**
- * Property editor to support specification of an Activity's power cost in the Info View.
+ * Property editor to add notes to either an activity or a decision
  *
  */
-public final class PowerPropertyEditor implements PropertyEditor<Object> {
-	ActivityComponent activityComponent = null;
+public final class NotesPropertyEditor implements PropertyEditor<Object> {
 
-	public PowerPropertyEditor(AbstractComponent component) {
-		activityComponent = (ActivityComponent)component;
+	private AbstractComponent component = null;
+
+	public NotesPropertyEditor(AbstractComponent component) {
+		this.component = component;
+		if (!(component instanceof ActivityComponent) && !(component instanceof DecisionComponent)) {
+			throw new IllegalArgumentException("NotesPropertyEditor only valid for activities and decisions");
+		}
 	}
 
+	
 	@Override
 	public String getAsText() {
-		double numericData = activityComponent.getModel().getData().getPower();
-		return String.valueOf(numericData);
+		if (component instanceof ActivityComponent) {
+			return ((ActivityComponent) component).getModel().getData().getNotes();
+		} else if (component instanceof DecisionComponent) {
+			return ((DecisionComponent) component).getModel().getData().getNotes();
+		} else {
+			return "";
+		}
 	}
 
 	/**
@@ -53,26 +62,14 @@ public final class PowerPropertyEditor implements PropertyEditor<Object> {
 	 */
 	@Override
 	public void setAsText(String newValue) throws IllegalArgumentException {
-		String result = verify(newValue);
-		if (verify(newValue) != null) {
-			throw new IllegalArgumentException(result);
+		if (newValue == null) {
+			throw new IllegalArgumentException("Cannot be null");
 		}
-		ActivityData businessModel = activityComponent.getModel().getData();
-		double d = Double.parseDouble(newValue); // verify() took care of a possible number format exception
-		businessModel.setPower(d);
-	}
-
-	private String verify(String s) {
-		assert s != null;
-		if (s.isEmpty()) {
-			return "Cannot be unspecified";
-		}
-		try {
-			Double.parseDouble(s);
-		} catch (NumberFormatException e) {
-			return "Must be a numeric";
-		}
-		return null;
+		if (component instanceof ActivityComponent) {
+			((ActivityComponent) component).getModel().getData().setNotes(newValue);
+		} else if (component instanceof DecisionComponent) {
+			((DecisionComponent) component).getModel().getData().setNotes(newValue);
+		}			
 	}
 
 	@Override
@@ -90,3 +87,4 @@ public final class PowerPropertyEditor implements PropertyEditor<Object> {
 		throw new UnsupportedOperationException();
 	}
 } 
+

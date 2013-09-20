@@ -1,6 +1,28 @@
+/*******************************************************************************
+ * Mission Control Technologies, Copyright (c) 2009-2012, United States Government
+ * as represented by the Administrator of the National Aeronautics and Space 
+ * Administration. All rights reserved.
+ *
+ * The MCT platform is licensed under the Apache License, Version 2.0 (the 
+ * "License"); you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+ * License for the specific language governing permissions and limitations under 
+ * the License.
+ *
+ * MCT includes source code licensed under additional open source licenses. See 
+ * the MCT Open Source Licenses file included with this distribution or the About 
+ * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
+ * information. 
+ *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.policy.PolicyInfo;
+import gov.nasa.arc.mct.scenario.policy.ScenarioContainmentPolicy;
 import gov.nasa.arc.mct.scenario.policy.TimelineFilterViewPolicy;
 import gov.nasa.arc.mct.scenario.view.ScenarioView;
 import gov.nasa.arc.mct.scenario.view.TimelineInspector;
@@ -13,6 +35,8 @@ import gov.nasa.arc.mct.services.component.ViewType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ResourceBundle;
+
+import javax.swing.ImageIcon;
 
 /**
  * ComponentProvider for the scenario plug-in. Exposes Activities, Scenarios, Timelines, 
@@ -29,33 +53,43 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			bundle.getString("display_name_activity"),  
 			bundle.getString("description_activity"), 
 			ActivityComponent.class,
-			new ActivityCreationWizardUI());
+			new ActivityCreationWizardUI(),
+			new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_activity.png")));
 
 	private static final ComponentTypeInfo decisionComponentType = new ComponentTypeInfo(
 			bundle.getString("display_name_decision"),  
 			bundle.getString("description_decision"), 
 			DecisionComponent.class,
-			new DecisionCreationWizardUI());
+			new DecisionCreationWizardUI(),
+			new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_decision.png")));
 
 	private static final ComponentTypeInfo timelineComponentType = new ComponentTypeInfo(
 			bundle.getString("display_name_timeline"),  
 			bundle.getString("description_timeline"), 
-			TimelineComponent.class);
+			TimelineComponent.class,
+			true,
+			new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_timeline.png")));
 
-	// TODO: Expose this & scenario view to MCT
 	private static final ComponentTypeInfo scenarioComponentType = new ComponentTypeInfo(
 			bundle.getString("display_name_scenario"),  
 			bundle.getString("description_scenario"), 
-			ScenarioComponent.class);
+			ScenarioComponent.class,
+			true,
+			new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_scenario.png")));
 	
-	private static final PolicyInfo timelinePolicy = new PolicyInfo(
+	
+	private static final PolicyInfo timelineViewPolicy = new PolicyInfo(
 			PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(), 
 			TimelineFilterViewPolicy.class);
+	
+	private static final PolicyInfo containmentPolicy = new PolicyInfo(
+			PolicyInfo.CategoryType.COMPOSITION_POLICY_CATEGORY.getKey(), 
+			ScenarioContainmentPolicy.class);
 	
 	@Override
 	public Collection<ComponentTypeInfo> getComponentTypes() {
 		// return the component types provided
-		return Arrays.asList(activityComponentType, timelineComponentType, decisionComponentType , scenarioComponentType   );
+		return Arrays.asList(activityComponentType, timelineComponentType, decisionComponentType , scenarioComponentType );
 	}
 
 	@Override
@@ -79,7 +113,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 	@Override
 	public Collection<PolicyInfo> getPolicyInfos() {
 		return Arrays.asList(
-				timelinePolicy
+				timelineViewPolicy, containmentPolicy
 				);
 	}
 	

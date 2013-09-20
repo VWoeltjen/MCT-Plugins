@@ -42,17 +42,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeListener;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -145,10 +141,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		super(new BorderLayout());
 		//this.masterDuration = masterDuration;
 		
-		centerTime = (masterDuration.getStart() + masterDuration.getEnd()) / 2;
-		
-		start = masterDuration.getStart();
-		end = masterDuration.getEnd();
+		start = Math.min(start, masterDuration.getStart());
+		end = Math.max(end, masterDuration.getEnd());
+		centerTime = (start + end) / 2;
 		
 		setOpaque(false);
 		add(upperPanel = makeUpperPanel(), BorderLayout.NORTH);
@@ -172,6 +167,16 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 				updateAncestor();
 			}			
 		});
+	}
+	
+	public void updateMasterDuration(DurationCapability masterDuration) {	
+		if (parent != null) {
+			parent.updateMasterDuration(masterDuration);
+		} else {
+			start = Math.min(start, masterDuration.getStart());
+			end = Math.max(end, masterDuration.getEnd());
+			stateChanged(null);
+		}
 	}
 	
 	private void updateAncestor() {
@@ -676,6 +681,10 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		selectedView = null;
 	}
 	
+	/**
+	 * Select the specified view
+	 * @param view the view to select
+	 */
 	public void select(View view) {
 		if (parent != null && parent != this) {
 			parent.select(view);
@@ -683,6 +692,31 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			Collection<View> oldSelections = getSelectedManifestations();
 			selectedView = view;
 			firePropertyChange(SelectionProvider.SELECTION_CHANGED_PROP, oldSelections, getSelectedManifestations());
+		}
+	}
+	
+	/**
+	 * Try to select a specific component (by id)
+	 * If there is no embedded view of a component with this id, this
+	 * method does nothing.
+	 * 
+	 * @param componentId the id of a component to select
+	 */
+	public void selectComponent(String componentId) {
+		searchAndSelect(getContentPane(), componentId);
+	}
+	
+	private void searchAndSelect(Component comp, String id) {
+		if (comp instanceof View) {
+			if (((View) comp).getManifestedComponent().getComponentId().equals(id)) {
+				select((View) comp);
+				return;
+			}			
+		}
+		if (comp instanceof Container) { //Not found, keep searching
+			for (Component child : ((Container) comp).getComponents()) {
+				searchAndSelect(child, id);
+			}
 		}
 	}
 	
