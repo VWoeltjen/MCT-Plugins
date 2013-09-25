@@ -26,8 +26,6 @@ import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.ObjectManager;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ScenarioComponent extends CostFunctionComponent implements DurationCapability {

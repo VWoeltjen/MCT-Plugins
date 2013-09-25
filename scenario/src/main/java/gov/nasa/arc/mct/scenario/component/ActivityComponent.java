@@ -32,9 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -57,13 +55,6 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	public ActivityData getData() {
 		return getModel().getData();
 	}
-	
-	private static ThreadLocal<Set<String>> ignore = new ThreadLocal<Set<String>>() {
-		@Override
-		protected Set<String> initialValue() {
-			return new HashSet<String>();
-		}		
-	};
 	
 
 	@Override
