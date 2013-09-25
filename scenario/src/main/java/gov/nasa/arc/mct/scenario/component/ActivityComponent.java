@@ -21,9 +21,9 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
-import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
+import gov.nasa.arc.mct.components.ObjectManager;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 import gov.nasa.arc.mct.scenario.component.TimePropertyEditor.TimeProperty;
@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  */
 public class ActivityComponent extends CostFunctionComponent implements DurationCapability {
+	private ObjectManager objectManager = new ObjectManager.ExplicitObjectManager();
 	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	
 	/**
@@ -64,36 +65,15 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		}		
 	};
 	
-	@Override
-	public Set<AbstractComponent> getAllModifiedObjects() {
-		// Note that this is necessary to support Save All
-		// ("all modified objects" is the All in Save All;
-		//  typically, this should be all dirty children.)
-		
-		// Avoid cycles - ignore self
-		ignore.get().add(getComponentId());
-		
-		Set<AbstractComponent> modified = new HashSet<AbstractComponent>();
-		for (AbstractComponent child : getComponents()) {
-			// Don't pursue modified objects in a cycle
-			if (!ignore.get().contains(child.getComponentId())) {
-				if (child.isDirty()) {
-					modified.add(child);
-				}
-				modified.addAll(child.getAllModifiedObjects());
-			}			
-		}
-		
-		ignore.get().remove(getComponentId());
-		
-		return modified;
-	}
 
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
 		// Note: Don't report self as capability until initialized.
 		if (capability.isAssignableFrom(getClass())) {
 			return capability.cast(this);
+		}
+		if (capability.isAssignableFrom(ObjectManager.class)) {
+			return capability.cast(objectManager);
 		}
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
 		    JAXBModelStatePersistence<ActivityModelRole> persistence = new JAXBModelStatePersistence<ActivityModelRole>() {

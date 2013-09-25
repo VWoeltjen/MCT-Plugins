@@ -22,6 +22,7 @@
 package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.ObjectManager;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
@@ -79,7 +80,8 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
                     AbstractComponent committedComponent = 
                     		PlatformAccess.getPlatform().getPersistenceProvider().getComponent(getManifestedComponent().getComponentId());
                     // Propogate unsaved changes to the newer component
-                    boolean updated = new TimelineMergeHandler(getManifestedComponent()).update(committedComponent);
+                    ObjectManager om = getManifestedComponent().getCapability(ObjectManager.class);
+                    boolean updated = om != null && new TimelineMergeHandler(om).update(committedComponent);
                     setManifestedComponent(committedComponent);
                     updateMasterDuration();
                     rebuildUpperPanel();
@@ -148,7 +150,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		if (costGraph != null) {
 			costGraph.setManifestedComponent(getManifestedComponent());
 			costGraph.viewPersisted();
-		}
+		}		
 		
 		// Finally, ensure time settings are obeyed
 		refreshAll();

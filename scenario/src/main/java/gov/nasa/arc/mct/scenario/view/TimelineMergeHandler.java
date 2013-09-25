@@ -22,6 +22,7 @@
 package gov.nasa.arc.mct.scenario.view;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.ObjectManager;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 
 import java.util.HashMap;
@@ -66,7 +67,7 @@ public class TimelineMergeHandler {
 	 * changes to a specific object and its descendants.
 	 * @param dirtyParent the object whose changes should be tracked
 	 */
-	public TimelineMergeHandler(AbstractComponent dirtyParent) {
+	public TimelineMergeHandler(ObjectManager dirtyParent) {
 		for (AbstractComponent dirtyChild : dirtyParent.getAllModifiedObjects()) {
 			DurationCapability dc = 
 					dirtyChild.getCapability(DurationCapability.class);
