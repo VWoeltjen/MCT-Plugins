@@ -146,6 +146,9 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 			select(null);
 		}
 		
+		// Clear all enforced constraints - these will be recreated
+		constraints.clear();
+		
 		// Rebuild the view
 		buildUpperPanel();
 		
@@ -322,20 +325,29 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 			if ((Boolean) evt.getNewValue()) {
 				// Borrowed from NodeView
 				if (!used && getManifestedComponent().getComponentId() != null) {
+					// Get the latest version of the object from persistence
 					AbstractComponent committedComponent = 
 							PlatformAccess.getPlatform().getPersistenceProvider().getComponent(getManifestedComponent().getComponentId());
-					// Propogate unsaved changes to the newer component
+
+					// For future compatibility 
 					//ObjectManager om = getManifestedComponent().getCapability(ObjectManager.class);					
-					long start = System.currentTimeMillis();
+					
+					// Propogate unsaved changes to the newer component
 					boolean updated = new TimelineMergeHandler(getManifestedComponent()).update(committedComponent);
-					System.out.println(System.currentTimeMillis() - start);
-					setManifestedComponent(committedComponent);
-					updateMasterDuration();
-					rebuildUpperPanel();
+					if (updated || getManifestedComponent().isStale()) {
+						setManifestedComponent(committedComponent);
+						updateMasterDuration();
+						rebuildUpperPanel();
+						
+						// Flag this as used - don't repeat the above for other stale notifications
+						used = true;
+					}
+					
+					// Invoke the view's "save" if there was an update, to ensure Save All remains visible
 					if (updated) {
 						save();
 					}
-					used = true;
+					
 				}
 			}
 		}
