@@ -63,7 +63,6 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 	static final ViewInfo VIEW_INFO = new ViewInfo(TimelineView.class, "Timeline", ViewType.EMBEDDED);
 
 	private static final long serialVersionUID = -5039383350178424964L;
-
 	
 	private JPanel upperPanel = new JPanel();
 	private Color backgroundColor = Color.WHITE;
@@ -319,36 +318,47 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 	 * rebuildUpperPanel due to this behavior.
 	 */
 	private class TimelineStaleListener implements PropertyChangeListener { 
-		boolean used = false;
+		private boolean used = false;
+
 		@Override
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if ((Boolean) evt.getNewValue()) {
-				// Borrowed from NodeView
-				if (!used && getManifestedComponent().getComponentId() != null) {
+			// Redundant updates may be sent to new views
+			// Verify object is really stale to avoid update cascade
+			Object src = evt.getSource();
+			if ((Boolean) evt.getNewValue() && 
+				src instanceof View && 
+				((View)src).getManifestedComponent().isStale() ) {
+				
+				// Similar to NodeView, get latest from persistence.
+				// Check used flag to only execute once, as after this 
+				// the view will have been remade anyway.
+				if (!used && 
+					getManifestedComponent().getComponentId() != null) {
 					// Get the latest version of the object from persistence
 					AbstractComponent committedComponent = 
-							PlatformAccess.getPlatform().getPersistenceProvider().getComponent(getManifestedComponent().getComponentId());
+							PlatformAccess.getPlatform().getPersistenceProvider()
+							.getComponent(getManifestedComponent().getComponentId());
 
 					// For future compatibility 
 					//ObjectManager om = getManifestedComponent().getCapability(ObjectManager.class);					
 					
-					// Propogate unsaved changes to the newer component
-					boolean updated = new TimelineMergeHandler(getManifestedComponent()).update(committedComponent);
-					if (updated || getManifestedComponent().isStale()) {
-						setManifestedComponent(committedComponent);
-						updateMasterDuration();
-						rebuildUpperPanel();
+					// Propagate unsaved changes to the newer component
+					boolean updated = 
+							new TimelineMergeHandler(getManifestedComponent())
+							.update(committedComponent);
+					setManifestedComponent(committedComponent);
+					updateMasterDuration();
+					rebuildUpperPanel();
 						
-						// Flag this as used - don't repeat the above for other stale notifications
-						used = true;
-					}
+					// Flag this as used - don't repeat the above for other stale notifications
+					used = true;
 					
 					// Invoke the view's "save" if there was an update, to ensure Save All remains visible
 					if (updated) {
 						save();
 					}
-					
 				}
+				
 			}
 		}
 	}
