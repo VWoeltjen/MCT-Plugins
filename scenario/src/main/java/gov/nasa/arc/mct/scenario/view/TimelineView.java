@@ -339,8 +339,17 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 					AbstractComponent committedComponent = 
 							PlatformAccess.getPlatform().getPersistenceProvider()
 							.getComponent(getManifestedComponent().getComponentId());
-					ObjectManager objectManager = getManifestedComponent()
-							.getCapability(ObjectManager.class);		
+					AbstractComponent workUnitDelegate =
+							getManifestedComponent().getWorkUnitDelegate();
+					ObjectManager objectManager = (workUnitDelegate == null ?
+							getManifestedComponent() : workUnitDelegate)
+							.getCapability(ObjectManager.class);
+					
+					// Copy over work unit delegate, if there was one
+					if (workUnitDelegate != null) {
+						committedComponent.getCapability(ComponentInitializer.class)
+							.setWorkUnitDelegate(workUnitDelegate);
+					}
 					
 					// Propagate unsaved changes to the newer component			
 					boolean updated = 

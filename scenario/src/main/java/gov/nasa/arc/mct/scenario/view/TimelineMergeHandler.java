@@ -84,7 +84,9 @@ public class TimelineMergeHandler {
 	 * @param otherParent the component to which unsaved changes will be transferred
 	 */
 	public boolean update(AbstractComponent otherParent) {
-		return update(otherParent, otherParent, new HashSet<String>());
+		AbstractComponent delegate = otherParent.getWorkUnitDelegate();
+		return update(delegate != null ? delegate : otherParent, 
+				otherParent, new HashSet<String>());
 	}
 	
 	private boolean update(AbstractComponent parent, AbstractComponent component, Set<String> ignore) {
