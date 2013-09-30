@@ -29,7 +29,7 @@ import gov.nasa.arc.mct.components.ObjectManager;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ScenarioComponent extends CostFunctionComponent implements DurationCapability {
-	private ObjectManager objectManager = new ObjectManager.ExplicitObjectManager();
+	private ObjectManager objectManager = new ObjectManager.DirtyObjectManager(this);
 	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	
 	public ActivityData getData() {

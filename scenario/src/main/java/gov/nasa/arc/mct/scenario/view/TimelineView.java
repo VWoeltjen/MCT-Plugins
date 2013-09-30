@@ -347,7 +347,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 							objectManager != null &&
 							new TimelineMergeHandler(objectManager).update(committedComponent);
 					
-					// Rebuild view to match what was in persistence
+					// Rebuild view to match what was in persistence					
 					setManifestedComponent(committedComponent);
 					rebuildUpperPanel();
 					updateMasterDuration();
