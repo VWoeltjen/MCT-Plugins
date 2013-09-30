@@ -84,10 +84,10 @@ public class TimelineMergeHandler {
 	 * @param otherParent the component to which unsaved changes will be transferred
 	 */
 	public boolean update(AbstractComponent otherParent) {
-		return update(otherParent, new HashSet<String>());
+		return update(otherParent, otherParent, new HashSet<String>());
 	}
 	
-	private boolean update(AbstractComponent component, Set<String> ignore) {
+	private boolean update(AbstractComponent parent, AbstractComponent component, Set<String> ignore) {
 		boolean updated = false;
 		String id = component.getComponentId();
 		if (!ignore.contains(id)) {
@@ -110,6 +110,10 @@ public class TimelineMergeHandler {
 					}
 					// Make sure the component still appears dirty
 					component.save();
+					ObjectManager om = parent.getCapability(ObjectManager.class);
+					if (om != null) {
+						om.addModifiedObject(component);
+					}
 					// Report that we did update a component
 					updated = true;
 				}
@@ -117,7 +121,7 @@ public class TimelineMergeHandler {
 			
 			// Visit children
 			for (AbstractComponent child : component.getComponents()) {
-				updated |= update(child, ignore);
+				updated |= update(parent, child, ignore);
 			}
 		}
 		return updated;

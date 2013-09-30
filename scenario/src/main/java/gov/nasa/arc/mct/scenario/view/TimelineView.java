@@ -339,17 +339,18 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 					AbstractComponent committedComponent = 
 							PlatformAccess.getPlatform().getPersistenceProvider()
 							.getComponent(getManifestedComponent().getComponentId());
-
-					 
-					ObjectManager om = getManifestedComponent().getCapability(ObjectManager.class);					
+					ObjectManager objectManager = getManifestedComponent()
+							.getCapability(ObjectManager.class);		
 					
-					// Propagate unsaved changes to the newer component
+					// Propagate unsaved changes to the newer component			
 					boolean updated = 
-							om != null &&
-							new TimelineMergeHandler(om).update(committedComponent);
+							objectManager != null &&
+							new TimelineMergeHandler(objectManager).update(committedComponent);
+					
+					// Rebuild view to match what was in persistence
 					setManifestedComponent(committedComponent);
-					updateMasterDuration();
 					rebuildUpperPanel();
+					updateMasterDuration();
 						
 					// Flag this as used - don't repeat the above for other stale notifications
 					used = true;
