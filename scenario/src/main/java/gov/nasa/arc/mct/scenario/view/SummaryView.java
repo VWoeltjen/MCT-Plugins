@@ -90,7 +90,11 @@ public class SummaryView extends View {
 		chart = new PieChart(summary);
 		legend = new Legend(summary);
 		
-		add(legend, BorderLayout.NORTH);
+		JPanel upperPanel = new JPanel(new BorderLayout());
+		upperPanel.setOpaque(false);
+		
+		upperPanel.add(legend, BorderLayout.EAST);
+		add(upperPanel, BorderLayout.NORTH);
 		add(chart, BorderLayout.CENTER);
 		setBackground(Color.DARK_GRAY);	
 	}
@@ -187,14 +191,20 @@ public class SummaryView extends View {
 				view.setForeground(Color.LIGHT_GRAY);						
 				entry.add(view);
 			}
+			if (tagSet.tags.isEmpty()) {
+				JLabel label = new JLabel(tagSet.toString());
+				label.setForeground(Color.LIGHT_GRAY);				
+				entry.add(label);
+			}
+			entry.setAlignmentX(LEFT_ALIGNMENT);
 			return entry;
 		}
 		
 	}
 	
 	private static class LegendIcon implements Icon {
-		private static int ICON_HEIGHT = 12;
-		private static int ICON_WIDTH = 9;
+		private static int ICON_HEIGHT = 14;
+		private static int ICON_WIDTH = 20;
 		private Color color;
 		
 		public LegendIcon(Color c) {
