@@ -104,6 +104,9 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_timeline.png")));
 		iconMap.put(ScenarioComponent.class, 
 				new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_scenario.png")));
+		iconMap.put(TagComponent.class, 
+				new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_tag.png")));
+
 	}
 	
 	@Override
