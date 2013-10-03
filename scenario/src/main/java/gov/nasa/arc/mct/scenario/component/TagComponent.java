@@ -39,4 +39,10 @@ public class TagComponent extends AbstractComponent implements TagCapability {
 	public String getTag() {
 		return getDisplayName();
 	}
+
+	@Override
+	public AbstractComponent getComponentRepresentation() {
+		return this;
+	}
+	
 }

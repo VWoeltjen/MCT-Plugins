@@ -21,6 +21,8 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
+
 /**
  * A component (such as an activity) that has been tagged 
  * may be categorized in a certain way. This supports 
@@ -29,4 +31,5 @@ package gov.nasa.arc.mct.scenario.component;
  */
 public interface TagCapability {
 	public String getTag();
+	public AbstractComponent getComponentRepresentation();
 }
