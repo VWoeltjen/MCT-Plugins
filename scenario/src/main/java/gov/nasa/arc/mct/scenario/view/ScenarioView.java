@@ -195,5 +195,18 @@ public class ScenarioView extends AbstractTimelineView {
 		return container;
 	}
 
+	@Override
+	protected void rebuild() {
+		upperPanel.removeAll();
+		buildUpperPanel();
+		revalidate();
+		repaint();
+		for (Component c : upperPanel.getComponents()) {
+			c.invalidate();
+			c.validate();
+			c.repaint();
+		}
+	}
+
 	
 }
