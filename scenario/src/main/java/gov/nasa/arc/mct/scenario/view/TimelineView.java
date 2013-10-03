@@ -62,13 +62,12 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 	static final ViewInfo VIEW_INFO = new ViewInfo(TimelineView.class, "Timeline", ViewType.EMBEDDED);
 
 	private static final long serialVersionUID = -5039383350178424964L;
-
 	
 	private JPanel upperPanel = new JPanel();
 	private Color backgroundColor = Color.WHITE;
 	private View  costGraph = null;
 	private List<DurationConstraintSystem> constraints = new ArrayList<DurationConstraintSystem>();
-	
+		
 	public TimelineView(AbstractComponent ac, ViewInfo vi) {
 		// When we are a non-embedded view, work with a fresh copy of the 
 		// component direct from persistence. This ensures that we get fresh 
@@ -108,6 +107,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 				refreshAll();
 			}			
 		});
+		
 	}
 	
 	@Override
@@ -124,7 +124,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		if (costGraph != null) {
 			costGraph.setManifestedComponent(getManifestedComponent());
 			costGraph.viewPersisted();
-		}
+		}		
 		
 		// Finally, ensure time settings are obeyed
 		refreshAll();
@@ -141,6 +141,9 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 			select(null);
 		}
 		
+		// Clear all enforced constraints - these will be recreated
+		constraints.clear();
+		
 		// Rebuild the view
 		buildUpperPanel();
 		
@@ -150,7 +153,15 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		}		
 	}
 	
-	private void buildUpperPanel() {
+	private void buildUpperPanel() {		
+
+		if (getStaleListener() != null) {
+			removePropertyChangeListener(getStaleListener());
+			resetStaleListener();
+		}
+		
+		// Create a new instance & attach it (will be attached to new views as well)
+		addPropertyChangeListener(VIEW_STALE_PROPERTY, getStaleListener());
 		
 		AbstractComponent ac = getManifestedComponent();
 		if (!getInfo().getViewType().equals(ViewType.EMBEDDED)) { // If we're a clone, add a view manifestation of "this"
@@ -270,6 +281,8 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 
 		activityView.addMouseListener(controller);
 		activityView.addMouseMotionListener(controller);
+		
+		activityView.addPropertyChangeListener(VIEW_STALE_PROPERTY, getStaleListener());
 	}
 
 	
@@ -289,6 +302,11 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 	@Override
 	public Set<Component> getActiveViews() {		
 		return Collections.emptySet();
+	}
+
+	@Override
+	protected void rebuild() {
+		rebuildUpperPanel();
 	}
 
 }

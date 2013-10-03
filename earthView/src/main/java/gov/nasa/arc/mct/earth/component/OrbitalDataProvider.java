@@ -93,9 +93,9 @@ public class OrbitalDataProvider implements DataProvider {
 		return v.normal().multiply(-0.0084);
 	}
 	
-	private static Vector drift (Vector v1, Vector v2) {
-		return new Vector (v2.getZ(), 0.0, v2.getX()).normal().multiply(0.00008);
-	}
+//	private static Vector drift (Vector v1, Vector v2) {
+//		return new Vector (v2.getZ(), 0.0, v2.getX()).normal().multiply(0.00008);
+//	}
 	
 	@Override
 	public Map<String, List<Map<String, String>>> getData(Set<String> feedIDs,
@@ -128,6 +128,7 @@ public class OrbitalDataProvider implements DataProvider {
 				SortedMap<Long, Map<String, String>> data = new TreeMap<Long, Map<String, String>>();
 				for (long time = startTime; time < endTime; time += 1000) {
 					double dataValue = 0.0;
+					//-----start concern
 					Trajectory t = this.getTrajectory(name, time);
 					//Vector  position = positions.get(index);
 					Vector position = velocity ? t.getVelocity() : t.getPosition();
@@ -135,6 +136,8 @@ public class OrbitalDataProvider implements DataProvider {
 					if (params.contains("x")) dataValue = position.getX();
 					if (params.contains("y")) dataValue = position.getY();
 					if (params.contains("z")) dataValue = position.getZ();
+					//------end concern 
+					
 					Map <String, String> dataItem = new HashMap<String, String> ();
 					RenderingInfo ri = new RenderingInfo(Double.toString(dataValue), Color.ORANGE, " ", Color.ORANGE, true);
 					dataItem.put(FeedProvider.NORMALIZED_RENDERING_INFO, ri.toString());
