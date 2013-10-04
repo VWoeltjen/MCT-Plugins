@@ -31,6 +31,7 @@ import gov.nasa.arc.mct.scenario.component.DecisionComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.component.ScenarioComponent;
 import gov.nasa.arc.mct.scenario.component.TagComponent;
+import gov.nasa.arc.mct.scenario.component.TagRepositoryComponent;
 import gov.nasa.arc.mct.scenario.component.TimelineComponent;
 
 import java.util.Collection;
@@ -65,6 +66,10 @@ public class ScenarioContainmentPolicy implements Policy {
 	}
 
 	private boolean canContain(AbstractComponent parent, AbstractComponent child) {
+		if (parent instanceof TagRepositoryComponent) {
+			return child instanceof TagComponent;
+		}
+		
 		if (parent instanceof ScenarioComponent) {
 			return child instanceof TimelineComponent ||
 				   child instanceof ActivityComponent;
