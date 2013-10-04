@@ -21,16 +21,6 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario;
 
-import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.platform.spi.PersistenceProvider;
-import gov.nasa.arc.mct.platform.spi.Platform;
-import gov.nasa.arc.mct.platform.spi.PlatformAccess;
-import gov.nasa.arc.mct.scenario.component.TagRepositoryComponent;
-import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
-
-import java.util.Collection;
-import java.util.Collections;
-
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -42,31 +32,6 @@ public class Activator implements BundleActivator {
 	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
 	 */
 	public void start(BundleContext context) throws Exception {
-		Platform platform = PlatformAccess.getPlatform();
-		PersistenceProvider persistence = platform.getPersistenceProvider();
-		Collection<AbstractComponent> bootstraps = persistence.getBootstrapComponents();
-		String user = platform.getCurrentUser().getUserId();
-		String wild = "*";
-		
-		if (!contains(bootstraps, TagRepositoryComponent.class, user)) {
-			AbstractComponent repo = new TagRepositoryComponent();
-			repo.setDisplayName("User Tags");
-			repo.getCapability(ComponentInitializer.class).setId("tag_repo:" + user);
-			repo.getCapability(ComponentInitializer.class).setCreator(user);
-			repo.getCapability(ComponentInitializer.class).setOwner(user);
-			persistence.persist(Collections.singleton(repo));
-			persistence.tagComponents("bootstrap:creator", Collections.singleton(repo));
-		}
-		
-		if (!contains(bootstraps, TagRepositoryComponent.class, wild)) {
-			AbstractComponent repo = new TagRepositoryComponent();
-			repo.setDisplayName("Mission Tags");
-			repo.getCapability(ComponentInitializer.class).setId("tag_repo:" + wild);
-			repo.getCapability(ComponentInitializer.class).setCreator(wild);
-			repo.getCapability(ComponentInitializer.class).setOwner(wild);
-			persistence.persist(Collections.singleton(repo));
-			persistence.tagComponents("bootstrap:admin", Collections.singleton(repo));
-		}
 	}
 	
 	/*
@@ -74,18 +39,5 @@ public class Activator implements BundleActivator {
 	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
-	}
-
-	private boolean contains(Collection<AbstractComponent> components, 
-			Class<? extends AbstractComponent> componentClass, 
-			String creator) {
-		for (AbstractComponent ac : components) {
-			if (componentClass.isAssignableFrom(ac.getClass())) {
-				if (ac.getCreator().equals(creator)) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 }

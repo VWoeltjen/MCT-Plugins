@@ -21,6 +21,9 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.platform.spi.Platform;
+import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.policy.PolicyInfo;
 import gov.nasa.arc.mct.scenario.policy.ScenarioContainmentPolicy;
 import gov.nasa.arc.mct.scenario.policy.TimelineFilterViewPolicy;
@@ -34,6 +37,7 @@ import gov.nasa.arc.mct.services.component.CreateWizardUI;
 import gov.nasa.arc.mct.services.component.TypeInfo;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
+import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -178,6 +182,25 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		return super.getAsset(type, assetClass);
 	}
 
+	@Override
+	public Collection<AbstractComponent> getBootstrapComponents() {
+		String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
+		String wild = "*";
+				
+		AbstractComponent userTags = new TagRepositoryComponent();
+		userTags.setDisplayName("User Tags");
+		userTags.getCapability(ComponentInitializer.class).setId("tag_repo:" + user);
+		userTags.getCapability(ComponentInitializer.class).setCreator(user);
+		userTags.getCapability(ComponentInitializer.class).setOwner(user);
+		
+		AbstractComponent missionTags = new TagRepositoryComponent();
+		missionTags.setDisplayName("Mission Tags");
+		missionTags.getCapability(ComponentInitializer.class).setId("tag_repo:" + wild);
+		missionTags.getCapability(ComponentInitializer.class).setCreator(wild);
+		missionTags.getCapability(ComponentInitializer.class).setOwner(wild);
+		
+		return Arrays.asList(missionTags, userTags);
+	}
 
 	
 }
