@@ -27,7 +27,6 @@ import gov.nasa.arc.mct.platform.spi.Platform;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.component.TagRepositoryComponent;
 import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
-import gov.nasa.arc.mct.services.internal.component.User;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -45,22 +44,26 @@ public class Activator implements BundleActivator {
 	public void start(BundleContext context) throws Exception {
 		Platform platform = PlatformAccess.getPlatform();
 		PersistenceProvider persistence = platform.getPersistenceProvider();
-		Collection<AbstractComponent> bootstraps = platform.getBootstrapComponents();
+		Collection<AbstractComponent> bootstraps = persistence.getBootstrapComponents();
 		String user = platform.getCurrentUser().getUserId();
 		String wild = "*";
-		String compType = TagRepositoryComponent.class.getName();
 		
 		if (!contains(bootstraps, TagRepositoryComponent.class, user)) {
-			AbstractComponent repo = platform.getComponentRegistry().newInstance(compType);
+			AbstractComponent repo = new TagRepositoryComponent();
 			repo.setDisplayName("User Tags");
+			repo.getCapability(ComponentInitializer.class).setId("tag_repo:" + user);
+			repo.getCapability(ComponentInitializer.class).setCreator(user);
+			repo.getCapability(ComponentInitializer.class).setOwner(user);
 			persistence.persist(Collections.singleton(repo));
 			persistence.tagComponents("bootstrap:creator", Collections.singleton(repo));
 		}
 		
 		if (!contains(bootstraps, TagRepositoryComponent.class, wild)) {
-			AbstractComponent repo = platform.getComponentRegistry().newInstance(compType);
+			AbstractComponent repo = new TagRepositoryComponent();
 			repo.setDisplayName("Mission Tags");
+			repo.getCapability(ComponentInitializer.class).setId("tag_repo:" + wild);
 			repo.getCapability(ComponentInitializer.class).setCreator(wild);
+			repo.getCapability(ComponentInitializer.class).setOwner(wild);
 			persistence.persist(Collections.singleton(repo));
 			persistence.tagComponents("bootstrap:admin", Collections.singleton(repo));
 		}
