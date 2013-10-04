@@ -35,6 +35,8 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Arc2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,6 +61,8 @@ public class SummaryView extends View {
 	private int MAX_SAMPLES = 2 << 8;
 	private Map<String, Summary> costSummaries =
 			new HashMap<String, Summary>();
+	private TagSet highlighted = null;
+	
 	
 	private PieChart chart;
 	private Legend legend;
@@ -156,7 +160,37 @@ public class SummaryView extends View {
 		}
 	}
 	
-	private static class Legend extends JPanel {
+	private class Highlighter extends MouseAdapter {
+		private TagSet tagSet;
+
+		public Highlighter(TagSet tagSet) {
+			this.tagSet = tagSet;
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			highlighted = tagSet;
+			Object source = e.getSource();
+			if (source instanceof JComponent) {
+				((JComponent) source).repaint();
+			}
+			chart.repaint();
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			if (tagSet.equals(highlighted)) {
+				highlighted = null;
+			}
+			Object source = e.getSource();
+			if (source instanceof JComponent) {
+				((JComponent) source).repaint();
+			}
+			chart.repaint();			
+		}
+	}
+	
+	private class Legend extends JPanel {
 		private static final long serialVersionUID = 4396877097465579358L;
 		
 		public Legend(Summary summary) {
@@ -183,8 +217,8 @@ public class SummaryView extends View {
 			JPanel entry = new JPanel();
 			entry.setOpaque(false);
 			entry.setLayout(new BoxLayout(entry, BoxLayout.LINE_AXIS));	
-			
-			entry.add(new JLabel(new LegendIcon(ScenarioColorPalette.getColor(tagSet.toString()))));
+						
+			entry.add(new JLabel(new LegendIcon(tagSet)));
 			for (TagCapability tag : tagSet.tags) {
 				JComponent view = 
 						LabelView.VIEW_INFO.createView(tag.getComponentRepresentation());
@@ -197,21 +231,23 @@ public class SummaryView extends View {
 				entry.add(label);
 			}
 			entry.setAlignmentX(LEFT_ALIGNMENT);
+			entry.addMouseListener(new Highlighter(tagSet));
 			return entry;
 		}
 		
 	}
-	
-	private static class LegendIcon implements Icon {
-		private static int ICON_HEIGHT = 14;
-		private static int ICON_WIDTH = 20;
+
+	private static int ICON_HEIGHT = 14;
+	private static int ICON_WIDTH = 20;
+	private class LegendIcon implements Icon {
+		private TagSet tagSet;
 		private Color color;
 		
-		public LegendIcon(Color c) {
-			color = c;
+		public LegendIcon(TagSet tagSet) {
+			this.tagSet = tagSet;
+			this.color = ScenarioColorPalette.getColor(tagSet.toString());
 		}
-		
-		
+				
 		@Override
 		public int getIconHeight() {
 			return ICON_HEIGHT;
@@ -230,15 +266,15 @@ public class SummaryView extends View {
 						RenderingHints.VALUE_ANTIALIAS_ON
 				);
 			}
-			g.setColor(color);
+			g.setColor(tagSet.equals(highlighted) ? color.brighter() : color);
 			g.fillRoundRect(x, y, ICON_WIDTH-1, ICON_HEIGHT-1, ICON_WIDTH/2, ICON_WIDTH/2);
-			g.setColor(Color.BLACK);
+			g.setColor(color.darker());
 			g.drawRoundRect(x, y, ICON_WIDTH-1, ICON_HEIGHT-1, ICON_WIDTH/2, ICON_WIDTH/2);
 		}
 		
 	}
 	
-	private static class PieChart extends JComponent {
+	private class PieChart extends JComponent {
 		private static final long serialVersionUID = -3249915607722487317L;
 		private List<PieSlice> slices;
 		private double total;
@@ -275,7 +311,8 @@ public class SummaryView extends View {
 					if (g instanceof Graphics2D) {
 						arc2D.setAngleStart(start);
 						arc2D.setAngleExtent(arc);
-						g.setColor(ScenarioColorPalette.getColor(slice.toString()));
+						Color c = ScenarioColorPalette.getColor(slice.toString());						
+						g.setColor(slice.equals(highlighted) ? c.brighter() : c);
 						((Graphics2D) g).fill(arc2D);
 						g.setColor(Color.BLACK);
 						((Graphics2D) g).draw(arc2D);
@@ -292,7 +329,7 @@ public class SummaryView extends View {
 			}
 		}
 		
-		private static class PieSlice extends TagSet {
+		private class PieSlice extends TagSet {
 			private double cost;
 			
 			public PieSlice(Collection<TagCapability> tags, double cost) {
@@ -326,8 +363,18 @@ public class SummaryView extends View {
 
 		@Override
 		public int compareTo(TagSet other) {
-			return string.compareTo(other.toString());
+			return toString().compareTo(other.toString());
 		}		
+		
+		@Override
+		public int hashCode() {
+			return toString().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			return o instanceof TagSet && compareTo((TagSet)o) == 0;
+		}
 	}
 	
 	private static class Summary {
