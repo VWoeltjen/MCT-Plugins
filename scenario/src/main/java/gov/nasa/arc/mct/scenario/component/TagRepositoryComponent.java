@@ -22,6 +22,7 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.Bootstrap;
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
 
@@ -31,14 +32,17 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-public class TagRepositoryComponent extends AbstractComponent implements RepositoryCapability {
+public class TagRepositoryComponent extends AbstractComponent implements RepositoryCapability, Bootstrap {
 	private AtomicReference<TagRepositoryModel> model =
 			new AtomicReference<TagRepositoryModel>(new TagRepositoryModel());
 
 	@Override
-	public <T> T handleGetCapability(Class<T> capabilityClass) {
-		return (capabilityClass.isAssignableFrom(ModelStatePersistence.class)) ?
-			capabilityClass.cast(persistence) :
+	public <T> T handleGetCapability(Class<T> capabilityClass) {	
+		return
+			capabilityClass.isAssignableFrom(getClass()) ? 
+					capabilityClass.cast(this) :
+			capabilityClass.isAssignableFrom(ModelStatePersistence.class) ? 
+					capabilityClass.cast(persistence) :
 			super.handleGetCapability(capabilityClass);
 	}
 	
@@ -47,6 +51,7 @@ public class TagRepositoryComponent extends AbstractComponent implements Reposit
 		return TagComponent.class;
 	}
 
+	// TODO: Use this to support the Group capability
 	@Override
 	public String getUserScope() {
 		return model.get().scope;
@@ -79,4 +84,26 @@ public class TagRepositoryComponent extends AbstractComponent implements Reposit
 			return TagRepositoryModel.class;
 		}		
 	};
+
+	@Override
+	public boolean isGlobal() {
+		return getCreator().equals("*");
+	}
+
+	@Override
+	public boolean isSandbox() {
+		return false;
+	}
+
+	@Override
+	public int categoryIndex() {
+		// Categorize by package - "somewhere in the middle",
+		// but grouped with other components from the same package.
+		return getClass().getPackage().getName().hashCode() & 0xFFFF;
+	}
+
+	@Override
+	public int componentIndex() {
+		return isGlobal() ? 0 : 1;
+	}
 }
