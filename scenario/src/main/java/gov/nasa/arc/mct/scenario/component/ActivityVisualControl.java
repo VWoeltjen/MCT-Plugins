@@ -208,6 +208,9 @@ public class ActivityVisualControl extends CustomVisualControl {
 			label.setForeground(foreground);
 			JButton icon = new JButton(X_ICON);
 			icon.setBorder(null);
+			icon.setFocusPainted(false);
+			icon.setBorderPainted(false);
+			icon.setContentAreaFilled(false);
 			icon.setOpaque(false);
 			icon.setBackground(comboBox.getBackground().darker());
 			icon.setForeground(foreground);
