@@ -67,8 +67,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 					if (childTags != null && !childTags.isEmpty()) {
 						if (tagCapabilities == null) {
 							tagCapabilities = new ArrayList<T>();
-							tagCapabilities.addAll(childTags);
 						}
+						tagCapabilities.addAll(childTags);
 					}
 				}
 			}
