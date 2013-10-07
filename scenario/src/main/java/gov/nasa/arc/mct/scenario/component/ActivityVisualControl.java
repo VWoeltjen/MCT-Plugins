@@ -23,36 +23,72 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.CustomVisualControl;
+import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.view.LabelView;
 
+import java.awt.BorderLayout;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
 
 public class ActivityVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 260628819696786275L;
-
+	private List<AbstractComponent> tags = new ArrayList<AbstractComponent>();
+	private JPanel tagPanel = new JPanel();
+	private JComboBox comboBox;
+	
+	public ActivityVisualControl() {
+		setLayout(new BorderLayout());
+		comboBox = makeComboBox();
+		add(comboBox, BorderLayout.NORTH);
+		add(tagPanel, BorderLayout.CENTER);
+	}
+	
 	@Override
 	public void setValue(Object value) {
-		this.removeAll();
+		tagPanel.removeAll();
+		tags.clear();
 		if (value instanceof List) {
-			for (Object element : (List) value) {
+			for (Object element : (List<?>) value) {
 				if (element instanceof AbstractComponent) {
 					add(LabelView.VIEW_INFO.createView((AbstractComponent) element));
+					tags.add((AbstractComponent) element);
 				}
 			}
 		}
-
 	}
 
 	@Override
 	public Object getValue() {
-		// TODO Auto-generated method stub
-		return null;
+		return tags;
 	}
 
 	@Override
 	public void setMutable(boolean mutable) {
-		// TODO Auto-generated method stub
-
 	}
-
+	
+	private JComboBox makeComboBox() {
+		List<Object> listItems = new ArrayList<Object>();
+		for (AbstractComponent comp : 
+			PlatformAccess.getPlatform().getBootstrapComponents()) {
+			RepositoryCapability repo = comp.getCapability(RepositoryCapability.class);
+			if (repo != null && 
+				TagCapability.class.isAssignableFrom(repo.getCapabilityClass())) {
+				// First, add repo as a section heading
+				listItems.add(comp);
+				// Add all tags underneath
+				for (AbstractComponent child : comp.getComponents()) {					
+					listItems.addAll(child.getCapabilities(TagCapability.class));
+				}
+			}
+		}
+		
+		JComboBox comboBox = new JComboBox(listItems.toArray());
+		
+		return comboBox;
+	}
+	
+	
 }
