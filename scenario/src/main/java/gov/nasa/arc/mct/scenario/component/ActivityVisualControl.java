@@ -208,9 +208,15 @@ public class ActivityVisualControl extends CustomVisualControl {
 			public void itemStateChanged(ItemEvent event) {
 				Object source = event.getSource();
 				if (source instanceof JComboBox) {
-					Object item = ((JComboBox) source).getSelectedItem();
+					JComboBox comboBox = ((JComboBox) source);
+					Object item = comboBox.getSelectedItem();
 					if (item instanceof TagCapability) {
 						addTag(((TagCapability) item).getComponentRepresentation());
+					}
+					
+					// Clear selection (allow same action to be repeated, if desired)
+					if (comboBox.getSelectedIndex() > 0) {
+						comboBox.setSelectedIndex(-1);
 					}
 				}				
 			}			
