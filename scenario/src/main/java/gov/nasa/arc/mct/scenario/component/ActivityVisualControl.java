@@ -27,11 +27,18 @@ import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.view.LabelView;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 
 public class ActivityVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 260628819696786275L;
@@ -86,7 +93,30 @@ public class ActivityVisualControl extends CustomVisualControl {
 		}
 		
 		JComboBox comboBox = new JComboBox(listItems.toArray());
-		
+		comboBox.setRenderer(new ListCellRenderer() {
+			private JLabel label = new JLabel(); // Re-use
+			private Color c = label.getForeground();
+			@Override
+			public Component getListCellRendererComponent(JList list,
+					Object item, int index, boolean isSelected, boolean hasFocus) {
+				label.setFont(label.getFont().deriveFont(
+					item instanceof TagCapability ? Font.PLAIN : 
+					item instanceof AbstractComponent ? Font.ITALIC :
+					Font.BOLD));
+						
+				label.setIcon(item instanceof TagCapability ?
+					((TagCapability)item).getComponentRepresentation().getAsset(ImageIcon.class) :
+					null);
+				
+				label.setText(item instanceof AbstractComponent ?
+					((AbstractComponent)item).getDisplayName() :
+					item.toString());
+				
+				label.setForeground(c);
+				
+				return label;
+			}			
+		});
 		return comboBox;
 	}
 	
