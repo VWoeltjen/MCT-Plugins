@@ -33,6 +33,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -99,6 +100,16 @@ public class ActivityVisualControl extends CustomVisualControl {
 	private void addTag(AbstractComponent tag) {
 		if (!tags.contains(tag)) {
 			tags.add(tag);
+		}		
+		rebuildTagPanel();
+		tagPanel.revalidate();
+		tagPanel.repaint();
+		fireChange();
+	}
+	
+	private void removeTag(AbstractComponent tag) {
+		if (tags.contains(tag)) {
+			tags.remove(tag);
 		}		
 		rebuildTagPanel();
 		tagPanel.revalidate();
@@ -196,7 +207,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 		return comboBox;
 	}
 
-	private class RemovableTag extends JPanel {
+	private class RemovableTag extends JPanel implements ActionListener {
 		private static final long serialVersionUID = 4900258333156735699L;
 		private AbstractComponent tagComponent;
 
@@ -214,6 +225,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 			icon.setOpaque(false);
 			icon.setBackground(comboBox.getBackground().darker());
 			icon.setForeground(foreground);
+			icon.addActionListener(this);
 			add (label, BorderLayout.CENTER);
 			add (icon, BorderLayout.EAST);
 			setOpaque(false);
@@ -231,6 +243,11 @@ public class ActivityVisualControl extends CustomVisualControl {
 			g.setColor(getBackground());
 			g.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, getHeight(), getHeight());
 			super.paintComponent(g);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent event) {
+			removeTag(tagComponent);
 		}
 	}
 	
