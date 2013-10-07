@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ComboBoxEditor;
@@ -140,6 +142,9 @@ public class ActivityVisualControl extends CustomVisualControl {
 			}
 		}
 
+		// Always show "create tag" as the last option
+		listItems.add(createTagAction);
+
 		JComboBox comboBox = new JComboBox(listItems.toArray());
 		
 		comboBox.setEditor(new ComboBoxEditor() {
@@ -181,14 +186,15 @@ public class ActivityVisualControl extends CustomVisualControl {
 				label.setFont(label.getFont().deriveFont(
 					item instanceof TagCapability ? Font.PLAIN : 
 					item instanceof AbstractComponent ? Font.ITALIC :
-					Font.BOLD));
+					Font.PLAIN));
 						
 				label.setIcon(item instanceof TagCapability ?
 					((TagCapability)item).getComponentRepresentation().getAsset(ImageIcon.class) :
 					null);
 				
-				label.setText(item instanceof AbstractComponent ?
-					((AbstractComponent)item).getDisplayName() :
+				label.setText(
+					item instanceof AbstractComponent ? ((AbstractComponent)item).getDisplayName() :
+					item instanceof Action ? ((Action)item).getValue(Action.NAME).toString() :
 					item.toString());
 				
 				label.setForeground(foreground);
@@ -298,6 +304,14 @@ public class ActivityVisualControl extends CustomVisualControl {
 
 		}
 		
+	};
+	
+	private final Action createTagAction = 
+			new AbstractAction("Create a New User Tag...") {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+		}
 	};
 	
 }
