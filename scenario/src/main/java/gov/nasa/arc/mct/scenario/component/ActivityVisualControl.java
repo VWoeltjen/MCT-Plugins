@@ -44,7 +44,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.ListCellRenderer;
 
 public class ActivityVisualControl extends CustomVisualControl {
@@ -96,10 +95,11 @@ public class ActivityVisualControl extends CustomVisualControl {
 	private void addTag(AbstractComponent tag) {
 		if (!tags.contains(tag)) {
 			tags.add(tag);
-		}
+		}		
 		rebuildTagPanel();
 		tagPanel.revalidate();
 		tagPanel.repaint();
+		fireChange();
 	}
 	
 	private JComboBox makeComboBox() {
