@@ -54,7 +54,7 @@ public class TagRepositoryComponent extends AbstractComponent implements Reposit
 	// TODO: Use this to support the Group capability
 	@Override
 	public String getUserScope() {
-		return model.get().scope;
+		return getCreator(); //model.get().scope;
 	}
 	
 	public void setUserScope(String scope) {

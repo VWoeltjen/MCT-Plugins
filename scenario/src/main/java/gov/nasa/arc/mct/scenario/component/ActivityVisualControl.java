@@ -127,6 +127,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 	
 	private JComboBox makeComboBox() {
 		List<Object> listItems = new ArrayList<Object>();
+		AbstractComponent userRepository = null;
 		for (AbstractComponent comp : 
 			PlatformAccess.getPlatform().getBootstrapComponents()) {
 			RepositoryCapability repo = comp.getCapability(RepositoryCapability.class);
@@ -139,11 +140,19 @@ public class ActivityVisualControl extends CustomVisualControl {
 					listItems.addAll(child.getCapabilities(TagCapability.class));
 				}
 				listItems.add(Box.createVerticalStrut(8)); // Blank space
+				
+				// Also, check to see if this is User Tags
+				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
+				if (repo.getUserScope().equals(user)) {
+					userRepository = comp;
+				}
 			}
 		}
 
 		// Always show "create tag" as the last option
-		listItems.add(createTagAction);
+		if (userRepository != null) {
+			listItems.add(new CreateTagAction(userRepository));
+		}
 
 		JComboBox comboBox = new JComboBox(listItems.toArray());
 		
@@ -314,14 +323,23 @@ public class ActivityVisualControl extends CustomVisualControl {
 		
 	};
 	
-	private final Action createTagAction = 
-			new AbstractAction("Create a New User Tag...") {
-				private static final long serialVersionUID = -6802988734433646534L;
-
+	private class CreateTagAction extends AbstractAction {
+		private static final long serialVersionUID = -6802988734433646534L;
+		private AbstractComponent repository;
+		
+		public CreateTagAction(AbstractComponent repository) {
+			super("Create a New User Tag...");
+			this.repository = repository;				
+		}				
+				
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+			AbstractComponent tag = 
+					new TagDialog(ActivityVisualControl.this, repository)
+						.createComponent();
+			if (tag != null) {
+				addTag(tag);
+			}
 		}
-	};
-	
+	};	
 }
