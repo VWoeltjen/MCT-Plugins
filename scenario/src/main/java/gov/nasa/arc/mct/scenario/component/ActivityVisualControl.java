@@ -61,6 +61,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 	private JPanel tagPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 	private JComboBox comboBox;
 	private Color foreground;
+	private boolean isMutable = true;
 	
 	public ActivityVisualControl() {
 		setLayout(new BorderLayout());
@@ -90,6 +91,9 @@ public class ActivityVisualControl extends CustomVisualControl {
 
 	@Override
 	public void setMutable(boolean mutable) {
+		isMutable = mutable;
+		comboBox.setEnabled(isMutable);
+		rebuildTagPanel();
 	}
 
 	private void rebuildTagPanel() {
@@ -221,7 +225,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 			label.setForeground(foreground);
 
 			// Don't allow removing the last manifestation of a tag
-			if (isRemovable()) { 				
+			if (isRemovable() && isMutable) { 				
 				JButton icon = new JButton(X_ICON);
 				icon.setBorder(null);
 				icon.setFocusPainted(false);
