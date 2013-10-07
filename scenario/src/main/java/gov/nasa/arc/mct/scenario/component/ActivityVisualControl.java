@@ -39,6 +39,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -218,17 +219,21 @@ public class ActivityVisualControl extends CustomVisualControl {
 			this.tagComponent = tagComponent;
 			JComponent label = LabelView.VIEW_INFO.createView(tagComponent);
 			label.setForeground(foreground);
-			JButton icon = new JButton(X_ICON);
-			icon.setBorder(null);
-			icon.setFocusPainted(false);
-			icon.setBorderPainted(false);
-			icon.setContentAreaFilled(false);
-			icon.setOpaque(false);
-			icon.setBackground(comboBox.getBackground().darker());
-			icon.setForeground(foreground);
-			icon.addActionListener(this);
+
+			// Don't allow removing the last manifestation of a tag
+			if (isRemovable()) { 				
+				JButton icon = new JButton(X_ICON);
+				icon.setBorder(null);
+				icon.setFocusPainted(false);
+				icon.setBorderPainted(false);
+				icon.setContentAreaFilled(false);
+				icon.setOpaque(false);
+				icon.setBackground(comboBox.getBackground().darker());
+				icon.setForeground(foreground);
+				icon.addActionListener(this);
+				add (icon, BorderLayout.EAST);
+			}
 			add (label, BorderLayout.CENTER);
-			add (icon, BorderLayout.EAST);
 			setOpaque(false);
 			setBackground(comboBox.getBackground());
 			setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
@@ -249,6 +254,20 @@ public class ActivityVisualControl extends CustomVisualControl {
 		@Override
 		public void actionPerformed(ActionEvent event) {
 			removeTag(tagComponent);
+		}
+		
+		private boolean isRemovable() {
+			Collection<AbstractComponent> references = 
+					tagComponent.getReferencingComponents();
+			// If there's only one parent, make sure it's a repository (and not our activity)
+			if (references.size() == 1) {
+				AbstractComponent parent = references.iterator().next();
+				RepositoryCapability capability = parent.getCapability(RepositoryCapability.class);
+				return (capability != null && 
+						TagCapability.class.isAssignableFrom(capability.getCapabilityClass()));
+			} else {
+				return references.size() > 1;
+			}			
 		}
 	}
 	
