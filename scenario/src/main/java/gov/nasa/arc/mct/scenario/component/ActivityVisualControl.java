@@ -230,7 +230,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 			add (icon, BorderLayout.EAST);
 			setOpaque(false);
 			setBackground(comboBox.getBackground());
-			setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
+			setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
 		}
 		
 		@Override
