@@ -29,6 +29,7 @@ import gov.nasa.arc.mct.scenario.view.LabelView;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -56,7 +57,7 @@ import javax.swing.ListCellRenderer;
 public class ActivityVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 260628819696786275L;
 	private List<AbstractComponent> tags = new ArrayList<AbstractComponent>();
-	private JPanel tagPanel = new JPanel();
+	private JPanel tagPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 	private JComboBox comboBox;
 	private Color foreground;
 	
