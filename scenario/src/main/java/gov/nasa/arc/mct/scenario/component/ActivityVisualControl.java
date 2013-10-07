@@ -44,6 +44,7 @@ import javax.swing.Box;
 import javax.swing.ComboBoxEditor;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -205,7 +206,9 @@ public class ActivityVisualControl extends CustomVisualControl {
 			this.tagComponent = tagComponent;
 			JComponent label = LabelView.VIEW_INFO.createView(tagComponent);
 			label.setForeground(foreground);
-			JComponent icon = new JLabel(X_ICON);
+			JButton icon = new JButton(X_ICON);
+			icon.setBorder(null);
+			icon.setOpaque(false);
 			icon.setBackground(comboBox.getBackground().darker());
 			icon.setForeground(foreground);
 			add (label, BorderLayout.CENTER);
