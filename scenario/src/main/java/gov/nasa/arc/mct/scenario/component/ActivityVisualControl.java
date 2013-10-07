@@ -30,9 +30,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.ComboBoxEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -91,11 +95,39 @@ public class ActivityVisualControl extends CustomVisualControl {
 				}
 			}
 		}
-		
+
+		final Color foreground = new JLabel().getForeground();
 		JComboBox comboBox = new JComboBox(listItems.toArray());
+		
+		comboBox.setEditor(new ComboBoxEditor() {
+			private JLabel label = new JLabel("- Add a Tag -");
+
+			@Override
+			public void addActionListener(ActionListener listener) {}
+
+			@Override
+			public Component getEditorComponent() {
+				return label;
+			}
+
+			@Override
+			public Object getItem() {
+				return label.getText();
+			}
+
+			@Override
+			public void removeActionListener(ActionListener listener) {}
+
+			@Override
+			public void selectAll() {}
+
+			@Override
+			public void setItem(Object item) {}			
+		});
+ 		comboBox.setEditable(true);
+
 		comboBox.setRenderer(new ListCellRenderer() {
 			private JLabel label = new JLabel(); // Re-use
-			private Color c = label.getForeground();
 			@Override
 			public Component getListCellRendererComponent(JList list,
 					Object item, int index, boolean isSelected, boolean hasFocus) {
@@ -112,13 +144,23 @@ public class ActivityVisualControl extends CustomVisualControl {
 					((AbstractComponent)item).getDisplayName() :
 					item.toString());
 				
-				label.setForeground(c);
+				label.setForeground(foreground);
 				
 				return label;
 			}			
 		});
+		
+		comboBox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent event) {
+				Object source = event.getSource();
+				if (source instanceof JComboBox) {
+					
+				}				
+			}			
+		});
+		
 		return comboBox;
 	}
-	
-	
+
 }
