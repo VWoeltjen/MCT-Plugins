@@ -212,6 +212,8 @@ public class ActivityVisualControl extends CustomVisualControl {
 					Object item = comboBox.getSelectedItem();
 					if (item instanceof TagCapability) {
 						addTag(((TagCapability) item).getComponentRepresentation());
+					} else if (item instanceof Action) {
+						((Action) item).actionPerformed(new ActionEvent(event.getSource(), 0, ""));
 					}
 					
 					// Clear selection (allow same action to be repeated, if desired)
@@ -314,6 +316,8 @@ public class ActivityVisualControl extends CustomVisualControl {
 	
 	private final Action createTagAction = 
 			new AbstractAction("Create a New User Tag...") {
+				private static final long serialVersionUID = -6802988734433646534L;
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
