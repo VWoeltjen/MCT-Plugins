@@ -36,12 +36,15 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.Box;
 import javax.swing.ComboBoxEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.ListCellRenderer;
 
 public class ActivityVisualControl extends CustomVisualControl {
@@ -49,26 +52,27 @@ public class ActivityVisualControl extends CustomVisualControl {
 	private List<AbstractComponent> tags = new ArrayList<AbstractComponent>();
 	private JPanel tagPanel = new JPanel();
 	private JComboBox comboBox;
+	private Color foreground;
 	
 	public ActivityVisualControl() {
 		setLayout(new BorderLayout());
 		comboBox = makeComboBox();
+		foreground = new JLabel().getForeground();
 		add(comboBox, BorderLayout.NORTH);
 		add(tagPanel, BorderLayout.CENTER);
 	}
 	
 	@Override
 	public void setValue(Object value) {
-		tagPanel.removeAll();
 		tags.clear();
 		if (value instanceof List) {
 			for (Object element : (List<?>) value) {
 				if (element instanceof AbstractComponent) {
-					add(LabelView.VIEW_INFO.createView((AbstractComponent) element));
 					tags.add((AbstractComponent) element);
 				}
 			}
 		}
+		rebuildTagPanel();
 	}
 
 	@Override
@@ -78,6 +82,24 @@ public class ActivityVisualControl extends CustomVisualControl {
 
 	@Override
 	public void setMutable(boolean mutable) {
+	}
+
+	private void rebuildTagPanel() {
+		tagPanel.removeAll();
+		for (AbstractComponent t : tags) {
+			JComponent view = LabelView.VIEW_INFO.createView(t);
+			view.setForeground(foreground);
+			tagPanel.add(view);
+		}
+	}
+	
+	private void addTag(AbstractComponent tag) {
+		if (!tags.contains(tag)) {
+			tags.add(tag);
+		}
+		rebuildTagPanel();
+		tagPanel.revalidate();
+		tagPanel.repaint();
 	}
 	
 	private JComboBox makeComboBox() {
@@ -96,7 +118,6 @@ public class ActivityVisualControl extends CustomVisualControl {
 			}
 		}
 
-		final Color foreground = new JLabel().getForeground();
 		JComboBox comboBox = new JComboBox(listItems.toArray());
 		
 		comboBox.setEditor(new ComboBoxEditor() {
@@ -131,6 +152,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 			@Override
 			public Component getListCellRendererComponent(JList list,
 					Object item, int index, boolean isSelected, boolean hasFocus) {
+				
 				label.setFont(label.getFont().deriveFont(
 					item instanceof TagCapability ? Font.PLAIN : 
 					item instanceof AbstractComponent ? Font.ITALIC :
@@ -155,7 +177,10 @@ public class ActivityVisualControl extends CustomVisualControl {
 			public void itemStateChanged(ItemEvent event) {
 				Object source = event.getSource();
 				if (source instanceof JComboBox) {
-					
+					Object item = ((JComboBox) source).getSelectedItem();
+					if (item instanceof TagCapability) {
+						addTag(((TagCapability) item).getComponentRepresentation());
+					}
 				}				
 			}			
 		});
