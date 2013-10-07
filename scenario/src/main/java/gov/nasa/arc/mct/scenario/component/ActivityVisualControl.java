@@ -42,6 +42,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ComboBoxEditor;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -204,8 +205,11 @@ public class ActivityVisualControl extends CustomVisualControl {
 			this.tagComponent = tagComponent;
 			JComponent label = LabelView.VIEW_INFO.createView(tagComponent);
 			label.setForeground(foreground);
+			JComponent icon = new JLabel(X_ICON);
+			icon.setBackground(comboBox.getBackground().darker());
+			icon.setForeground(foreground);
 			add (label, BorderLayout.CENTER);
-			add (new JLabel("X"), BorderLayout.EAST);
+			add (icon, BorderLayout.EAST);
 			setOpaque(false);
 			setBackground(comboBox.getBackground());
 			setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
@@ -223,5 +227,30 @@ public class ActivityVisualControl extends CustomVisualControl {
 			super.paintComponent(g);
 		}
 	}
+	
+	private static final Icon X_ICON = new Icon() {
+		@Override
+		public int getIconHeight() {			
+			return 12;
+		}
 
+		@Override
+		public int getIconWidth() {
+			return 12;
+		}
+
+		@Override
+		public void paintIcon(Component c, Graphics g, int x, int y) {
+			g.setColor(c.getBackground());
+			g.fillOval(x, y, getIconWidth(), getIconHeight());
+			g.setColor(c.getForeground());
+			g.drawLine(x +   getIconWidth()/4  , y +   getIconHeight()/4  , 
+					   x + 3*getIconWidth()/4-1, y + 3*getIconHeight()/4-1);
+			g.drawLine(x +   getIconWidth()/4  , y + 3*getIconHeight()/4-1, 
+					   x + 3*getIconWidth()/4-1, y +   getIconHeight()/4  );
+
+		}
+		
+	};
+	
 }
