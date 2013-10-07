@@ -26,7 +26,10 @@ import gov.nasa.arc.mct.components.PropertyEditor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TagPropertyEditor implements PropertyEditor<List<AbstractComponent>> {
 	private AbstractComponent component;
@@ -62,22 +65,32 @@ public class TagPropertyEditor implements PropertyEditor<List<AbstractComponent>
 			throw new IllegalArgumentException("Must provide a list");
 		}
 		
-		List<AbstractComponent> newChildren = new ArrayList<AbstractComponent>();
+		// Aggregate new children
+		Map<String, AbstractComponent> newChildren = 
+				new LinkedHashMap<String, AbstractComponent>();
 		for (Object element : (List<?>) value) {
 			if (!(element instanceof AbstractComponent)) {
 				throw new IllegalArgumentException("Must provide list of AbstractComponents");
 			} else {
-				newChildren.add((AbstractComponent) element);
+				AbstractComponent comp = (AbstractComponent) element;
+				newChildren.put(comp.getComponentId(), comp);
 			}
 		}
 		
+		// Don't bother adding any current children
+		// And identify children to remove
 		List<AbstractComponent> toRemove = getValue();
-		toRemove.removeAll(newChildren);
-		
-		newChildren.removeAll(getValue());
+		Iterator<AbstractComponent> iter = toRemove.iterator();
+		while (iter.hasNext()) {
+			AbstractComponent next = iter.next();
+			if (newChildren.containsKey(next.getComponentId())) {
+				iter.remove();
+				newChildren.remove(next.getComponentId());
+			}
+		}
 		
 		component.removeDelegateComponents(toRemove);
-		component.addDelegateComponents(newChildren);
+		component.addDelegateComponents(newChildren.values());
 	}
 
 	@Override
