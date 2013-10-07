@@ -30,12 +30,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ComboBoxEditor;
 import javax.swing.ImageIcon;
@@ -202,6 +204,15 @@ public class ActivityVisualControl extends CustomVisualControl {
 			label.setForeground(foreground);
 			add (label, BorderLayout.CENTER);
 			add (new JLabel("X"), BorderLayout.EAST);
+			setOpaque(false);
+			setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
+		}
+		
+		@Override
+		public void paintComponent(Graphics g) {
+			g.setColor(Color.GRAY);
+			g.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, getHeight(), getHeight());
+			super.paintComponent(g);
 		}
 		
 		
