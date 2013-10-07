@@ -22,7 +22,7 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.platform.spi.Platform;
+import gov.nasa.arc.mct.gui.CustomVisualControl;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.policy.PolicyInfo;
 import gov.nasa.arc.mct.scenario.policy.ScenarioContainmentPolicy;
@@ -178,6 +178,13 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			}
 		}
 	
+		// Custom editors
+		if (assetClass.isAssignableFrom(CustomVisualControl.class)) {
+			if (ActivityComponent.class.isAssignableFrom(type.getTypeClass())) {
+				return assetClass.cast(new ActivityVisualControl());
+			}
+		}
+		
 		// Default behavior
 		return super.getAsset(type, assetClass);
 	}
