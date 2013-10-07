@@ -31,6 +31,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -211,14 +213,15 @@ public class ActivityVisualControl extends CustomVisualControl {
 		
 		@Override
 		public void paintComponent(Graphics g) {
+			// Draw with smooth edges
+			if (g instanceof Graphics2D) {
+				((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+						                          RenderingHints.VALUE_ANTIALIAS_ON);
+			}
 			g.setColor(getBackground());
 			g.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, getHeight(), getHeight());
 			super.paintComponent(g);
 		}
-		
-		
-		
-		
 	}
-	
+
 }
