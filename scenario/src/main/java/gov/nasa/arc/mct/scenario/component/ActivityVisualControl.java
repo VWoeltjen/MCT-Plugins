@@ -205,12 +205,13 @@ public class ActivityVisualControl extends CustomVisualControl {
 			add (label, BorderLayout.CENTER);
 			add (new JLabel("X"), BorderLayout.EAST);
 			setOpaque(false);
+			setBackground(comboBox.getBackground());
 			setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
 		}
 		
 		@Override
 		public void paintComponent(Graphics g) {
-			g.setColor(Color.GRAY);
+			g.setColor(getBackground());
 			g.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, getHeight(), getHeight());
 			super.paintComponent(g);
 		}
