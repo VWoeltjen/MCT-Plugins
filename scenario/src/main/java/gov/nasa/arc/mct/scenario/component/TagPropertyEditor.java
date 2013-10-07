@@ -31,6 +31,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Property editor for an activity's tags. Expresses 
+ * the list of tags currently applied to a component 
+ * by probing its children; makes modifications to 
+ * this list by adding and removing children.
+ */
 public class TagPropertyEditor implements PropertyEditor<List<AbstractComponent>> {
 	private AbstractComponent component;
 	

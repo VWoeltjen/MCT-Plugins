@@ -44,6 +44,10 @@ import javax.swing.SwingUtilities;
 
 
 /**
+ * Provides a dialog box for creating tags. 
+ * Tags are created by default in some appropriate 
+ * user repository, defined in the constructor.
+ * 
  * Adapted from { @link NewObjectDialog }
  */
 @SuppressWarnings("serial")
@@ -56,8 +60,6 @@ public class TagDialog extends JDialog {
     
     /**
      * The constructor that creates the dialog.
-     * @param frame the owner of the {@link Frame} of which this
-     * dialog is displayed.
      */
     public TagDialog(JComponent parent, final AbstractComponent repository) {
         super(SwingUtilities.getWindowAncestor(parent), ModalityType.DOCUMENT_MODAL);
@@ -113,6 +115,13 @@ public class TagDialog extends JDialog {
         } 
     }
     
+    /**
+     * Create a new tag component with this dialog.
+     * This will block until the dialog is disposed 
+     * (typically when the user has chosen create 
+     * or cancel.) If cancelled, this will return null.
+     * @return the tag component created (null if cancelled)
+     */
     public AbstractComponent createComponent() {
     	setVisible(true);
     	return component;

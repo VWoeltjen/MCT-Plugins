@@ -57,6 +57,12 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
+/**
+ * Provides the user interface for editing an activity's 
+ * tags from the Info View.
+ * @author vwoeltje
+ *
+ */
 public class ActivityVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 260628819696786275L;
 	private List<AbstractComponent> tags = new ArrayList<AbstractComponent>();
