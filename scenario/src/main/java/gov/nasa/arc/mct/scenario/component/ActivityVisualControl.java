@@ -86,9 +86,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 	private void rebuildTagPanel() {
 		tagPanel.removeAll();
 		for (AbstractComponent t : tags) {
-			JComponent view = LabelView.VIEW_INFO.createView(t);
-			view.setForeground(foreground);
-			tagPanel.add(view);
+			tagPanel.add(new RemovableTag(t));
 		}
 	}
 	
@@ -192,4 +190,23 @@ public class ActivityVisualControl extends CustomVisualControl {
 		return comboBox;
 	}
 
+	private class RemovableTag extends JPanel {
+		private static final long serialVersionUID = 4900258333156735699L;
+		private AbstractComponent tagComponent;
+
+		public RemovableTag(AbstractComponent tagComponent) {
+			super();
+			setLayout(new BorderLayout());
+			this.tagComponent = tagComponent;
+			JComponent label = LabelView.VIEW_INFO.createView(tagComponent);
+			label.setForeground(foreground);
+			add (label, BorderLayout.CENTER);
+			add (new JLabel("X"), BorderLayout.EAST);
+		}
+		
+		
+		
+		
+	}
+	
 }
