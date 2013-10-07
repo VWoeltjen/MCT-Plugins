@@ -115,6 +115,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 				for (AbstractComponent child : comp.getComponents()) {					
 					listItems.addAll(child.getCapabilities(TagCapability.class));
 				}
+				listItems.add(Box.createVerticalStrut(8)); // Blank space
 			}
 		}
 
@@ -152,6 +153,9 @@ public class ActivityVisualControl extends CustomVisualControl {
 			@Override
 			public Component getListCellRendererComponent(JList list,
 					Object item, int index, boolean isSelected, boolean hasFocus) {
+				if (item instanceof Component) {
+					return (Component) item;
+				}
 				
 				label.setFont(label.getFont().deriveFont(
 					item instanceof TagCapability ? Font.PLAIN : 
