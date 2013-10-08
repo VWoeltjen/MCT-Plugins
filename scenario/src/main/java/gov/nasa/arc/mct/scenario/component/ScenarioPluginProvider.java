@@ -194,16 +194,17 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 	public Collection<AbstractComponent> getBootstrapComponents() {
 		String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
 		String wild = "*";
+		String prefix = bundle.getString("prefix_tagrepo");
 				
 		AbstractComponent userTags = new TagRepositoryComponent();
-		userTags.setDisplayName("User Tags");
-		userTags.getCapability(ComponentInitializer.class).setId("tag_repo:" + user);
+		userTags.setDisplayName(bundle.getString("bdn_usertags"));
+		userTags.getCapability(ComponentInitializer.class).setId(prefix + user);
 		userTags.getCapability(ComponentInitializer.class).setCreator(user);
 		userTags.getCapability(ComponentInitializer.class).setOwner(user);
 		
 		AbstractComponent missionTags = new TagRepositoryComponent();
-		missionTags.setDisplayName("Mission Tags");
-		missionTags.getCapability(ComponentInitializer.class).setId("tag_repo:" + wild);
+		missionTags.setDisplayName(bundle.getString("bdn_missiontags"));
+		missionTags.getCapability(ComponentInitializer.class).setId(prefix + wild);
 		missionTags.getCapability(ComponentInitializer.class).setCreator(wild);
 		missionTags.getCapability(ComponentInitializer.class).setOwner(wild);
 		
