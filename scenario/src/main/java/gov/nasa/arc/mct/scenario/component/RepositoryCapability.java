@@ -21,6 +21,13 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+/**
+ * Exposed as a capability by objects which serve as a 
+ * central (or at least locatable) repository for other 
+ * objects, based on the capabilities exposed by those 
+ * objects. An example is the Tag Repositories, 
+ * User Tags and Mission Tags.
+ */
 public interface RepositoryCapability {
 	// All components in a repository are expected to exhibit some specific capability
 	public Class<?> getCapabilityClass();
