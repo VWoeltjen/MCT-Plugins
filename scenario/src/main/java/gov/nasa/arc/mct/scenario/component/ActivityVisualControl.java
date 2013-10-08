@@ -41,6 +41,7 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -65,6 +66,7 @@ import javax.swing.ListCellRenderer;
  */
 public class ActivityVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 260628819696786275L;
+	private static final ResourceBundle bundle = ResourceBundle.getBundle("Bundle"); 
 	private List<AbstractComponent> tags = new ArrayList<AbstractComponent>();
 	private JPanel tagPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 	private JComboBox comboBox;
@@ -163,7 +165,8 @@ public class ActivityVisualControl extends CustomVisualControl {
 		JComboBox comboBox = new JComboBox(listItems.toArray());
 		
 		comboBox.setEditor(new ComboBoxEditor() {
-			private JLabel label = new JLabel("- Add a Tag -");
+			private JLabel label = 
+					new JLabel(bundle.getString("visual_control_add_tag"));
 
 			@Override
 			public void addActionListener(ActionListener listener) {}
@@ -334,7 +337,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 		private AbstractComponent repository;
 		
 		public CreateTagAction(AbstractComponent repository) {
-			super("Create a New User Tag...");
+			super(bundle.getString("visual_control_create_tag"));
 			this.repository = repository;				
 		}				
 				
