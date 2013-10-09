@@ -92,7 +92,11 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			bundle.getString("description_tagrepo"), 
 			TagRepositoryComponent.class,
 			false);
-
+	
+	private static final ComponentTypeInfo milestoneComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_milestone"),  
+			bundle.getString("description_milestone"), 
+			MilestoneComponent.class);
 	
 	private static final PolicyInfo timelineViewPolicy = new PolicyInfo(
 			PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(), 
@@ -128,7 +132,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				decisionComponentType, 
 				scenarioComponentType,
 				tagComponentType,
-				tagRepoComponentType
+				tagRepoComponentType,
+				milestoneComponentType
 				);
 	}
 
