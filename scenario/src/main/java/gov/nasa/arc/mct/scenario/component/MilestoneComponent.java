@@ -22,7 +22,12 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.PropertyDescriptor;
+import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
+import gov.nasa.arc.mct.scenario.component.TimePropertyEditor.TimeProperty;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -39,6 +44,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MilestoneComponent extends AbstractComponent implements DurationCapability{
 	private AtomicReference<MilestoneModel> model =
 			new AtomicReference<MilestoneModel>(new MilestoneModel());
+
+	@Override
+	public List<PropertyDescriptor> getFieldDescriptors()  {
+		PropertyDescriptor time = new PropertyDescriptor("Time", 
+				new TimePropertyEditor(this, TimeProperty.START),  
+				VisualControlDescriptor.TextField);
+		time.setFieldMutable(true);
+
+		return Arrays.asList(time);
+	}
 	
 	@Override
 	public long getStart() {
