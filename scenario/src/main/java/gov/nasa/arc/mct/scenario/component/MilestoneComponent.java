@@ -25,6 +25,10 @@ import gov.nasa.arc.mct.components.AbstractComponent;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+
 public class MilestoneComponent extends AbstractComponent implements DurationCapability{
 	private AtomicReference<MilestoneModel> model =
 			new AtomicReference<MilestoneModel>(new MilestoneModel());
@@ -49,6 +53,8 @@ public class MilestoneComponent extends AbstractComponent implements DurationCap
 		model.get().timestamp = end;
 	}
 
+	@XmlRootElement()
+	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class MilestoneModel {
 		private long timestamp;
 	}
