@@ -22,6 +22,9 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
+import gov.nasa.arc.mct.components.ModelStatePersistence;
+import gov.nasa.arc.mct.components.ObjectManager;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 import gov.nasa.arc.mct.scenario.component.TimePropertyEditor.TimeProperty;
@@ -45,6 +48,36 @@ public class MilestoneComponent extends AbstractComponent implements DurationCap
 	private AtomicReference<MilestoneModel> model =
 			new AtomicReference<MilestoneModel>(new MilestoneModel());
 
+	@Override
+	protected <T> T handleGetCapability(Class<T> capability) {
+		if (capability.isAssignableFrom(getClass())) {
+			return capability.cast(this);
+		}
+		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
+		    JAXBModelStatePersistence<MilestoneModel> persistence = new JAXBModelStatePersistence<MilestoneModel>() {
+
+				@Override
+				protected MilestoneModel getStateToPersist() {
+					return model.get();
+				}
+
+				@Override
+				protected void setPersistentState(MilestoneModel modelState) {
+					model.set(modelState);
+				}
+
+				@Override
+				protected Class<MilestoneModel> getJAXBClass() {
+					return MilestoneModel.class;
+				}
+		        
+			};
+			
+			return capability.cast(persistence);
+		}
+		return null;
+	}
+	
 	@Override
 	public List<PropertyDescriptor> getFieldDescriptors()  {
 		PropertyDescriptor time = new PropertyDescriptor("Time", 
