@@ -174,6 +174,9 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			if (DecisionComponent.class.isAssignableFrom(type.getTypeClass())) {
 				return assetClass.cast(new DecisionCreationWizardUI());
 			}
+			if (MilestoneComponent.class.isAssignableFrom(type.getTypeClass())) {
+				return assetClass.cast(new MilestoneCreationWizardUI());
+			}
 		}
 		
 		// Icons
