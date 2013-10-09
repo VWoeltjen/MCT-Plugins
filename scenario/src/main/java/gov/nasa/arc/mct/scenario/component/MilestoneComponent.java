@@ -48,7 +48,7 @@ public class MilestoneComponent extends AbstractComponent implements DurationCap
 	@Override
 	public List<PropertyDescriptor> getFieldDescriptors()  {
 		PropertyDescriptor time = new PropertyDescriptor("Time", 
-				new TimePropertyEditor(this, TimeProperty.START),  
+				new TimePropertyEditor(this, TimeProperty.TIME),  
 				VisualControlDescriptor.TextField);
 		time.setFieldMutable(true);
 

@@ -85,10 +85,11 @@ public class TimePropertyEditor implements PropertyEditor<Object> {
 	 * Describes various time elements that can be gotten/set
 	 */
 	public enum TimeProperty {
-		START, END, DURATION;
+		START, END, DURATION, TIME;
 		
 		private long getTime(DurationCapability dc) {
 			switch (this) {
+			case TIME:
 			case START:
 				return dc.getStart();
 			case END:
@@ -105,6 +106,7 @@ public class TimePropertyEditor implements PropertyEditor<Object> {
 				if (time > dc.getEnd() || time < 0) {
 					throw new IllegalArgumentException("Invalid start time.");
 				}
+			case TIME: // Just setting the start, but don't need to check
 				dc.setStart(time);
 				break;
 			case END:
