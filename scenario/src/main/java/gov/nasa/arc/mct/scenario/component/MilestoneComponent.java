@@ -29,6 +29,13 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Represents a zero-duration event used when composing 
+ * timelines. 
+ *  
+ * @author vwoeltje
+ *
+ */
 public class MilestoneComponent extends AbstractComponent implements DurationCapability{
 	private AtomicReference<MilestoneModel> model =
 			new AtomicReference<MilestoneModel>(new MilestoneModel());
