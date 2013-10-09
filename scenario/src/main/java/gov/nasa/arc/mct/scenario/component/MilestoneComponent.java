@@ -23,27 +23,30 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class MilestoneComponent extends AbstractComponent implements DurationCapability{
-	private MilestoneModel model;
+	private AtomicReference<MilestoneModel> model =
+			new AtomicReference<MilestoneModel>(new MilestoneModel());
 	
 	@Override
 	public long getStart() {
-		return model.timestamp;
+		return model.get().timestamp;
 	}
 
 	@Override
 	public long getEnd() {
-		return model.timestamp;
+		return model.get().timestamp;
 	}
 
 	@Override
 	public void setStart(long start) {
-		model.timestamp = start;
+		model.get().timestamp = start;
 	}
 
 	@Override
 	public void setEnd(long end) {
-		model.timestamp = end;
+		model.get().timestamp = end;
 	}
 
 	public static class MilestoneModel {
