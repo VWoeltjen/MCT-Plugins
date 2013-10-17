@@ -57,6 +57,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 
 /**
  * Provides the user interface for editing an activity's 
@@ -163,6 +164,9 @@ public class ActivityVisualControl extends CustomVisualControl {
 		}
 
 		JComboBox comboBox = new JComboBox(listItems.toArray());
+		
+		Color border = UIManager.getColor("border");
+		comboBox.setBorder(BorderFactory.createLineBorder(border != null ? border : foreground));
 		
 		comboBox.setEditor(new ComboBoxEditor() {
 			private JLabel label = 
