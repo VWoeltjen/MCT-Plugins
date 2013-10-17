@@ -56,6 +56,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 
@@ -168,43 +169,16 @@ public class ActivityVisualControl extends CustomVisualControl {
 		
 		Color border = UIManager.getColor("border");
 		comboBox.setBorder(BorderFactory.createLineBorder(border != null ? border : foreground));
-		
-		comboBox.setEditor(new ComboBoxEditor() {
-			private JLabel label = 
-					new JLabel(bundle.getString("visual_control_add_tag"));
-			{
-				label.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
-			}
-			
-			@Override
-			public void addActionListener(ActionListener listener) {}
-
-			@Override
-			public Component getEditorComponent() {
-				return label;
-			}
-
-			@Override
-			public Object getItem() {
-				return label.getText();
-			}
-
-			@Override
-			public void removeActionListener(ActionListener listener) {}
-
-			@Override
-			public void selectAll() {}
-
-			@Override
-			public void setItem(Object item) {}			
-		});
- 		comboBox.setEditable(true);
 
 		comboBox.setRenderer(new ListCellRenderer() {
 			private JLabel label = new JLabel(); // Re-use
 			@Override
 			public Component getListCellRendererComponent(JList list,
 					Object item, int index, boolean isSelected, boolean hasFocus) {
+				if (index < 0) {
+					item = bundle.getString("visual_control_add_tag");
+				}
+				
 				if (item instanceof Component) {
 					return (Component) item;
 				}
@@ -224,6 +198,8 @@ public class ActivityVisualControl extends CustomVisualControl {
 					item.toString());
 				
 				label.setForeground(foreground);
+				
+				label.setOpaque(isSelected);
 				
 				return label;
 			}			
