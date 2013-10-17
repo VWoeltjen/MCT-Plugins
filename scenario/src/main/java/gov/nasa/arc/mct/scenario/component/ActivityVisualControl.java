@@ -112,6 +112,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 		for (AbstractComponent t : tags) {
 			tagPanel.add(new RemovableTag(t));
 		}
+		tagPanel.setVisible(tagPanel.getComponentCount() > 0);
 	}
 	
 	private void addTag(AbstractComponent tag) {
