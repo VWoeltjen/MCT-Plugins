@@ -32,6 +32,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -54,6 +55,7 @@ import javax.swing.SwingUtilities;
 @SuppressWarnings("serial")
 public class TagDialog extends JDialog {    
     private static final int PADDING = 12;
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
     
     private JButton create = new JButton();
     private TagPanel tagPanel = new TagPanel();
@@ -67,10 +69,11 @@ public class TagDialog extends JDialog {
 
         Window parentWindow = SwingUtilities.getWindowAncestor(parent);
         String suffix = (parentWindow instanceof Frame) ?
-        		" - " + ((Frame) parentWindow).getTitle() : "";        
+        		BUNDLE.getString("wizard_title_infix") + ((Frame) parentWindow).getTitle() : 
+        		"";        
          
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setTitle("Create Tag" + suffix);
+        setTitle(BUNDLE.getString("wizard_title_tag") + suffix);
         
         JPanel controlPanel = new JPanel();
         create.addActionListener(new ActionListener() {
