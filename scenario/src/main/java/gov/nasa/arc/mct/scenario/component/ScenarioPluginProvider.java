@@ -63,6 +63,12 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			bundle.getString("description_activity"), 
 			ActivityComponent.class,
 			true);
+	
+	private static final ComponentTypeInfo subActivityComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_subactivity"),  
+			bundle.getString("description_subactivity"), 
+			SubActivityComponent.class,
+			true);
 
 	private static final ComponentTypeInfo decisionComponentType = new ComponentTypeInfo(
 			bundle.getString("display_name_decision"),  
@@ -124,6 +130,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		// return the component types provided
 		return Arrays.asList(
 				activityComponentType, 
+				subActivityComponentType,
 				timelineComponentType, 
 				decisionComponentType, 
 				scenarioComponentType,
