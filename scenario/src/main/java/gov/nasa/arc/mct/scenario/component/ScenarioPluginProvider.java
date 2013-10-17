@@ -114,6 +114,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 	public ScenarioPluginProvider() {
 		iconMap.put(ActivityComponent.class, 
 				new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_activity.png")));
+		iconMap.put(SubActivityComponent.class, 
+				new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_activity.png")));
 		iconMap.put(DecisionComponent.class, 
 				new ImageIcon(ScenarioPluginProvider.class.getResource("/icons/mct_icon_decision.png")));
 		iconMap.put(TimelineComponent.class, 
