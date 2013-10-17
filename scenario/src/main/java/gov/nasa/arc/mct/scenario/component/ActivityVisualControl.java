@@ -171,7 +171,10 @@ public class ActivityVisualControl extends CustomVisualControl {
 		comboBox.setEditor(new ComboBoxEditor() {
 			private JLabel label = 
 					new JLabel(bundle.getString("visual_control_add_tag"));
-
+			{
+				label.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
+			}
+			
 			@Override
 			public void addActionListener(ActionListener listener) {}
 
