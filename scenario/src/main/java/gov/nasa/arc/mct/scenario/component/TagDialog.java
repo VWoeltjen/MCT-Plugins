@@ -135,6 +135,7 @@ public class TagDialog extends JDialog {
     		tagField.setColumns(30);
     		add(tagLabel);
     		add(tagField);
+    		setBorder(BorderFactory.createEmptyBorder(0, 0, 17, 0));
     	}
     	
     	public String getText() {
