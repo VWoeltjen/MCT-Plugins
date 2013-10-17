@@ -132,6 +132,7 @@ public class TagDialog extends JDialog {
     	private JTextField tagField = new JTextField("untitled tag");
     	
     	public TagPanel() {
+    		tagField.setColumns(30);
     		add(tagLabel);
     		add(tagField);
     	}
