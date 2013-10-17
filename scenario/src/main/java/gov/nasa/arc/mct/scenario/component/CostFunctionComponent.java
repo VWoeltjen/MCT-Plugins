@@ -77,7 +77,7 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 			}
 			for (AbstractComponent child : getComponents()) {
 				if (!ignoreList.get().contains(child.getComponentId())) { // Don't continue down a cycle
-					for (CostFunctionCapability costFunction : child.getCapabilities(CostFunctionCapability.class)) {
+					for (CostFunctionCapability costFunction : getCostFunctionCapabilities(child)) {
 						if (!costFunctions.containsKey(costFunction.getName())) {
 							costFunctions.put(costFunction.getName(), 
 									new AggregateCostFunction(costFunction.getName(), costFunction.getUnits()));
@@ -100,6 +100,24 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 		return super.handleGetCapabilities(capability);
 	}
 
+	private Collection<CostFunctionCapability> getCostFunctionCapabilities(AbstractComponent child) {
+		Collection<CostFunctionCapability> result = 
+				child.getCapabilities(CostFunctionCapability.class);
+
+		// Visit collections, because Timeline View does
+		if (result.isEmpty() && !child.isLeaf()) {
+			result = new ArrayList<CostFunctionCapability>();
+			// Don't get stuck in a collection cycle
+			ignoreList.get().add(child.getComponentId());
+			for (AbstractComponent grandchild : child.getComponents()) {
+				result.addAll(getCostFunctionCapabilities(grandchild));
+			}
+			ignoreList.get().remove(child.getComponentId());
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * A cost function which acts as a sum or union of other cost functions
 	 * which share the same name. This is used to aggregate costs exposed by 
