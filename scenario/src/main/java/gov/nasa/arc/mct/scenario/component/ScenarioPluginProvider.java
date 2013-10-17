@@ -166,12 +166,13 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				);
 	}
 
+	@SuppressWarnings("unchecked") // Unchecked cast is actually checked (ActivityCreationWizardUI constructor call)
 	@Override
 	public <T> T getAsset(TypeInfo<?> type, Class<T> assetClass) {
 		// Create wizards
 		if (assetClass.isAssignableFrom(CreateWizardUI.class)) {
 			if (ActivityComponent.class.isAssignableFrom(type.getTypeClass())) {
-				return assetClass.cast(new ActivityCreationWizardUI());
+				return assetClass.cast(new ActivityCreationWizardUI((Class<? extends ActivityComponent>) type.getTypeClass()));
 			}
 			if (DecisionComponent.class.isAssignableFrom(type.getTypeClass())) {
 				return assetClass.cast(new DecisionCreationWizardUI());

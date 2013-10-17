@@ -76,8 +76,8 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
     private final JTextField duration = new JTextField("01:00");
     private Class<? extends AbstractComponent> componentClass;
 	
-	public ActivityCreationWizardUI() {
-		this.componentClass = ActivityComponent.class;
+	public ActivityCreationWizardUI(Class<? extends ActivityComponent> componentClass) {
+		this.componentClass = componentClass;
 	}
 	
 	@Override
