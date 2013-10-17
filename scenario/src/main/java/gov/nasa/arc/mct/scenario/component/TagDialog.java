@@ -28,6 +28,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -64,8 +65,12 @@ public class TagDialog extends JDialog {
     public TagDialog(JComponent parent, final AbstractComponent repository) {
         super(SwingUtilities.getWindowAncestor(parent), ModalityType.DOCUMENT_MODAL);
 
+        Window parentWindow = SwingUtilities.getWindowAncestor(parent);
+        String suffix = (parentWindow instanceof Frame) ?
+        		" - " + ((Frame) parentWindow).getTitle() : "";        
+         
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setTitle("Create Tag");
+        setTitle("Create Tag" + suffix);
         
         JPanel controlPanel = new JPanel();
         create.addActionListener(new ActionListener() {
