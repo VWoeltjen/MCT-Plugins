@@ -145,8 +145,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		return Arrays.asList(
 			    	new ViewInfo(ScenarioView.class, "Scenario", ViewType.CENTER),
 			    	new ViewInfo(ScenarioView.class, "Scenario", ViewType.OBJECT),
-			    	new ViewInfo(SummaryView.class, "Summary", ViewType.CENTER),
-			    	new ViewInfo(SummaryView.class, "Summary", ViewType.OBJECT), 		    	
+			    	/*new ViewInfo(SummaryView.class, "Summary", ViewType.CENTER),
+			    	new ViewInfo(SummaryView.class, "Summary", ViewType.OBJECT),*/ 		    	
 				    new ViewInfo(TimelineView.class, "Timeline", ViewType.CENTER),
 				    new ViewInfo(TimelineInspector.class, "Timeline Inspector", ViewType.CENTER_OWNED_INSPECTOR),
 					new ViewInfo(TimelineView.class, "Timeline", ViewType.OBJECT));
