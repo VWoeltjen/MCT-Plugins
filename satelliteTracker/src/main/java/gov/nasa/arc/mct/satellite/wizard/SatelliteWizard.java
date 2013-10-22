@@ -48,11 +48,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -67,6 +69,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingWorker;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -281,27 +284,46 @@ public class SatelliteWizard extends CreateWizardUI {
 				if( ((ComboItem)jcbSatCategories.getSelectedItem()).isEnabled()==true){
 					lmSatChoices.clear();
 					
-					String choice = jcbSatCategories.getSelectedItem().toString();
-					List<TLE> userSatChoices;
+					final String choice = jcbSatCategories.getSelectedItem().toString();
 					if(storedSatCats.containsKey(choice)) {
-						userSatChoices = storedSatCats.get(choice);
+						populate(storedSatCats.get(choice));
 					}
 					else {
-						userSatChoices = tleUtil.getTLEs(choice);	//this operation is expensive!
-						storedSatCats.put(choice, userSatChoices);
-					}
-					
-					//TODO: mark the TLEs already in the Chosen list as '**already added**'?
-					for(int i=0; i < userSatChoices.size(); i++)
-						lmSatChoices.addElement(userSatChoices.get(i));
-					
-					jbAddSat.setEnabled(true);
-					jbAddAllSat.setEnabled(true);
-					
-					jlSatChoices.requestFocusInWindow();
-					jlSatChoices.setSelectedIndex(0);
+						// Run the http request on a background thread
+						new SwingWorker<List<TLE>, Object>() {
+							@Override
+							protected List<TLE> doInBackground()
+									throws Exception {
+								return tleUtil.getTLEs(choice);
+							}
+
+							@Override
+							protected void done() {
+								try {
+									storedSatCats.put(choice, get());
+									populate(storedSatCats.get(choice));
+								} catch (InterruptedException e) {
+									populate(Collections.<TLE>emptyList());
+								} catch (ExecutionException e) {
+									populate(Collections.<TLE>emptyList());
+								}
+							}							
+						}.execute();
+					}					
 				}				
 			}//--end actionPerformed
+			
+			private void populate(List<TLE> userSatChoices) {
+				//TODO: mark the TLEs already in the Chosen list as '**already added**'?
+				for(int i=0; i < userSatChoices.size(); i++)
+					lmSatChoices.addElement(userSatChoices.get(i));
+				
+				jbAddSat.setEnabled(true);
+				jbAddAllSat.setEnabled(true);
+				
+				jlSatChoices.requestFocusInWindow();
+				jlSatChoices.setSelectedIndex(0);
+			}
 		});
 		
 		
