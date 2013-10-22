@@ -22,6 +22,7 @@
 package gov.nasa.arc.mct.scenario.view;
 
 
+import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.View;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.scenario.component.DurationConstraintSystem;
@@ -31,7 +32,9 @@ import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Mouse controls for moving & resizing activities/decisions within a timeline
@@ -50,7 +53,7 @@ public class TimelineDurationController extends MouseAdapter {
 	private int            initialX     = 0;
 	private long           initialStart = 0;
 	private long           initialEnd   = 0;
-	
+	private Set<AbstractComponent> changed = new HashSet<AbstractComponent>();
 	
 	public TimelineDurationController(DurationCapability dc,
 			AbstractTimelineView parent,
@@ -107,7 +110,11 @@ public class TimelineDurationController extends MouseAdapter {
 		super.mouseReleased(e);
 		Object src = e.getSource();
 		if (src instanceof View) {
+			for (AbstractComponent ac : changed) {
+				ac.save();
+			}
 			((View) src).getManifestedComponent().save();
+			changed.clear();
 			parentView.select(null);			
 			parentView.select((View) src);	// Should no longer be needed after InfoView refresh
 		}
@@ -166,7 +173,7 @@ public class TimelineDurationController extends MouseAdapter {
 					durationCapability.setEnd(durationCapability.getEnd() + delta);
 				}
 				
-				constraints.change(durationCapability, tDiff < 0 ? -1 : 1);
+				changed.addAll(constraints.change(durationCapability, tDiff < 0 ? -1 : 1));
 			}
 			
 			parentView.revalidate();
