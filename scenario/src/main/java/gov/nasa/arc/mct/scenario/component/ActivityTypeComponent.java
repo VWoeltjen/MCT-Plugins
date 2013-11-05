@@ -21,6 +21,9 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
+import gov.nasa.arc.mct.components.ModelStatePersistence;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,27 +31,51 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ActivityTypeComponent extends CostFunctionComponent {
-	private AtomicReference<ActivityTypeModel> activityModel =
+	private AtomicReference<ActivityTypeModel> model = 
 			new AtomicReference<ActivityTypeModel>(new ActivityTypeModel());
 	private List<CostFunctionCapability> internalCostFunctions = 
-			Arrays.<CostFunctionCapability>asList(new ActivityTypeCost(false), new ActivityTypeCost(true));
-	
-	
-	
+			Arrays.<CostFunctionCapability> asList(
+					new ActivityTypeCost(false),
+					new ActivityTypeCost(true));
+
 	@Override
 	public List<CostFunctionCapability> getInternalCostFunctions() {
 		return internalCostFunctions;
 	}
 
+	@Override
+	public <T> T handleGetCapability(Class<T> capability) {
+		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
+			JAXBModelStatePersistence<ActivityTypeModel> persistence = 
+					new JAXBModelStatePersistence<ActivityTypeModel>() {
+				@Override
+				protected ActivityTypeModel getStateToPersist() {
+					return model.get();
+				}
 
+				@Override
+				protected void setPersistentState(ActivityTypeModel modelState) {
+					model.set(modelState);
+				}
+
+				@Override
+				protected Class<ActivityTypeModel> getJAXBClass() {
+					return ActivityTypeModel.class;
+				}
+			};
+
+			return capability.cast(persistence);
+		}
+		return null;
+	}
 
 	private class ActivityTypeCost implements CostFunctionCapability {
 		private boolean isComm;
-		
+
 		public ActivityTypeCost(boolean isComm) {
 			this.isComm = isComm;
 		}
-		
+
 		@Override
 		public String getName() {
 			return isComm ? "Comms" : "Power";
@@ -61,14 +88,14 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 
 		@Override
 		public double getValue(long time) {
-			ActivityTypeModel model = activityModel.get();
-			return isComm ? model.getComms() : model.getPower();			
+			ActivityTypeModel m = model.get();
+			return isComm ? m.getComms() : m.getPower();
 		}
 
 		@Override
 		public Collection<Long> getChangeTimes() {
 			return Collections.emptyList();
 		}
-		
+
 	}
 }
