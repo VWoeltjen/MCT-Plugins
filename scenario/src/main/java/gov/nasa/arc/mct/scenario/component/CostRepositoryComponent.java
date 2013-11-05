@@ -32,9 +32,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-public class TagRepositoryComponent extends AbstractComponent implements RepositoryCapability, Bootstrap {
-	private AtomicReference<TagRepositoryModel> model =
-			new AtomicReference<TagRepositoryModel>(new TagRepositoryModel());
+public class CostRepositoryComponent extends AbstractComponent implements RepositoryCapability, Bootstrap {
+	private AtomicReference<CostRepositoryModel> model =
+			new AtomicReference<CostRepositoryModel>(new CostRepositoryModel());
 
 	@Override
 	public <T> T handleGetCapability(Class<T> capabilityClass) {	
@@ -48,7 +48,7 @@ public class TagRepositoryComponent extends AbstractComponent implements Reposit
 	
 	@Override
 	public Class<?> getCapabilityClass() {
-		return TagCapability.class;
+		return CostFunctionCapability.class;
 	}
 
 	// TODO: Use this to support the Group capability
@@ -63,26 +63,26 @@ public class TagRepositoryComponent extends AbstractComponent implements Reposit
 	
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
-	public static class TagRepositoryModel {
+	public static class CostRepositoryModel {
 		@SuppressWarnings("unused") // Used by JAXB
 		private String scope = "";
 	}
 	
 	private final ModelStatePersistence persistence = 
-			new JAXBModelStatePersistence<TagRepositoryModel>() {
+			new JAXBModelStatePersistence<CostRepositoryModel>() {
 		@Override
-		protected TagRepositoryModel getStateToPersist() {
+		protected CostRepositoryModel getStateToPersist() {
 			return model.get();
 		}
 
 		@Override
-		protected void setPersistentState(TagRepositoryModel modelState) {
+		protected void setPersistentState(CostRepositoryModel modelState) {
 			model.set(modelState);
 		}
 
 		@Override
-		protected Class<TagRepositoryModel> getJAXBClass() {
-			return TagRepositoryModel.class;
+		protected Class<CostRepositoryModel> getJAXBClass() {
+			return CostRepositoryModel.class;
 		}		
 	};
 
@@ -105,6 +105,6 @@ public class TagRepositoryComponent extends AbstractComponent implements Reposit
 
 	@Override
 	public int componentIndex() {
-		return isGlobal() ? 0 : 2;
+		return isGlobal() ? 1 : 3;
 	}
 }

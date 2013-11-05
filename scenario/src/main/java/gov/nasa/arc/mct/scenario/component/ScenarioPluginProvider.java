@@ -93,6 +93,12 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			TagRepositoryComponent.class,
 			false);
 
+	private static final ComponentTypeInfo costRepoComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_typerepo"),  
+			bundle.getString("description_typerepo"), 
+			CostRepositoryComponent.class,
+			false);
+	
 	private static final ComponentTypeInfo activityTypeComponentType = new ComponentTypeInfo(
 			bundle.getString("display_name_activity_type"),  
 			bundle.getString("description_activity_type"), 
@@ -133,7 +139,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				scenarioComponentType,
 				activityTypeComponentType,
 				tagComponentType,
-				tagRepoComponentType
+				tagRepoComponentType,
+				costRepoComponentType
 				);
 	}
 
@@ -201,6 +208,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		String wild = "*";
 		String prefix = bundle.getString("prefix_tagrepo");
 				
+		// Tag repos
 		AbstractComponent userTags = new TagRepositoryComponent();
 		userTags.setDisplayName(bundle.getString("bdn_usertags"));
 		userTags.getCapability(ComponentInitializer.class).setId(prefix + user);
@@ -213,7 +221,22 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		missionTags.getCapability(ComponentInitializer.class).setCreator(wild);
 		missionTags.getCapability(ComponentInitializer.class).setOwner(wild);
 		
-		return Arrays.asList(missionTags, userTags);
+		// Activity type repos
+		prefix = bundle.getString("prefix_typerepo");
+		
+		AbstractComponent userTypes = new CostRepositoryComponent();
+		userTypes.setDisplayName(bundle.getString("bdn_usertypes"));
+		userTypes.getCapability(ComponentInitializer.class).setId(prefix + user);
+		userTypes.getCapability(ComponentInitializer.class).setCreator(user);
+		userTypes.getCapability(ComponentInitializer.class).setOwner(user);
+		
+		AbstractComponent missionTypes = new CostRepositoryComponent();
+		missionTypes.setDisplayName(bundle.getString("bdn_missiontypes"));
+		missionTypes.getCapability(ComponentInitializer.class).setId(prefix + wild);
+		missionTypes.getCapability(ComponentInitializer.class).setCreator(wild);
+		missionTypes.getCapability(ComponentInitializer.class).setOwner(wild);		
+
+		return Arrays.asList(missionTags, userTags, missionTypes, userTypes);
 	}
 
 	
