@@ -135,9 +135,6 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
-		PropertyDescriptor type = new PropertyDescriptor("Activity Type",
-				new TypePropertyEditor(this), VisualControlDescriptor.TextField);
-		type.setFieldMutable(true);
 		PropertyDescriptor startTime = new PropertyDescriptor("Start Time", 
 				new TimePropertyEditor(this, TimeProperty.START),  VisualControlDescriptor.TextField);
 		startTime.setFieldMutable(true);
@@ -147,12 +144,6 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		PropertyDescriptor duration = new PropertyDescriptor("Duration",
 				new TimePropertyEditor(this, TimeProperty.DURATION), VisualControlDescriptor.TextField);
 		duration.setFieldMutable(true);
-		PropertyDescriptor power = new PropertyDescriptor("Power (W)", 
-				new PowerPropertyEditor(this),  VisualControlDescriptor.TextField);
-		power.setFieldMutable(true);
-		PropertyDescriptor comm = new PropertyDescriptor("Comm (Kb/s)", 
-				new CommPropertyEditor(this),  VisualControlDescriptor.TextField);
-		comm.setFieldMutable(true);
 		PropertyDescriptor notes = new PropertyDescriptor("Notes", 
 				new NotesPropertyEditor(this),  VisualControlDescriptor.TextArea);
 		notes.setFieldMutable(true);
@@ -160,12 +151,10 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				new TagPropertyEditor(this), VisualControlDescriptor.Custom);
 		tags.setFieldMutable(true);
 
-		fields.add(type);
 		fields.add(startTime);
 		fields.add(endTime);
 		fields.add(duration);
-		fields.add(power);
-		fields.add(comm);
+		fields.addAll(super.getFieldDescriptors()); // Costs
 		fields.add(notes);
 		fields.add(tags);
 
