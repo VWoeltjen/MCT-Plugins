@@ -242,6 +242,16 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		}
 
 		@Override
+		public void setValue(double value) {
+			if (isComm) {
+				getData().setComm(value);
+			} else {
+				getData().setPower(value);
+			}
+			
+		}
+		
+		@Override
 		public Collection<Long> getChangeTimes() {
 			return Arrays.asList(getStart(), getEnd());
 		}

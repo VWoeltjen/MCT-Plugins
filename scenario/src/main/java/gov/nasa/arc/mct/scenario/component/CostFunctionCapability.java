@@ -57,6 +57,13 @@ public interface CostFunctionCapability {
 	public double getValue(long time);
 	
 	/**
+	 * Set the value associated with this cost.
+	 * May throw an exception if setting is not supported.
+	 * @throws UnsupportedOperationException
+	 */
+	public void setValue(double value);	
+	
+	/**
 	 * Get the times at which this cost function changes. Since costs 
 	 * are handled step-wise, having a list of points at which costs 
 	 * change makes it simple to draw/label these transitions.

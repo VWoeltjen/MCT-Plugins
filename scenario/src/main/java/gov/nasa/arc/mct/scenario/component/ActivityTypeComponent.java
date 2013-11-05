@@ -26,7 +26,6 @@ import gov.nasa.arc.mct.components.ModelStatePersistence;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -75,7 +74,7 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 		}
 		return null;
 	}
-
+	
 	private class ActivityTypeCost implements CostFunctionCapability {
 		private boolean isComm;
 
@@ -101,7 +100,17 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 
 		@Override
 		public Collection<Long> getChangeTimes() {
-			return Collections.emptyList();
+			return Arrays.asList(0L);
+		}
+
+		@Override
+		public void setValue(double value) {
+			ActivityTypeModel m = model.get();
+			if (isComm) {
+				m.setComms(value);
+			} else {
+				m.setPower(value);
+			}
 		}
 
 	}
