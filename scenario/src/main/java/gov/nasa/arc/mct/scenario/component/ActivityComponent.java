@@ -122,7 +122,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		if (getModel().getData().getPower() != 0.0) {
 			internal.add(new CostFunctionStub(false));
 		}
-		return Arrays.<CostFunctionCapability>asList(new CostFunctionStub(true), new CostFunctionStub(false));
+		return internal;
 	}
 
 	/**
