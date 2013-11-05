@@ -194,10 +194,11 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		// Custom editors
 		if (assetClass.isAssignableFrom(CustomVisualControl.class)) {
 			if (ActivityComponent.class.isAssignableFrom(type.getTypeClass())) {
-				return assetClass.cast(
-						new ActivityVisualControl(
-								CostFunctionCapability.class, 
-								activityTypeComponentType));
+				Map<Class<?>, ComponentTypeInfo> types = 
+						new HashMap<Class<?>, ComponentTypeInfo>();
+				types.put(TagCapability.class, tagComponentType);
+				types.put(CostFunctionCapability.class, activityTypeComponentType);
+				return assetClass.cast(new CompositeActivityVisualControl(types));
 			}
 		}
 		
