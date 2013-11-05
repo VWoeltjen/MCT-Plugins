@@ -100,7 +100,7 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 
 		@Override
 		public Collection<Long> getChangeTimes() {
-			return Arrays.asList(0L);
+			return Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE);
 		}
 
 		@Override

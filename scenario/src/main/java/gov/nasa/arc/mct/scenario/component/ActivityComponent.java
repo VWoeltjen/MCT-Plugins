@@ -76,6 +76,15 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				return tagCapabilities;
 			}
 		}
+		if (capability.isAssignableFrom(CostFunctionCapability.class)) {
+			// Wrap aggregated cost functions
+			List<T> costFunctions = new ArrayList<T>();
+			for (CostFunctionCapability cost : 
+				super.handleGetCapabilities(CostFunctionCapability.class)) {
+				costFunctions.add(capability.cast(new CostFunctionWrapper(cost)));
+			}	
+			return costFunctions;
+		}
 		return super.handleGetCapabilities(capability);
 	}
 
@@ -254,5 +263,68 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		
 	}
 
+	private class CostFunctionWrapper implements CostFunctionCapability {
+		private CostFunctionCapability cost;
+
+		public CostFunctionWrapper(CostFunctionCapability cost) {
+			super();
+			this.cost = cost;
+		}
+
+		public String getName() {
+			return cost.getName();
+		}
+
+		public String getUnits() {
+			return cost.getUnits();
+		}
+
+		public double getValue(long time) {
+			// Report zero outside of activity duration
+			return time < getStart() || time >= getEnd() ?
+					0.0 : cost.getValue(time);			
+		}
+
+		public void setValue(double value) {
+			throw new UnsupportedOperationException();
+		}
+
+		public Collection<Long> getChangeTimes() {
+			// Ensure all exposed change times fall within this activity
+			Collection<Long> times = cost.getChangeTimes();
+			
+			long min = Long.MAX_VALUE;
+			long max = Long.MIN_VALUE;
+			
+			for (Long time : times) {
+				if (time < min) {
+					min = time;
+				}
+				if (time > max) {
+					max = time;
+				}
+			}
+			
+			long start = getStart();
+			long end   = getEnd();
+			
+			// Trim if necessary
+			if (min < start || max > end) {
+				List<Long> result = new ArrayList<Long>();
+				result.add(start);
+				for (Long time : times) {
+					if (time > start && time < end) {
+						result.add(time);
+					}
+				}
+				result.add(end);
+				return result;
+			} else {
+				return times;
+			}
+		}
+		
+		
+	}
 
 }
