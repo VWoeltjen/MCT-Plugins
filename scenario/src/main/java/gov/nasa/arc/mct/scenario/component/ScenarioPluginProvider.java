@@ -93,6 +93,10 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			TagRepositoryComponent.class,
 			false);
 
+	private static final ComponentTypeInfo activityTypeComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_activity_type"),  
+			bundle.getString("description_activity_type"), 
+			ActivityTypeComponent.class);
 	
 	private static final PolicyInfo timelineViewPolicy = new PolicyInfo(
 			PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(), 
@@ -127,6 +131,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				timelineComponentType, 
 				decisionComponentType, 
 				scenarioComponentType,
+				activityTypeComponentType,
 				tagComponentType,
 				tagRepoComponentType
 				);
