@@ -58,24 +58,29 @@ public class TagDialog extends JDialog {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
     
     private JButton create = new JButton();
-    private TagPanel tagPanel = new TagPanel();    
+    private TagPanel tagPanel;    
     private AbstractComponent component = null;
+    private String typeName;
     
     /**
      * The constructor that creates the dialog.
      */
     public TagDialog(JComponent parent, 
     		final AbstractComponent repository, 
-    		final Class<? extends AbstractComponent> componentClass) {
+    		final Class<? extends AbstractComponent> componentClass,
+    		String typeName) {
         super(SwingUtilities.getWindowAncestor(parent), ModalityType.DOCUMENT_MODAL);
-
+        
+        this.typeName = typeName;
+        tagPanel = new TagPanel();
+        
         Window parentWindow = SwingUtilities.getWindowAncestor(parent);
         String suffix = (parentWindow instanceof Frame) ?
         		BUNDLE.getString("wizard_title_infix") + ((Frame) parentWindow).getTitle() : 
         		"";        
          
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setTitle(BUNDLE.getString("wizard_title_tag") + suffix);
+        setTitle(BUNDLE.getString("wizard_title_tag") + typeName + suffix);
         
         JPanel controlPanel = new JPanel();
         create.addActionListener(new ActionListener() {
@@ -137,9 +142,11 @@ public class TagDialog extends JDialog {
     	return component;
     }
     
-    private static class TagPanel extends JPanel {
-    	private JLabel tagLabel = new JLabel("Tag: ");
-    	private JTextField tagField = new JTextField("untitled tag");
+    private class TagPanel extends JPanel {
+    	private JLabel tagLabel = new JLabel(typeName + ": ");
+    	private JTextField tagField = 
+    			new JTextField(BUNDLE.getString("wizard_default_bdn_prefix") +
+    					typeName.toLowerCase());
     	
     	public TagPanel() {
     		tagField.setColumns(30);

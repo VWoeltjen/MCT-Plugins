@@ -25,6 +25,7 @@ import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.CustomVisualControl;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.scenario.view.LabelView;
+import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -73,7 +74,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 	private Color foreground;
 	private boolean isMutable = true;
 	private Class<?> capabilityClass;
-	private Class<? extends AbstractComponent> componentClass;
+	private ComponentTypeInfo componentInfo;
 	
 	/**
 	 * Create a new visual control for editing children of an activity, 
@@ -82,9 +83,9 @@ public class ActivityVisualControl extends CustomVisualControl {
 	 * @param componentClass class to be used for create actions (null to disallow create)
 	 */
 	public ActivityVisualControl(Class<?> capabilityClass, 
-			Class<? extends AbstractComponent> componentClass) {
+			ComponentTypeInfo componentInfo) {
 		this.capabilityClass = capabilityClass;
-		this.componentClass = componentClass;
+		this.componentInfo = componentInfo;
 		
 		setLayout(new BorderLayout());
 		comboBox = makeComboBox();
@@ -170,7 +171,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 		}
 
 		// Always show "create tag" as the last option
-		if (userRepository != null && componentClass != null) {
+		if (userRepository != null && componentInfo != null && componentInfo.isCreatable()) {
 			listItems.add(new CreateTagAction(userRepository));
 		}
 
@@ -342,8 +343,10 @@ public class ActivityVisualControl extends CustomVisualControl {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			AbstractComponent tag = 
-					new TagDialog(ActivityVisualControl.this, repository, componentClass)
-						.createComponent();
+					new TagDialog(ActivityVisualControl.this, 
+							repository, 
+							componentInfo.getTypeClass(), 
+							componentInfo.getDisplayName()).createComponent();
 			if (tag != null) {
 				addTag(tag);
 			}
