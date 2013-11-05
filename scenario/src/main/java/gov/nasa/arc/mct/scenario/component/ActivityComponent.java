@@ -164,7 +164,10 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				new NotesPropertyEditor(this),  VisualControlDescriptor.TextArea);
 		notes.setFieldMutable(true);
 		PropertyDescriptor tags = new PropertyDescriptor("Tags", 
-				new TagPropertyEditor(this), VisualControlDescriptor.Custom);
+				new TagPropertyEditor(this, 
+						Arrays.<Class<?>>asList(TagCapability.class, 
+								      CostFunctionCapability.class)), 
+				VisualControlDescriptor.Custom);
 		tags.setFieldMutable(true);
 
 		fields.add(startTime);

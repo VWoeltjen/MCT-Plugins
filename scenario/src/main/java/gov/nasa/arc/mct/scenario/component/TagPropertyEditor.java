@@ -25,11 +25,14 @@ import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyEditor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Property editor for an activity's tags. Expresses 
@@ -37,12 +40,14 @@ import java.util.Map;
  * by probing its children; makes modifications to 
  * this list by adding and removing children.
  */
-public class TagPropertyEditor implements PropertyEditor<List<AbstractComponent>> {
+public class TagPropertyEditor implements PropertyEditor<Map<Class<?>, List<AbstractComponent>>> {
 	private AbstractComponent component;
+	private List<Class<?>> capabilities = new ArrayList<Class<?>>();
 	
-	public TagPropertyEditor(AbstractComponent component) {
+	public TagPropertyEditor(AbstractComponent component, Collection<Class<?>> capabilities) {
 		super();
 		this.component = component;
+		this.capabilities.addAll(capabilities);
 	}
 
 	@Override
@@ -57,35 +62,54 @@ public class TagPropertyEditor implements PropertyEditor<List<AbstractComponent>
 	}
 
 	@Override
-	public List<AbstractComponent> getValue() {
-		List<AbstractComponent> current = new ArrayList<AbstractComponent>();
-		for (TagCapability tc : component.getCapabilities(TagCapability.class)) {
-			current.add(tc.getComponentRepresentation());
+	public Map<Class<?>, List<AbstractComponent>> getValue() {
+		Map<Class<?>, List<AbstractComponent>> result = 
+				new HashMap<Class<?>, List<AbstractComponent>>();
+		for (Class<?> c : capabilities) {
+			List<AbstractComponent> current = 
+					new ArrayList<AbstractComponent>();
+			for (AbstractComponent child : component.getComponents()) {
+				if (child.getCapability(c) != null || 
+					!child.getCapabilities(c).isEmpty()) {
+					current.add(child);
+				}
+			}
+			result.put(c, current);
 		}
-		return current;
+		return result;
 	}
 
 	@Override
 	public void setValue(Object value) throws IllegalArgumentException {
-		if (!(value instanceof List)) {
-			throw new IllegalArgumentException("Must provide a list");
+		if (!(value instanceof Map)) {
+			throw new IllegalArgumentException("Map expected");
 		}
 		
 		// Aggregate new children
 		Map<String, AbstractComponent> newChildren = 
 				new LinkedHashMap<String, AbstractComponent>();
-		for (Object element : (List<?>) value) {
-			if (!(element instanceof AbstractComponent)) {
-				throw new IllegalArgumentException("Must provide list of AbstractComponents");
+		for (Entry<?,?> entry : ((Map<?,?>) value).entrySet()) {
+			if (entry.getValue() instanceof List) {
+				for (Object element : ((List<?>)entry.getValue())) {			
+					if (!(element instanceof AbstractComponent)) {
+						throw new IllegalArgumentException("Must provide map of list of AbstractComponents");
+					} else {
+						AbstractComponent comp = (AbstractComponent) element;
+						newChildren.put(comp.getComponentId(), comp);
+					}
+				}
 			} else {
-				AbstractComponent comp = (AbstractComponent) element;
-				newChildren.put(comp.getComponentId(), comp);
+				throw new IllegalArgumentException("Must provide map of list of AbstractComponents");
 			}
 		}
 		
 		// Don't bother adding any current children
 		// And identify children to remove
-		List<AbstractComponent> toRemove = getValue();
+		Map<Class<?>, List<AbstractComponent>> current = getValue();
+		List<AbstractComponent> toRemove = new ArrayList<AbstractComponent>();
+		for (List<AbstractComponent> list : current.values()) {
+			toRemove.addAll(list);
+		}
 		Iterator<AbstractComponent> iter = toRemove.iterator();
 		while (iter.hasNext()) {
 			AbstractComponent next = iter.next();
@@ -100,7 +124,7 @@ public class TagPropertyEditor implements PropertyEditor<List<AbstractComponent>
 	}
 
 	@Override
-	public List<List<AbstractComponent>> getTags() {
+	public List<Map<Class<?>, List<AbstractComponent>>> getTags() {
 		// Unused
 		return Collections.emptyList();
 	}
