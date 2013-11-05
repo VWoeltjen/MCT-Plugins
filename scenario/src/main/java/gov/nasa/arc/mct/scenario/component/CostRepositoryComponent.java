@@ -105,6 +105,6 @@ public class CostRepositoryComponent extends AbstractComponent implements Reposi
 
 	@Override
 	public int componentIndex() {
-		return isGlobal() ? 1 : 3;
+		return isGlobal() ? 2 : 3;
 	}
 }

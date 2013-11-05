@@ -105,6 +105,6 @@ public class TagRepositoryComponent extends AbstractComponent implements Reposit
 
 	@Override
 	public int componentIndex() {
-		return isGlobal() ? 0 : 2;
+		return isGlobal() ? 0 : 1;
 	}
 }
