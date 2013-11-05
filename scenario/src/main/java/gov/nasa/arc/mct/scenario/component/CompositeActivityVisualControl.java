@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.BoxLayout;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Collects multiple custom controls for repository-driven 
@@ -37,7 +39,7 @@ import javax.swing.BoxLayout;
  * @author vwoeltje
  *
  */
-public class CompositeActivityVisualControl extends CustomVisualControl  {
+public class CompositeActivityVisualControl extends CustomVisualControl implements ChangeListener {
 	private static final long serialVersionUID = 1944674986744108472L;
 	private Map<Class<?>, CustomVisualControl> controls = 
 			new HashMap<Class<?>, CustomVisualControl>();
@@ -46,7 +48,9 @@ public class CompositeActivityVisualControl extends CustomVisualControl  {
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		
 		for (Entry<Class<?>, ComponentTypeInfo> capability : capabilities.entrySet()) {
-			CustomVisualControl control = new ActivityVisualControl(capability.getKey(), capability.getValue());
+			CustomVisualControl control = 
+					new ActivityVisualControl(capability.getKey(), capability.getValue());
+			control.addChangeListener(this);
 			add(control);
 			controls.put(capability.getKey(), control);
 		}
@@ -78,6 +82,11 @@ public class CompositeActivityVisualControl extends CustomVisualControl  {
 		for (CustomVisualControl control : controls.values()) {
 			control.setMutable(mutable);
 		}
+	}
+
+	@Override
+	public void stateChanged(ChangeEvent arg0) {
+		fireChange();
 	}
 
 }
