@@ -55,7 +55,7 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 					new ActivityVisualControl(capability.getKey(), capability.getValue());
 			control.addChangeListener(this);
 			TitledBorder border = BorderFactory.createTitledBorder(
-					capability.getValue().getDisplayName());
+					capability.getValue().getDisplayName() + "s");
 			border.setTitleColor(new JLabel().getForeground());
 			control.setBorder(border);
 			add(control);
