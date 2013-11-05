@@ -67,7 +67,7 @@ import javax.swing.UIManager;
  */
 public class ActivityVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 260628819696786275L;
-	private static final ResourceBundle bundle = ResourceBundle.getBundle("Bundle"); 
+	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle"); 
 	private List<AbstractComponent> tags = new ArrayList<AbstractComponent>();
 	private JPanel tagPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 	private JComboBox comboBox;
@@ -186,7 +186,9 @@ public class ActivityVisualControl extends CustomVisualControl {
 			public Component getListCellRendererComponent(JList list,
 					Object item, int index, boolean isSelected, boolean hasFocus) {
 				if (index < 0) {
-					item = bundle.getString("visual_control_add_tag");
+					item = String.format(
+							BUNDLE.getString("visual_control_add_tag"),
+							componentInfo.getDisplayName());
 				}
 				
 				if (item instanceof Component) {
@@ -336,7 +338,9 @@ public class ActivityVisualControl extends CustomVisualControl {
 		private AbstractComponent repository;
 		
 		public CreateTagAction(AbstractComponent repository) {
-			super(bundle.getString("visual_control_create_tag"));
+			super(String.format(
+						BUNDLE.getString("visual_control_create_tag"), 
+						componentInfo.getDisplayName()));
 			this.repository = repository;				
 		}				
 				
