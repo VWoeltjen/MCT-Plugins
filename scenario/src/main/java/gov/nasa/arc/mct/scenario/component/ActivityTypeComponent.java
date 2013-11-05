@@ -50,6 +50,11 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 	}
 
 	@Override
+	public boolean isLeaf() {
+		return true;
+	}
+	
+	@Override
 	public <T> T handleGetCapability(Class<T> capability) {
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
 			JAXBModelStatePersistence<ActivityTypeModel> persistence = 

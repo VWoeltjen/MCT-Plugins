@@ -71,7 +71,14 @@ public class TagPropertyEditor implements PropertyEditor<Map<Class<?>, List<Abst
 			for (AbstractComponent child : component.getComponents()) {
 				if (child.getCapability(c) != null || 
 					!child.getCapabilities(c).isEmpty()) {
-					current.add(child);
+					// TODO: Need to find a better way of distinguishing 
+					// objects which originate capabilities from objects 
+					// which aggregate capabilities.
+					// (This is to avoid exposing "Activity" components
+					// in tagging UI)
+					if (child.isLeaf()) {
+						current.add(child);
+					}
 				}
 			}
 			result.put(c, current);
