@@ -81,6 +81,8 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 	}
 	
 	private class ActivityTypeCost implements CostFunctionCapability {
+		// Short-term approach; this should be changed to permit more variety
+		// (i.e. not just Power/Comms)
 		private boolean isComm;
 
 		public ActivityTypeCost(boolean isComm) {
