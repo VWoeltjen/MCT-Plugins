@@ -115,6 +115,13 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	
 	@Override
 	public List<CostFunctionCapability> getInternalCostFunctions() {
+		List<CostFunctionCapability> internal = new ArrayList<CostFunctionCapability>();
+		if (getModel().getData().getComm() != 0.0) {
+			internal.add(new CostFunctionStub(true));
+		} 
+		if (getModel().getData().getPower() != 0.0) {
+			internal.add(new CostFunctionStub(false));
+		}
 		return Arrays.<CostFunctionCapability>asList(new CostFunctionStub(true), new CostFunctionStub(false));
 	}
 
