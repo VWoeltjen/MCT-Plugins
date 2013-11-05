@@ -21,10 +21,11 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
-import java.util.Collections;
-import java.util.List;
-
 import gov.nasa.arc.mct.components.PropertyEditor;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public class CostPropertyEditor implements PropertyEditor<Object> {
 	private CostFunctionCapability cost;
@@ -35,9 +36,14 @@ public class CostPropertyEditor implements PropertyEditor<Object> {
 	}
 
 	@Override
-	public String getAsText() {
-		// Note: This is wrong if cost varies over time...
-		return String.valueOf(cost.getChangeTimes().iterator().next());
+	public String getAsText() {		
+		// TODO: This needs to change when varying costs are added
+		Iterator<Long> times = cost.getChangeTimes().iterator();
+		if (times.hasNext()) {
+			return String.valueOf(cost.getValue(times.next()));
+		} else {
+			return ""; // No value at all.
+		}
 	}
 
 	/**
