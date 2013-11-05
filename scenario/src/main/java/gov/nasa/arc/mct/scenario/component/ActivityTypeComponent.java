@@ -30,6 +30,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * An Activity Type exhibits reusable properties of an activity, 
+ * such as power draw and comms usage.
+ * 
+ * @author vwoeltje
+ *
+ */
 public class ActivityTypeComponent extends CostFunctionComponent {
 	private AtomicReference<ActivityTypeModel> model = 
 			new AtomicReference<ActivityTypeModel>(new ActivityTypeModel());
