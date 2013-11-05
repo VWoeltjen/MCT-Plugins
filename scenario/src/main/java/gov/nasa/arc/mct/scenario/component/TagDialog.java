@@ -58,13 +58,15 @@ public class TagDialog extends JDialog {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
     
     private JButton create = new JButton();
-    private TagPanel tagPanel = new TagPanel();
+    private TagPanel tagPanel = new TagPanel();    
     private AbstractComponent component = null;
     
     /**
      * The constructor that creates the dialog.
      */
-    public TagDialog(JComponent parent, final AbstractComponent repository) {
+    public TagDialog(JComponent parent, 
+    		final AbstractComponent repository, 
+    		final Class<? extends AbstractComponent> componentClass) {
         super(SwingUtilities.getWindowAncestor(parent), ModalityType.DOCUMENT_MODAL);
 
         Window parentWindow = SwingUtilities.getWindowAncestor(parent);
@@ -80,7 +82,7 @@ public class TagDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent arg0) {
             	component = PlatformAccess.getPlatform().getComponentRegistry()
-            		.newInstance(TagComponent.class, repository);
+            		.newInstance(componentClass, repository);
             	component.setDisplayName(tagPanel.getText());
             	PlatformAccess.getPlatform().getPersistenceProvider()
             		.persist(Arrays.asList(component, repository));

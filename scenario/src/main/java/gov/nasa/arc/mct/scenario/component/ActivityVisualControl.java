@@ -72,8 +72,20 @@ public class ActivityVisualControl extends CustomVisualControl {
 	private JComboBox comboBox;
 	private Color foreground;
 	private boolean isMutable = true;
+	private Class<?> capabilityClass;
+	private Class<? extends AbstractComponent> componentClass;
 	
-	public ActivityVisualControl() {
+	/**
+	 * Create a new visual control for editing children of an activity, 
+	 * based on the type of capability they expose.
+	 * @param capabilityClass the exposed capability
+	 * @param componentClass class to be used for create actions (null to disallow create)
+	 */
+	public ActivityVisualControl(Class<?> capabilityClass, 
+			Class<? extends AbstractComponent> componentClass) {
+		this.capabilityClass = capabilityClass;
+		this.componentClass = componentClass;
+		
 		setLayout(new BorderLayout());
 		comboBox = makeComboBox();
 		foreground = new JLabel().getForeground();
@@ -141,13 +153,12 @@ public class ActivityVisualControl extends CustomVisualControl {
 			PlatformAccess.getPlatform().getBootstrapComponents()) {
 			RepositoryCapability repo = comp.getCapability(RepositoryCapability.class);
 			if (repo != null && 
-				TagCapability.class.isAssignableFrom(repo.getCapabilityClass())) {
+				capabilityClass.isAssignableFrom(repo.getCapabilityClass())) {
+				
 				// First, add repo as a section heading
 				listItems.add(comp);
 				// Add all tags underneath
-				for (AbstractComponent child : comp.getComponents()) {					
-					listItems.addAll(child.getCapabilities(TagCapability.class));
-				}
+				listItems.addAll(comp.getComponents());
 				listItems.add(Box.createVerticalStrut(8)); // Blank space
 				
 				// Also, check to see if this is User Tags
@@ -159,7 +170,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 		}
 
 		// Always show "create tag" as the last option
-		if (userRepository != null) {
+		if (userRepository != null && componentClass != null) {
 			listItems.add(new CreateTagAction(userRepository));
 		}
 
@@ -181,13 +192,17 @@ public class ActivityVisualControl extends CustomVisualControl {
 					return (Component) item;
 				}
 				
-				label.setFont(label.getFont().deriveFont(
-					item instanceof TagCapability ? Font.PLAIN : 
-					item instanceof AbstractComponent ? Font.ITALIC :
+				boolean isRepository = 
+						item instanceof AbstractComponent &&
+						((AbstractComponent)item).getCapability(RepositoryCapability.class) 
+						    != null;
+				
+				label.setFont(label.getFont().deriveFont(isRepository ? 
+					Font.ITALIC :
 					Font.PLAIN));
 						
-				label.setIcon(item instanceof TagCapability ?
-					((TagCapability)item).getComponentRepresentation().getAsset(ImageIcon.class) :
+				label.setIcon(item instanceof AbstractComponent && !isRepository ?
+					((AbstractComponent)item).getAsset(ImageIcon.class) :
 					null);
 				
 				label.setText(
@@ -210,8 +225,9 @@ public class ActivityVisualControl extends CustomVisualControl {
 				if (source instanceof JComboBox) {
 					JComboBox comboBox = ((JComboBox) source);
 					Object item = comboBox.getSelectedItem();
-					if (item instanceof TagCapability) {
-						addTag(((TagCapability) item).getComponentRepresentation());
+					if (item instanceof AbstractComponent &&
+						(((AbstractComponent) item).getCapability(RepositoryCapability.class) == null)) {
+						addTag((AbstractComponent) item);
 					} else if (item instanceof Action) {
 						((Action) item).actionPerformed(new ActionEvent(event.getSource(), 0, ""));
 					}
@@ -282,7 +298,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 				AbstractComponent parent = references.iterator().next();
 				RepositoryCapability capability = parent.getCapability(RepositoryCapability.class);
 				return (capability != null && 
-						TagCapability.class.isAssignableFrom(capability.getCapabilityClass()));
+						capabilityClass.isAssignableFrom(capability.getCapabilityClass()));
 			} else {
 				return references.size() > 1;
 			}			
@@ -326,7 +342,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			AbstractComponent tag = 
-					new TagDialog(ActivityVisualControl.this, repository)
+					new TagDialog(ActivityVisualControl.this, repository, componentClass)
 						.createComponent();
 			if (tag != null) {
 				addTag(tag);
