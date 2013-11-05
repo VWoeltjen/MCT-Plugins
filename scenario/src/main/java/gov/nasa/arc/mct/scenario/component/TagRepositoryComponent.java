@@ -48,7 +48,7 @@ public class TagRepositoryComponent extends AbstractComponent implements Reposit
 	
 	@Override
 	public Class<?> getCapabilityClass() {
-		return TagComponent.class;
+		return TagCapability.class;
 	}
 
 	// TODO: Use this to support the Group capability
