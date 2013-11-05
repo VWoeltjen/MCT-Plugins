@@ -64,6 +64,7 @@ public class TagRepositoryComponent extends AbstractComponent implements Reposit
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class TagRepositoryModel {
+		@SuppressWarnings("unused") // Used by JAXB
 		private String scope = "";
 	}
 	
