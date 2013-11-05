@@ -28,7 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -51,6 +54,10 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 			CustomVisualControl control = 
 					new ActivityVisualControl(capability.getKey(), capability.getValue());
 			control.addChangeListener(this);
+			TitledBorder border = BorderFactory.createTitledBorder(
+					capability.getValue().getDisplayName());
+			border.setTitleColor(new JLabel().getForeground());
+			control.setBorder(border);
 			add(control);
 			controls.put(capability.getKey(), control);
 		}
