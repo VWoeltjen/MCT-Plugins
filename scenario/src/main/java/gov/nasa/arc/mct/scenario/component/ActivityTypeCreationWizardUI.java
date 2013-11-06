@@ -21,6 +21,8 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import java.util.ResourceBundle;
+
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
 import gov.nasa.arc.mct.services.component.CreateWizardUI;
@@ -39,9 +41,11 @@ import javax.swing.event.DocumentListener;
  * The wizard used when creating new Activity Type instances.
  */
 public class ActivityTypeCreationWizardUI extends CreateWizardUI {
-	private JTextField name  = new JTextField();
-	private JTextField comms = new JTextField();
-	private JTextField power = new JTextField();
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
+    	
+	private JTextField name  = new JTextField(BUNDLE.getString("wizard_activity_type_name_default"));
+	private JTextField power = new JTextField(BUNDLE.getString("wizard_activity_type_power_default"));
+	private JTextField comms = new JTextField(BUNDLE.getString("wizard_activity_type_comms_default"));
 	private JButton createButton;
 	
 	public ActivityTypeCreationWizardUI() {
@@ -53,9 +57,9 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 	public JComponent getUI(JButton create) {
 		this.createButton = create;
 		
-		JLabel nameLabel = new JLabel("Name: ");
-		JLabel powerLabel = new JLabel("Power: ");
-		JLabel commsLabel = new JLabel("Comms: ");
+		JLabel nameLabel = new JLabel(BUNDLE.getString("wizard_activity_type_name_label"));
+		JLabel powerLabel = new JLabel(BUNDLE.getString("wizard_activity_type_power_label"));
+		JLabel commsLabel = new JLabel(BUNDLE.getString("wizard_activity_type_comms_label"));
 		
 		JPanel panel = new JPanel();
 		GroupLayout groupLayout = new GroupLayout(panel);		
