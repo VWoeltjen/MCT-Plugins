@@ -23,6 +23,9 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
+import gov.nasa.arc.mct.services.component.ComponentRegistry;
+import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
+import gov.nasa.arc.mct.services.component.CreateWizardUI;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -58,32 +61,47 @@ public class TagDialog extends JDialog {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
     
     private JButton create = new JButton();
-    private TagPanel tagPanel = new TagPanel();
+    private CreateWizardUI wizard;
+    private TagPanel tagPanel;    
     private AbstractComponent component = null;
+    private String typeName;
     
     /**
      * The constructor that creates the dialog.
      */
-    public TagDialog(JComponent parent, final AbstractComponent repository) {
+    public TagDialog(JComponent parent, 
+    		final AbstractComponent repository, 
+    		final ComponentTypeInfo componentInfo) {
         super(SwingUtilities.getWindowAncestor(parent), ModalityType.DOCUMENT_MODAL);
-
+        
+        this.typeName = componentInfo.getDisplayName();
+        tagPanel = new TagPanel();
+        wizard = componentInfo.getAsset(CreateWizardUI.class); 
+        
         Window parentWindow = SwingUtilities.getWindowAncestor(parent);
         String suffix = (parentWindow instanceof Frame) ?
         		BUNDLE.getString("wizard_title_infix") + ((Frame) parentWindow).getTitle() : 
         		"";        
          
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setTitle(BUNDLE.getString("wizard_title_tag") + suffix);
+        setTitle(BUNDLE.getString("wizard_title_tag") + typeName + suffix);
         
         JPanel controlPanel = new JPanel();
         create.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-            	component = PlatformAccess.getPlatform().getComponentRegistry()
-            		.newInstance(TagComponent.class, repository);
-            	component.setDisplayName(tagPanel.getText());
-            	PlatformAccess.getPlatform().getPersistenceProvider()
-            		.persist(Arrays.asList(component, repository));
+            	ComponentRegistry registry = 
+            			PlatformAccess.getPlatform().getComponentRegistry();
+            	if (wizard == null) {
+	            	component = registry.newInstance(componentInfo.getTypeClass(), repository);
+	            	component.setDisplayName(tagPanel.getText());
+            	} else {
+            		component = wizard.createComp(registry, repository);
+            	}
+            	if (component != null) {
+            		PlatformAccess.getPlatform().getPersistenceProvider()
+            			.persist(Arrays.asList(component, repository));
+            	}
             	dispose();
             }
         });
@@ -102,7 +120,7 @@ public class TagDialog extends JDialog {
         // Allocate most available space to wizard's UI, with create/cancel on the bottom
         setLayout(new BorderLayout());
         getRootPane().setBorder(BorderFactory.createEmptyBorder(PADDING,PADDING,PADDING-1,PADDING-1));
-        add(tagPanel, BorderLayout.CENTER);
+        add(wizard != null ? wizard.getUI(create) : tagPanel, BorderLayout.CENTER);
         add(controlPanel, BorderLayout.SOUTH); 
 
         // Set Create button as default to respond to enter key
@@ -135,9 +153,11 @@ public class TagDialog extends JDialog {
     	return component;
     }
     
-    private static class TagPanel extends JPanel {
-    	private JLabel tagLabel = new JLabel("Tag: ");
-    	private JTextField tagField = new JTextField("untitled tag");
+    private class TagPanel extends JPanel {
+    	private JLabel tagLabel = new JLabel(typeName + ": ");
+    	private JTextField tagField = 
+    			new JTextField(BUNDLE.getString("wizard_default_bdn_prefix") +
+    					typeName.toLowerCase());
     	
     	public TagPanel() {
     		tagField.setColumns(30);

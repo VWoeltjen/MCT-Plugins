@@ -27,11 +27,12 @@ import gov.nasa.arc.mct.policy.ExecutionResult;
 import gov.nasa.arc.mct.policy.Policy;
 import gov.nasa.arc.mct.policy.PolicyContext;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
+import gov.nasa.arc.mct.scenario.component.ActivityTypeComponent;
 import gov.nasa.arc.mct.scenario.component.DecisionComponent;
 import gov.nasa.arc.mct.scenario.component.DurationCapability;
+import gov.nasa.arc.mct.scenario.component.RepositoryCapability;
 import gov.nasa.arc.mct.scenario.component.ScenarioComponent;
 import gov.nasa.arc.mct.scenario.component.TagComponent;
-import gov.nasa.arc.mct.scenario.component.TagRepositoryComponent;
 import gov.nasa.arc.mct.scenario.component.TimelineComponent;
 
 import java.util.Collection;
@@ -66,8 +67,11 @@ public class ScenarioContainmentPolicy implements Policy {
 	}
 
 	private boolean canContain(AbstractComponent parent, AbstractComponent child) {
-		if (parent instanceof TagRepositoryComponent) {
-			return child instanceof TagComponent;
+		// Repositories have a characteristic capability they should contain
+		RepositoryCapability repo = parent.getCapability(RepositoryCapability.class);
+		if (repo != null) {
+			return child.getCapability(repo.getCapabilityClass()) != null ||
+					!child.getCapabilities(repo.getCapabilityClass()).isEmpty();
 		}
 		
 		if (parent instanceof ScenarioComponent) {
@@ -87,6 +91,7 @@ public class ScenarioContainmentPolicy implements Policy {
 		if (parent instanceof ActivityComponent) {
 			return child instanceof ActivityComponent ||
 				   child instanceof DecisionComponent ||
+				   child instanceof ActivityTypeComponent ||
 				   child instanceof TagComponent;
 		}
 		

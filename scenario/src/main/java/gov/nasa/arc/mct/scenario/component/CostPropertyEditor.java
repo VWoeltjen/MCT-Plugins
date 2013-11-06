@@ -21,27 +21,29 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
-import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyEditor;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
+public class CostPropertyEditor implements PropertyEditor<Object> {
+	private CostFunctionCapability cost;
 
-/**
- * Property editor to support specification of an Activity's power cost in the Info View.
- *
- */
-public final class PowerPropertyEditor implements PropertyEditor<Object> {
-	ActivityComponent activityComponent = null;
-
-	public PowerPropertyEditor(AbstractComponent component) {
-		activityComponent = (ActivityComponent)component;
+	public CostPropertyEditor(CostFunctionCapability cost) {
+		super();
+		this.cost = cost;
 	}
 
 	@Override
-	public String getAsText() {
-		double numericData = activityComponent.getModel().getData().getPower();
-		return String.valueOf(numericData);
+	public String getAsText() {		
+		// TODO: This needs to change when varying costs are added
+		Iterator<Long> times = cost.getChangeTimes().iterator();
+		if (times.hasNext()) {
+			return String.valueOf(cost.getValue(times.next()));
+		} else {
+			return ""; // No value at all.
+		}
 	}
 
 	/**
@@ -57,9 +59,8 @@ public final class PowerPropertyEditor implements PropertyEditor<Object> {
 		if (verify(newValue) != null) {
 			throw new IllegalArgumentException(result);
 		}
-		ActivityData businessModel = activityComponent.getModel().getData();
-		double d = Double.parseDouble(newValue); // verify() took care of a possible number format exception
-		businessModel.setPower(d);
+		// verify() took care of a possible number format exception
+		cost.setValue(Double.parseDouble(newValue));
 	}
 
 	private String verify(String s) {
@@ -74,7 +75,7 @@ public final class PowerPropertyEditor implements PropertyEditor<Object> {
 		}
 		return null;
 	}
-
+	
 	@Override
 	public String getValue() {
 		throw new UnsupportedOperationException();
@@ -87,6 +88,6 @@ public final class PowerPropertyEditor implements PropertyEditor<Object> {
 
 	@Override
 	public List<Object> getTags() {
-		throw new UnsupportedOperationException();
-	}
-} 
+		return Collections.emptyList();
+	}	
+}

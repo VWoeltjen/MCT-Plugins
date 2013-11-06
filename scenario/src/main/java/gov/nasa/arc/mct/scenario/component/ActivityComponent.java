@@ -76,6 +76,15 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				return tagCapabilities;
 			}
 		}
+		if (capability.isAssignableFrom(CostFunctionCapability.class)) {
+			// Wrap aggregated cost functions
+			List<T> costFunctions = new ArrayList<T>();
+			for (CostFunctionCapability cost : 
+				super.handleGetCapabilities(CostFunctionCapability.class)) {
+				costFunctions.add(capability.cast(new CostFunctionWrapper(cost)));
+			}	
+			return costFunctions;
+		}
 		return super.handleGetCapabilities(capability);
 	}
 
@@ -115,7 +124,14 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	
 	@Override
 	public List<CostFunctionCapability> getInternalCostFunctions() {
-		return Arrays.<CostFunctionCapability>asList(new CostFunctionStub(true), new CostFunctionStub(false));
+		List<CostFunctionCapability> internal = new ArrayList<CostFunctionCapability>();
+		if (getModel().getData().getComm() != 0.0) {
+			internal.add(new CostFunctionStub(true));
+		} 
+		if (getModel().getData().getPower() != 0.0) {
+			internal.add(new CostFunctionStub(false));
+		}
+		return internal;
 	}
 
 	/**
@@ -135,9 +151,6 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		// We specify a mutable text field.  The control display's values are maintained in the business model
 		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
-		PropertyDescriptor type = new PropertyDescriptor("Activity Type",
-				new TypePropertyEditor(this), VisualControlDescriptor.TextField);
-		type.setFieldMutable(true);
 		PropertyDescriptor startTime = new PropertyDescriptor("Start Time", 
 				new TimePropertyEditor(this, TimeProperty.START),  VisualControlDescriptor.TextField);
 		startTime.setFieldMutable(true);
@@ -147,25 +160,20 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		PropertyDescriptor duration = new PropertyDescriptor("Duration",
 				new TimePropertyEditor(this, TimeProperty.DURATION), VisualControlDescriptor.TextField);
 		duration.setFieldMutable(true);
-		PropertyDescriptor power = new PropertyDescriptor("Power (W)", 
-				new PowerPropertyEditor(this),  VisualControlDescriptor.TextField);
-		power.setFieldMutable(true);
-		PropertyDescriptor comm = new PropertyDescriptor("Comm (Kb/s)", 
-				new CommPropertyEditor(this),  VisualControlDescriptor.TextField);
-		comm.setFieldMutable(true);
 		PropertyDescriptor notes = new PropertyDescriptor("Notes", 
 				new NotesPropertyEditor(this),  VisualControlDescriptor.TextArea);
 		notes.setFieldMutable(true);
-		PropertyDescriptor tags = new PropertyDescriptor("Tags", 
-				new TagPropertyEditor(this), VisualControlDescriptor.Custom);
+		PropertyDescriptor tags = new PropertyDescriptor("Associations", 
+				new TagPropertyEditor(this, 
+						Arrays.<Class<?>>asList(TagCapability.class, 
+								      CostFunctionCapability.class)), 
+				VisualControlDescriptor.Custom);
 		tags.setFieldMutable(true);
 
-		fields.add(type);
 		fields.add(startTime);
 		fields.add(endTime);
 		fields.add(duration);
-		fields.add(power);
-		fields.add(comm);
+		fields.addAll(super.getFieldDescriptors()); // Costs
 		fields.add(notes);
 		fields.add(tags);
 
@@ -242,11 +250,84 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		}
 
 		@Override
+		public void setValue(double value) {
+			if (isComm) {
+				getData().setComm(value);
+			} else {
+				getData().setPower(value);
+			}
+			
+		}
+		
+		@Override
 		public Collection<Long> getChangeTimes() {
 			return Arrays.asList(getStart(), getEnd());
 		}
 		
 	}
 
+	private class CostFunctionWrapper implements CostFunctionCapability {
+		private CostFunctionCapability cost;
+
+		public CostFunctionWrapper(CostFunctionCapability cost) {
+			super();
+			this.cost = cost;
+		}
+
+		public String getName() {
+			return cost.getName();
+		}
+
+		public String getUnits() {
+			return cost.getUnits();
+		}
+
+		public double getValue(long time) {
+			// Report zero outside of activity duration
+			return time < getStart() || time >= getEnd() ?
+					0.0 : cost.getValue(time);			
+		}
+
+		public void setValue(double value) {
+			throw new UnsupportedOperationException();
+		}
+
+		public Collection<Long> getChangeTimes() {
+			// Ensure all exposed change times fall within this activity
+			Collection<Long> times = cost.getChangeTimes();
+			
+			long min = Long.MAX_VALUE;
+			long max = Long.MIN_VALUE;
+			
+			for (Long time : times) {
+				if (time < min) {
+					min = time;
+				}
+				if (time > max) {
+					max = time;
+				}
+			}
+			
+			long start = getStart();
+			long end   = getEnd();
+			
+			// Trim if necessary
+			if (min < start || max > end) {
+				List<Long> result = new ArrayList<Long>();
+				result.add(start);
+				for (Long time : times) {
+					if (time > start && time < end) {
+						result.add(time);
+					}
+				}
+				result.add(end);
+				return result;
+			} else {
+				return times;
+			}
+		}
+		
+		
+	}
 
 }

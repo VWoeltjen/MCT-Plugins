@@ -22,6 +22,8 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.PropertyDescriptor;
+import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,6 +61,26 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 	 */
 	public List<CostFunctionCapability> getInternalCostFunctions() {
 		return Collections.emptyList();
+	}
+	
+
+	@Override
+	public List<PropertyDescriptor> getFieldDescriptors()  {
+		// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
+		List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
+
+		// Add property editors for all internal cost functions
+		for (CostFunctionCapability capability : getInternalCostFunctions()) {
+			PropertyDescriptor cost = new PropertyDescriptor(
+					capability.getName() + 
+					    " (" + capability.getUnits() + ")",
+					new CostPropertyEditor(capability),
+					VisualControlDescriptor.TextField);
+			cost.setFieldMutable(true);
+			fields.add(cost);
+		}
+
+		return fields;
 	}
 	
 	@Override
@@ -159,6 +181,13 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 			return sum;
 		}
 
+		@Override
+		public void setValue(double value) {
+			String msg = 
+					"Cannot set the value of a generated cost function";
+			throw new UnsupportedOperationException(msg);
+		}
+		
 		@Override
 		public Collection<Long> getChangeTimes() {
 			Collection<Long> changeTimes = new TreeSet<Long>();
