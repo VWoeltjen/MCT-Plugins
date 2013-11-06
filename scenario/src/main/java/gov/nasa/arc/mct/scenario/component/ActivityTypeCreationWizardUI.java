@@ -94,8 +94,17 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 	@Override
 	public AbstractComponent createComp(ComponentRegistry comp,
 			AbstractComponent parentComp) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		ActivityTypeComponent activityType = 
+				comp.newInstance(ActivityTypeComponent.class, parentComp);
+		
+		activityType.setDisplayName(name.getText());
+		
+		// Previous validation should ensure that no NFE is thrown
+		activityType.setCosts(
+				Double.parseDouble(power.getText()), 
+				Double.parseDouble(comms.getText()));
+		return activityType;
 	}
 	
 	private void updateCreateButton() {

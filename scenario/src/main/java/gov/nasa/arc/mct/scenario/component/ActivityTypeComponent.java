@@ -54,6 +54,12 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 		return true;
 	}
 	
+	public void setCosts(double power, double comms) {
+		ActivityTypeModel m = model.get();
+		m.setComms(comms);
+		m.setPower(power);
+	}
+	
 	@Override
 	public <T> T handleGetCapability(Class<T> capability) {
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
