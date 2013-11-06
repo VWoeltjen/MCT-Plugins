@@ -35,6 +35,9 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+/**
+ * The wizard used when creating new Activity Type instances.
+ */
 public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 	private JTextField name  = new JTextField();
 	private JTextField comms = new JTextField();
