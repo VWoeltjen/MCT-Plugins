@@ -349,8 +349,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 			AbstractComponent tag = 
 					new TagDialog(ActivityVisualControl.this, 
 							repository, 
-							componentInfo.getTypeClass(), 
-							componentInfo.getDisplayName()).createComponent();
+							componentInfo).createComponent();
 			if (tag != null) {
 				addTag(tag);
 			}

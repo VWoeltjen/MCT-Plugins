@@ -23,6 +23,9 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
+import gov.nasa.arc.mct.services.component.ComponentRegistry;
+import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
+import gov.nasa.arc.mct.services.component.CreateWizardUI;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -58,6 +61,7 @@ public class TagDialog extends JDialog {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
     
     private JButton create = new JButton();
+    private CreateWizardUI wizard;
     private TagPanel tagPanel;    
     private AbstractComponent component = null;
     private String typeName;
@@ -67,12 +71,12 @@ public class TagDialog extends JDialog {
      */
     public TagDialog(JComponent parent, 
     		final AbstractComponent repository, 
-    		final Class<? extends AbstractComponent> componentClass,
-    		String typeName) {
+    		final ComponentTypeInfo componentInfo) {
         super(SwingUtilities.getWindowAncestor(parent), ModalityType.DOCUMENT_MODAL);
         
-        this.typeName = typeName;
+        this.typeName = componentInfo.getDisplayName();
         tagPanel = new TagPanel();
+        wizard = componentInfo.getAsset(CreateWizardUI.class); 
         
         Window parentWindow = SwingUtilities.getWindowAncestor(parent);
         String suffix = (parentWindow instanceof Frame) ?
@@ -86,11 +90,18 @@ public class TagDialog extends JDialog {
         create.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-            	component = PlatformAccess.getPlatform().getComponentRegistry()
-            		.newInstance(componentClass, repository);
-            	component.setDisplayName(tagPanel.getText());
-            	PlatformAccess.getPlatform().getPersistenceProvider()
-            		.persist(Arrays.asList(component, repository));
+            	ComponentRegistry registry = 
+            			PlatformAccess.getPlatform().getComponentRegistry();
+            	if (wizard == null) {
+	            	component = registry.newInstance(componentInfo.getTypeClass(), repository);
+	            	component.setDisplayName(tagPanel.getText());
+            	} else {
+            		component = wizard.createComp(registry, repository);
+            	}
+            	if (component != null) {
+            		PlatformAccess.getPlatform().getPersistenceProvider()
+            			.persist(Arrays.asList(component, repository));
+            	}
             	dispose();
             }
         });
@@ -109,7 +120,7 @@ public class TagDialog extends JDialog {
         // Allocate most available space to wizard's UI, with create/cancel on the bottom
         setLayout(new BorderLayout());
         getRootPane().setBorder(BorderFactory.createEmptyBorder(PADDING,PADDING,PADDING-1,PADDING-1));
-        add(tagPanel, BorderLayout.CENTER);
+        add(wizard != null ? wizard.getUI(create) : tagPanel, BorderLayout.CENTER);
         add(controlPanel, BorderLayout.SOUTH); 
 
         // Set Create button as default to respond to enter key
