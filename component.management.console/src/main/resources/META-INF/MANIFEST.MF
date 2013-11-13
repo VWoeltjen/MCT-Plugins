@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: gov.nasa.arc.mct.component.management.console
+Bundle-Name: NASA MCT Component - Management Console
+Bundle-Version: 1.0.0
+Import-Package: gov.nasa.arc.mct.components;version="[1.1,2)",
+ gov.nasa.arc.mct.gui;version="[1.1,2)",
+ gov.nasa.arc.mct.services.component;version="[1.1,2)",
+ com.github.danielpacak.osgi.swingconsole;version="[1,2)",
+ org.osgi.framework,
+ org.osgi.service.cm
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Service-Component: OSGI-INF/service-component.xml
