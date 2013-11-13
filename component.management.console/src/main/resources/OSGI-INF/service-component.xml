@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component xmlns="http://www.osgi.org/xmlns/scr/v1.1.0">
+
+	<implementation class="gov.nasa.arc.mct.component.management.console.ManagementConsoleComponentProvider" />
+
+	<property name="service.description" value="NASA MCT Component - Management Console" />
+	<property name="service.vendor" value="NASA MCT" />
+
+	<service>
+		<provide interface="gov.nasa.arc.mct.services.component.ComponentProvider" />
+	</service>
+
+</component>
