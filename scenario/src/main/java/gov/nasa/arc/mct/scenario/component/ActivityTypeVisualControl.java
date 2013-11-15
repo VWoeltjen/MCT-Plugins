@@ -29,6 +29,8 @@ import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -56,6 +58,10 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 			add(button, BorderLayout.LINE_END);
 			button.addActionListener(buttonListener);
 		}
+		
+		FieldChangeListener fieldListener = new FieldChangeListener();
+		field.addActionListener(fieldListener);
+		field.addFocusListener(fieldListener);
 	}
 	
 	@Override
@@ -88,4 +94,21 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 			}			
 		}			
 	};
+	
+	private class FieldChangeListener implements ActionListener, FocusListener {		
+		@Override
+		public void focusGained(FocusEvent e) {
+			fireChange();
+		}
+
+		@Override
+		public void focusLost(FocusEvent e) {
+			fireChange();
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			fireChange();
+		}		
+	}
 }
