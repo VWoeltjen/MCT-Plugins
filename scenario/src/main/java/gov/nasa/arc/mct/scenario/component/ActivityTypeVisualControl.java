@@ -26,6 +26,12 @@ import gov.nasa.arc.mct.util.MCTIcons;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Desktop;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -41,11 +47,15 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 	
 	public ActivityTypeVisualControl() {
 		setLayout(new BorderLayout());
-		add(button, BorderLayout.LINE_END);
 		add(label, BorderLayout.CENTER);
 
 		button.setBorder(BorderFactory.createEmptyBorder());
 		button.setContentAreaFilled(false);
+
+		if (Desktop.isDesktopSupported()) {
+			add(button, BorderLayout.LINE_END);
+			button.addActionListener(buttonListener);
+		}
 	}
 	
 	@Override
@@ -66,4 +76,18 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 		add(mutable ? field : label, BorderLayout.CENTER);		
 	}
 	
+	private ActionListener buttonListener = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			try {
+				Desktop.getDesktop().browse(new URI(getValue().toString()));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+		}			
+	};
 }
