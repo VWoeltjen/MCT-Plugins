@@ -22,22 +22,42 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.gui.CustomVisualControl;
+import gov.nasa.arc.mct.util.MCTIcons;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+
+import javax.swing.JLabel;
+import javax.swing.JTextField;
 
 public class ActivityTypeVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 3538827305917390749L;	
+	private JLabel label = new JLabel();
+	private JTextField field = new JTextField();
+	private JLabel icon = new JLabel(MCTIcons.generateIcon(0, 12, Color.GRAY));
+	private boolean mutable = false;
+	
+	public ActivityTypeVisualControl() {
+		setLayout(new BorderLayout());
+		add(icon, BorderLayout.LINE_END);
+		add(label, BorderLayout.CENTER);
+	}
 	
 	@Override
 	public void setValue(Object value) {
-		
+		field.setText(value.toString());
+		label.setText(value.toString());
 	}
 
 	@Override
 	public Object getValue() {
-		return null;
+		return mutable ? field.getText() : label.getText();
 	}
 
 	@Override
 	public void setMutable(boolean mutable) {
-		
+		remove(mutable ? field : label);
+		this.mutable = mutable;
+		add(mutable ? field : label, BorderLayout.CENTER);		
 	}
 }
