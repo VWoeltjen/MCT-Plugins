@@ -34,6 +34,7 @@ import java.awt.event.FocusListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -43,6 +44,8 @@ import javax.swing.JTextField;
 
 public class ActivityTypeVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 3538827305917390749L;	
+	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
+	
 	private JLabel label = new JLabel();
 	private JTextField field = new JTextField();
 	private JButton button = new JButton(MCTIcons.generateIcon(44, 12, Color.GRAY));
@@ -84,7 +87,11 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 	}
 	
 	private void error(String message) {
-		JOptionPane.showMessageDialog(this, message, "", JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(
+				this, 
+				String.format(BUNDLE.getString("url_error_message"), getValue().toString()), 
+				BUNDLE.getString("url_error_title"), 
+				JOptionPane.ERROR_MESSAGE);
 	}
 	
 	private ActionListener buttonListener = new ActionListener() {
