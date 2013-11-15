@@ -23,9 +23,14 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
+import gov.nasa.arc.mct.components.PropertyDescriptor;
+import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
+import gov.nasa.arc.mct.components.PropertyEditor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -86,6 +91,23 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 		return null;
 	}
 	
+	@Override
+	public List<PropertyDescriptor> getFieldDescriptors()  {
+		// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
+		List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
+
+		// Add custom UI for link to external resource
+		PropertyDescriptor url = new PropertyDescriptor("External link", 
+				new URLPropertyEditor(), 
+				VisualControlDescriptor.Custom);
+		url.setFieldMutable(true);
+
+		fields.addAll(super.getFieldDescriptors()); // Costs
+		fields.add(url);
+
+		return fields;
+	}
+	
 	private class ActivityTypeCost implements CostFunctionCapability {
 		// Short-term approach; this should be changed to permit more variety
 		// (i.e. not just Power/Comms)
@@ -126,5 +148,34 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 			}
 		}
 
+	}
+	
+	private class URLPropertyEditor implements PropertyEditor<String> {
+
+		@Override
+		public String getAsText() {
+			return model.get().getUrl();
+		}
+
+		@Override
+		public void setAsText(String text) throws IllegalArgumentException {
+			model.get().setUrl(text == null ? "" : text);
+		}
+
+		@Override
+		public Object getValue() {
+			return getAsText();
+		}
+
+		@Override
+		public void setValue(Object value) throws IllegalArgumentException {
+			setAsText(value == null ? "" : value.toString());
+		}
+
+		@Override
+		public List<String> getTags() {
+			return Collections.emptyList();
+		}
+		
 	}
 }

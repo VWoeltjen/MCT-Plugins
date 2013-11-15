@@ -202,6 +202,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				types.put(TagCapability.class, tagComponentType);
 				types.put(CostFunctionCapability.class, activityTypeComponentType);
 				return assetClass.cast(new CompositeActivityVisualControl(types));
+			} else if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
+				return assetClass.cast(new ActivityTypeVisualControl());
 			}
 		}
 		
