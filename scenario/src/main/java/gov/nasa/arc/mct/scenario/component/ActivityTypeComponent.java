@@ -23,9 +23,11 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
+import gov.nasa.arc.mct.components.PropertyEditor;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -126,5 +128,34 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 			}
 		}
 
+	}
+	
+	private class URLPropertyEditor implements PropertyEditor<String> {
+
+		@Override
+		public String getAsText() {
+			return model.get().getUrl();
+		}
+
+		@Override
+		public void setAsText(String text) throws IllegalArgumentException {
+			model.get().setUrl(text == null ? "" : text);
+		}
+
+		@Override
+		public Object getValue() {
+			return getAsText();
+		}
+
+		@Override
+		public void setValue(Object value) throws IllegalArgumentException {
+			setAsText(value == null ? "" : value.toString());
+		}
+
+		@Override
+		public List<String> getTags() {
+			return Collections.emptyList();
+		}
+		
 	}
 }
