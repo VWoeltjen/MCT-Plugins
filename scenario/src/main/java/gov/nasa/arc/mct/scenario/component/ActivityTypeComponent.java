@@ -23,8 +23,11 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
+import gov.nasa.arc.mct.components.PropertyDescriptor;
+import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 import gov.nasa.arc.mct.components.PropertyEditor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -86,6 +89,23 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 			return capability.cast(persistence);
 		}
 		return null;
+	}
+	
+	@Override
+	public List<PropertyDescriptor> getFieldDescriptors()  {
+		// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
+		List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
+
+		// Add custom UI for link to external resource
+		PropertyDescriptor url = new PropertyDescriptor("External link", 
+				new URLPropertyEditor(), 
+				VisualControlDescriptor.Custom);
+		url.setFieldMutable(true);
+
+		fields.addAll(super.getFieldDescriptors()); // Costs
+		fields.add(url);
+
+		return fields;
 	}
 	
 	private class ActivityTypeCost implements CostFunctionCapability {
