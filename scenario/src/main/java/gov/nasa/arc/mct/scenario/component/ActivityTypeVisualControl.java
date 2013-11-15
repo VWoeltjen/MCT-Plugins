@@ -38,6 +38,7 @@ import java.net.URISyntaxException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 public class ActivityTypeVisualControl extends CustomVisualControl {
@@ -82,15 +83,19 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 		add(mutable ? field : label, BorderLayout.CENTER);		
 	}
 	
+	private void error(String message) {
+		JOptionPane.showMessageDialog(this, message, "", JOptionPane.ERROR_MESSAGE);
+	}
+	
 	private ActionListener buttonListener = new ActionListener() {
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			try {
 				Desktop.getDesktop().browse(new URI(getValue().toString()));
 			} catch (IOException e) {
-				
+				error(e.getLocalizedMessage());
 			} catch (URISyntaxException e) {
-				
+				error(e.getLocalizedMessage());
 			}			
 		}			
 	};
