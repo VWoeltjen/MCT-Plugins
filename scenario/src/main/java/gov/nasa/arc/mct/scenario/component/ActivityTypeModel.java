@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement()
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ActivityTypeModel {
+	private String url = "";
 	private double power = 0;
 	private double comms = 0;
 
@@ -45,5 +46,11 @@ public class ActivityTypeModel {
 	}
 	public void setComms(double comms) {
 		this.comms = comms;
+	}
+	public String getUrl() {
+		return url;
+	}
+	public void setUrl(String url) {
+		this.url = url;
 	}
 }
