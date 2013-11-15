@@ -27,6 +27,8 @@ import gov.nasa.arc.mct.util.MCTIcons;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
@@ -34,13 +36,16 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 3538827305917390749L;	
 	private JLabel label = new JLabel();
 	private JTextField field = new JTextField();
-	private JLabel icon = new JLabel(MCTIcons.generateIcon(0, 12, Color.GRAY));
+	private JButton button = new JButton(MCTIcons.generateIcon(44, 12, Color.GRAY));
 	private boolean mutable = false;
 	
 	public ActivityTypeVisualControl() {
 		setLayout(new BorderLayout());
-		add(icon, BorderLayout.LINE_END);
+		add(button, BorderLayout.LINE_END);
 		add(label, BorderLayout.CENTER);
+
+		button.setBorder(BorderFactory.createEmptyBorder());
+		button.setContentAreaFilled(false);
 	}
 	
 	@Override
@@ -60,4 +65,5 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 		this.mutable = mutable;
 		add(mutable ? field : label, BorderLayout.CENTER);		
 	}
+	
 }
