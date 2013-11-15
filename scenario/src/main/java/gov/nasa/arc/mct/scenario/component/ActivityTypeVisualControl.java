@@ -61,6 +61,7 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 		if (Desktop.isDesktopSupported()) {
 			add(button, BorderLayout.LINE_END);
 			button.addActionListener(buttonListener);
+			button.setToolTipText(BUNDLE.getString("url_tooltip"));
 		}
 		
 		FieldChangeListener fieldListener = new FieldChangeListener();
