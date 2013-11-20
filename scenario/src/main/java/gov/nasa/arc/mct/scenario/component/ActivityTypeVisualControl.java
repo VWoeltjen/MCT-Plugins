@@ -37,24 +37,37 @@ import java.net.URISyntaxException;
 import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 
+/**
+ * Provides the custom user interface needed for displaying  
+ * Activity Types in the Info View.
+ * 
+ * Specifically, provides a text field with a link button 
+ * next to it, which triggers the opening of a browser 
+ * window.
+ */
 public class ActivityTypeVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 3538827305917390749L;	
 	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
+	private static final ImageIcon LINK_ICON = new ImageIcon(ActivityTypeVisualControl.class.getResource("/icons/mct_icon_link.png"));	
 	
 	private JLabel label = new JLabel();
 	private JTextField field = new JTextField();
-	private JButton button = new JButton(MCTIcons.generateIcon(44, 12, Color.GRAY));
+	private JButton button = new JButton();
+	private Color border = UIManager.getColor("border");
 	private boolean mutable = false;
 	
 	public ActivityTypeVisualControl() {
 		setLayout(new BorderLayout());
 		add(label, BorderLayout.CENTER);
-
+		
+		button.setIcon(MCTIcons.processIcon(LINK_ICON, label.getForeground(), false));
 		button.setBorder(BorderFactory.createEmptyBorder());
 		button.setContentAreaFilled(false);
 
@@ -67,6 +80,7 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 		FieldChangeListener fieldListener = new FieldChangeListener();
 		field.addActionListener(fieldListener);
 		field.addFocusListener(fieldListener);
+		field.setBorder(BorderFactory.createLineBorder(border != null ? border : Color.GRAY));
 	}
 	
 	@Override
