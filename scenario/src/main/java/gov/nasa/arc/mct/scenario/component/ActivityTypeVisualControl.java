@@ -42,6 +42,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 
 public class ActivityTypeVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 3538827305917390749L;	
@@ -51,12 +52,13 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 	private JLabel label = new JLabel();
 	private JTextField field = new JTextField();
 	private JButton button = new JButton();
+	private Color border = UIManager.getColor("border");
 	private boolean mutable = false;
 	
 	public ActivityTypeVisualControl() {
 		setLayout(new BorderLayout());
 		add(label, BorderLayout.CENTER);
-
+		
 		button.setIcon(MCTIcons.processIcon(LINK_ICON, label.getForeground(), false));
 		button.setBorder(BorderFactory.createEmptyBorder());
 		button.setContentAreaFilled(false);
@@ -70,6 +72,7 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 		FieldChangeListener fieldListener = new FieldChangeListener();
 		field.addActionListener(fieldListener);
 		field.addFocusListener(fieldListener);
+		field.setBorder(BorderFactory.createLineBorder(border != null ? border : Color.GRAY));
 	}
 	
 	@Override
