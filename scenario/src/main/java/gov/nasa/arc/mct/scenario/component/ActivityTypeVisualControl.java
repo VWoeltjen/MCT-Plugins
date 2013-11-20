@@ -44,6 +44,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 
+/**
+ * Provides the custom user interface needed for displaying  
+ * Activity Types in the Info View.
+ * 
+ * Specifically, provides a text field with a link button 
+ * next to it, which triggers the opening of a browser 
+ * window.
+ */
 public class ActivityTypeVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 3538827305917390749L;	
 	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
