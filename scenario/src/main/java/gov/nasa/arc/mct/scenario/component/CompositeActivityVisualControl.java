@@ -51,16 +51,22 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		
 		for (Entry<Class<?>, ComponentTypeInfo> capability : capabilities.entrySet()) {
-			CustomVisualControl control = 
-					new ActivityVisualControl(capability.getKey(), capability.getValue());
-			control.addChangeListener(this);
-			TitledBorder border = BorderFactory.createTitledBorder(
+			CustomVisualControl control = addControl(
+					new ActivityVisualControl(capability.getKey(), capability.getValue()),
 					capability.getValue().getDisplayName() + "s");
-			border.setTitleColor(new JLabel().getForeground());
-			control.setBorder(border);
-			add(control);
 			controls.put(capability.getKey(), control);
 		}
+		
+		addControl(new LinkVisualControl(), "External link");
+	}
+	
+	private CustomVisualControl addControl(CustomVisualControl control, String title) {
+		control.addChangeListener(this);
+		TitledBorder border = BorderFactory.createTitledBorder(title);
+		border.setTitleColor(new JLabel().getForeground());
+		control.setBorder(border);
+		add(control);		
+		return control;
 	}
 	
 	@Override
