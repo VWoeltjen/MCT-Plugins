@@ -100,23 +100,27 @@ public class TimePropertyEditor implements PropertyEditor<Object> {
 		}
 		
 		private void setTime(DurationCapability dc, long time) throws IllegalArgumentException {
+			if (time < 0) {
+				throw new IllegalArgumentException("Invalid duration.");
+			}
+			
+			// Get delta, compared to original time
+			long delta = time - getTime(dc);
+			
 			switch (this) {
 			case START:
-				if (time > dc.getEnd() || time < 0) {
-					throw new IllegalArgumentException("Invalid start time.");
-				}
-				dc.setStart(time);
-				break;
 			case END:
-				if (time < dc.getStart() || time < 0) {
-					throw new IllegalArgumentException("Invalid end time.");
+				// Shift time
+				// Vary order, since dc may enforce start < end
+				if (delta < 0) {
+					dc.setStart(dc.getStart() + delta);
+					dc.setEnd(dc.getEnd() + delta);
+				} else {
+					dc.setEnd(dc.getEnd() + delta);
+					dc.setStart(dc.getStart() + delta);		
 				}
-				dc.setEnd(time);
 				break;
 			case DURATION:
-				if (time < 0) {
-					throw new IllegalArgumentException("Invalid duration.");
-				}
 				dc.setEnd(dc.getStart() + time);
 				break;				
 			}
