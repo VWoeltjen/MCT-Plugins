@@ -27,6 +27,7 @@ import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.ObjectManager;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
+import gov.nasa.arc.mct.components.PropertyEditor;
 import gov.nasa.arc.mct.scenario.component.TimePropertyEditor.TimeProperty;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -164,7 +166,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				new NotesPropertyEditor(this),  VisualControlDescriptor.TextArea);
 		notes.setFieldMutable(true);
 		PropertyDescriptor tags = new PropertyDescriptor("Associations", 
-				new TagPropertyEditor(this, 
+				new ActivityCustomPropertyEditor( 
 						Arrays.<Class<?>>asList(TagCapability.class, 
 								      CostFunctionCapability.class)), 
 				VisualControlDescriptor.Custom);
@@ -329,5 +331,65 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		
 		
 	}
+	
+	private class ActivityCustomPropertyEditor implements PropertyEditor<ActivityCustomProperty> {
+		private TagPropertyEditor tagPropertyEditor;
+		
+		public ActivityCustomPropertyEditor(Collection<Class<?>> capabilities) {
+			tagPropertyEditor = 
+					new TagPropertyEditor(ActivityComponent.this, capabilities);
+		}
 
+		@Override
+		public String getAsText() {
+			return "";
+		}
+
+		@Override
+		public void setAsText(String text) throws IllegalArgumentException {
+			// Unused
+		}
+
+		@Override
+		public Object getValue() {
+			return new ActivityCustomProperty(tagPropertyEditor.getValue(), "stub");
+		}
+
+		@Override
+		public void setValue(Object value) throws IllegalArgumentException {
+			if (value instanceof ActivityCustomProperty) {
+				ActivityCustomProperty property = (ActivityCustomProperty) value;
+				tagPropertyEditor.setValue(property.getTagStyleChildren());
+			} else {
+				throw new IllegalArgumentException(
+						ActivityCustomProperty.class.getName() + 
+						" expected, but " +
+				        value.getClass().getName() + 
+				        " passed instead.");
+			}
+		}
+
+		@Override
+		public List<ActivityCustomProperty> getTags() {
+			return null;
+		}
+	}
+
+	public static class ActivityCustomProperty {
+		private Map<Class<?>, List<AbstractComponent>> tagStyleChildren;
+		private String url;
+		public ActivityCustomProperty(
+				Map<Class<?>, List<AbstractComponent>> tagStyleChildren,
+				String url) {
+			super();
+			this.tagStyleChildren = tagStyleChildren;
+			this.url = url;
+		}
+		public Map<Class<?>, List<AbstractComponent>> getTagStyleChildren() {
+			return tagStyleChildren;
+		}
+		public String getUrl() {
+			return url;
+		}
+	}
 }
