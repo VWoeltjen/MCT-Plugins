@@ -34,6 +34,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -60,6 +62,8 @@ public class GraphView extends AbstractTimelineView {
 	private static final Stroke GRAPH_STROKE = new BasicStroke(2f);
 	private static final int GRAPH_HEIGHT = 60;
 	private static final int GRAPH_PAD    = 16;
+	private static final NumberFormat FORMAT = new DecimalFormat();
+	
 	
 	private static final Color DEFAULT_FOREGROUND_COLOR = Color.BLACK;
 	
@@ -139,9 +143,9 @@ public class GraphView extends AbstractTimelineView {
 						if (maxValue != minValue && x[i+1] > getLeftPadding() && x[i+1] < getWidth() - getRightPadding()) {
 							int maxY = Math.min(y[i], y[i+1]);
 							int minY = Math.max(y[i], y[i+1]);
-							String maxValueString = Double.toString(maxValue);
+							String maxValueString = FORMAT.format(maxValue);
 							g.drawString(maxValueString, x[i+1] - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length())/2, maxY - charHeight / 4);
-							String minValueString = Double.toString(minValue);
+							String minValueString = FORMAT.format(minValue);
 							g.drawString(minValueString, x[i+1] - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length())/2, minY + charHeight);
 						}
 					}
@@ -153,9 +157,9 @@ public class GraphView extends AbstractTimelineView {
 			g.drawLine(getLeftPadding()-1, GRAPH_PAD, getLeftPadding()-1, GRAPH_PAD + GRAPH_HEIGHT - 1);
 			g.drawLine(getLeftPadding()+5, GRAPH_PAD, getLeftPadding()-1, GRAPH_PAD);
 			g.drawLine(getLeftPadding()+5, GRAPH_PAD + GRAPH_HEIGHT - 1, getLeftPadding()-1, GRAPH_PAD+ GRAPH_HEIGHT - 1);
-			String maxValueString = Double.toString(maxData);
+			String maxValueString = FORMAT.format(maxData);
 			g.drawString(maxValueString, getLeftPadding() - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length()) - 8, GRAPH_PAD + charHeight/2);
-			String minValueString = Double.toString(minData);
+			String minValueString = FORMAT.format(minData);
 			g.drawString(minValueString, getLeftPadding() - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length()) - 8, GRAPH_PAD + GRAPH_HEIGHT + charHeight/2);
 			
 			String name = cost.getName();
