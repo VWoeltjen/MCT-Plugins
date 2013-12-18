@@ -21,10 +21,13 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.CustomVisualControl;
+import gov.nasa.arc.mct.scenario.component.ActivityComponent.ActivityCustomProperty;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -46,42 +49,59 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 	private static final long serialVersionUID = 1944674986744108472L;
 	private Map<Class<?>, CustomVisualControl> controls = 
 			new HashMap<Class<?>, CustomVisualControl>();
+	private CustomVisualControl linkControl;
 	
 	public CompositeActivityVisualControl(Map<Class<?>, ComponentTypeInfo> capabilities) {
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		
 		for (Entry<Class<?>, ComponentTypeInfo> capability : capabilities.entrySet()) {
-			CustomVisualControl control = 
-					new ActivityVisualControl(capability.getKey(), capability.getValue());
-			control.addChangeListener(this);
-			TitledBorder border = BorderFactory.createTitledBorder(
+			CustomVisualControl control = addControl(
+					new ActivityVisualControl(capability.getKey(), capability.getValue()),
 					capability.getValue().getDisplayName() + "s");
-			border.setTitleColor(new JLabel().getForeground());
-			control.setBorder(border);
-			add(control);
 			controls.put(capability.getKey(), control);
 		}
+		
+		linkControl = addControl(new LinkVisualControl(), "External Link");
+	}
+	
+	private CustomVisualControl addControl(CustomVisualControl control, String title) {
+		control.addChangeListener(this);
+		TitledBorder border = BorderFactory.createTitledBorder(title);
+		border.setTitleColor(new JLabel().getForeground());
+		control.setBorder(border);
+		add(control);		
+		return control;
 	}
 	
 	@Override
 	public void setValue(Object value) {
-		if (value instanceof Map) {
+		if (value instanceof ActivityCustomProperty) {
+			ActivityCustomProperty property = 
+					((ActivityCustomProperty) value);
+			Map<Class<?>, List<AbstractComponent>> map = 
+					property.getTagStyleChildren();
 			for (Entry<Class<?>, CustomVisualControl> entry : controls.entrySet()) {
-				Object v = ((Map<?,?>) value).get(entry.getKey());
+				Object v = map.get(entry.getKey());
 				if (v != null) {
 					entry.getValue().setValue(v);
 				}
 			}
+			
+			linkControl.setValue(property.getUrl());
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object getValue() {
-		Map<Class<?>, Object> value = new HashMap<Class<?>, Object>();
+		Map<Class<?>, List<AbstractComponent>> value = 
+				new HashMap<Class<?>, List<AbstractComponent>>();
 		for (Entry<Class<?>, CustomVisualControl> entry : controls.entrySet()) {
-			value.put(entry.getKey(), entry.getValue().getValue());
+			value.put(entry.getKey(), 
+					(List<AbstractComponent>) entry.getValue().getValue());
 		}
-		return value;
+		return new ActivityCustomProperty(value, 
+				linkControl.getValue().toString());
 	}
 
 	@Override
@@ -89,6 +109,7 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 		for (CustomVisualControl control : controls.values()) {
 			control.setMutable(mutable);
 		}
+		linkControl.setMutable(mutable);
 	}
 
 	@Override
