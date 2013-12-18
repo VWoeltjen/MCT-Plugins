@@ -52,10 +52,10 @@ import javax.swing.UIManager;
  * next to it, which triggers the opening of a browser 
  * window.
  */
-public class ActivityTypeVisualControl extends CustomVisualControl {
+public class LinkVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 3538827305917390749L;	
 	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
-	private static final ImageIcon LINK_ICON = new ImageIcon(ActivityTypeVisualControl.class.getResource("/icons/mct_icon_link.png"));	
+	private static final ImageIcon LINK_ICON = new ImageIcon(LinkVisualControl.class.getResource("/icons/mct_icon_link.png"));	
 	
 	private JLabel label = new JLabel();
 	private JTextField field = new JTextField();
@@ -63,7 +63,7 @@ public class ActivityTypeVisualControl extends CustomVisualControl {
 	private Color border = UIManager.getColor("border");
 	private boolean mutable = false;
 	
-	public ActivityTypeVisualControl() {
+	public LinkVisualControl() {
 		setLayout(new BorderLayout());
 		add(label, BorderLayout.CENTER);
 		
