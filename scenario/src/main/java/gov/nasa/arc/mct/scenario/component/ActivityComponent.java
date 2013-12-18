@@ -352,7 +352,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public Object getValue() {
-			return new ActivityCustomProperty(tagPropertyEditor.getValue(), "stub");
+			return new ActivityCustomProperty(tagPropertyEditor.getValue(), 
+					getModel().getData().getUrl());
 		}
 
 		@Override
@@ -360,6 +361,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			if (value instanceof ActivityCustomProperty) {
 				ActivityCustomProperty property = (ActivityCustomProperty) value;
 				tagPropertyEditor.setValue(property.getTagStyleChildren());
+				getModel().getData().setUrl(property.getUrl());
 			} else {
 				throw new IllegalArgumentException(
 						ActivityCustomProperty.class.getName() + 

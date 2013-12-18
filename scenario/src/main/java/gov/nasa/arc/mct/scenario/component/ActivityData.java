@@ -42,7 +42,8 @@ public class ActivityData {
 	private String notes;
 	private Date startDate;
 	private Date endDate;
-
+	private String url;
+	
 	public double getPower() {
 		return power;
 	}
@@ -100,6 +101,14 @@ public class ActivityData {
 
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
+	}
+	
+	public String getUrl() {
+		return url != null ? url : "";
+	}
+	
+	public void setUrl(String url) {
+		this.url = url;
 	}
 	
 }
