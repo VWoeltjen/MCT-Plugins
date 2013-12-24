@@ -24,9 +24,15 @@ package gov.nasa.arc.mct.scenario.actions;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.ActionContext;
 import gov.nasa.arc.mct.gui.ContextAwareAction;
+import gov.nasa.arc.mct.gui.FileChooser;
 import gov.nasa.arc.mct.gui.View;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,10 +63,58 @@ public abstract class ExportCSVAction extends ContextAwareAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (targets != null) {
-			System.out.println(new CSVExporter(targets).render());
+			Object src = e.getSource();
+			File file = selectFile((src instanceof Component) ? (Component) src : null);
+			if (file != null) {
+				try {					
+					writeCSV(file);
+				} catch (IOException ioe) {
+					// TODO: Show failure dialog
+				}
+			}
 		}
 	}
 	
+	private void writeCSV(File file) throws IOException {
+		String csv = new CSVExporter(targets).render();
+
+		Writer writer = null;
+		try {
+			writer = new FileWriter(file);
+			writer.write(csv);
+			writer.close();
+		} finally {
+			if (writer != null) {
+				writer.close();
+			}
+		}
+	}	
+
+	// Adapted from ImportExportProvider
+	private File selectFile(Component source) {
+		// create a save as dialog
+		final FileChooser fileChooser = new FileChooser();
+		fileChooser.setDialogTitle("Export as CSV");
+		fileChooser.setApproveButtonText("Export");
+		fileChooser.setFileSelectionMode(FileChooser.FILES_ONLY);
+		fileChooser.setFileFilter(new CSVFileFilter());
+
+		int returnVal = fileChooser.showOpenDialog(source);
+
+		if (returnVal == FileChooser.APPROVE_OPTION) {
+			File file = fileChooser.getSelectedFile();
+
+			// check if the selected file ends with the extension
+			// if not then add it
+			String path = file.getAbsolutePath();
+			// TODO add .xml to bundle?
+			if (!path.endsWith(".csv")) {
+				file = new File(path + ".csv");
+			}
+			return file;
+		}
+		return null;
+	}
 
 	public static class ThisExportCSVAction extends ExportCSVAction {
 		private static final long serialVersionUID = -4715218932910019818L;
