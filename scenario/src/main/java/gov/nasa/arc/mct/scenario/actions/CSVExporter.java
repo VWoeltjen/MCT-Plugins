@@ -99,7 +99,9 @@ public class CSVExporter {
 			values.put(id, map);
 			
 			// Add core common properties
-			
+			addProperty(id, "Base Displayed Name", ac.getDisplayName());
+			addProperty(id, "Component Type", ac.getComponentTypeID());
+			addProperty(id, "MCT Id", ac.getComponentId());
 			
 			// Add values from property descriptors
 			for (PropertyDescriptor pd : ac.getFieldDescriptors()) {
