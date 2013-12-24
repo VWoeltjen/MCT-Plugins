@@ -30,7 +30,7 @@ public class ExportCSVAction extends ContextAwareAction {
 	private static final long serialVersionUID = 1364579701311592635L;
 
 	public ExportCSVAction() {
-		super("CSV");
+		super("CSV...");
 	}
 	
 	@Override
