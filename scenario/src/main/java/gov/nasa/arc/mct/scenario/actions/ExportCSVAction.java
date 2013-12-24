@@ -21,20 +21,24 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.actions;
 
-import java.awt.event.ActionEvent;
-
+import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.ActionContext;
 import gov.nasa.arc.mct.gui.ContextAwareAction;
 
+import java.awt.event.ActionEvent;
+
 public class ExportCSVAction extends ContextAwareAction {
 	private static final long serialVersionUID = 1364579701311592635L;
-
+	private AbstractComponent target;
+	
 	public ExportCSVAction() {
 		super("CSV...");
 	}
 	
 	@Override
 	public boolean canHandle(ActionContext context) {
+		target = 
+			context.getWindowManifestation().getManifestedComponent();
 		return true;
 	}
 
@@ -45,6 +49,9 @@ public class ExportCSVAction extends ContextAwareAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		if (target != null) {
+			//System.out.println(new CSVExporter(target).render());
+		}
 	}
 
 }
