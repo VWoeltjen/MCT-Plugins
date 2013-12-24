@@ -35,7 +35,7 @@ public class CSVExporter {
 	private static final String CHILD_PREFIX = "Reference ";
 	
 	private Collection<String> headers = new ArrayList<String>();
-	private Collection<String> components = new ArrayList<String>();
+	private List<String> components = new ArrayList<String>();
 	private Map<String, Map<String, String>> values = 
 			new HashMap<String, Map<String, String>>();
 	private int maxChildren = 0;
@@ -58,15 +58,39 @@ public class CSVExporter {
 		renderRow(builder, headers.toArray(row));
 		
 		for (String id : components) {
-			Map<String, String> map = values.get(id);
-			int i = 0;
-			for (String description : headers) {
-				row[i++] = map.get(description);
-			}
-			renderRow(builder, row);
+			renderRow(builder, id, row);
 		}
 		
 		return builder.toString();
+	}
+	
+	public int getRowCount() {
+		return components.size();
+	}
+	
+	public String renderHeaders() {
+		StringBuilder b = new StringBuilder();		
+		renderRow(b, headers.toArray(new String[headers.size()]));		
+		return b.toString();	
+	}
+	
+	public String renderRow(int index) {
+		if (index < 0 || index >= getRowCount()) {
+			throw new IllegalArgumentException();
+		}
+		
+		StringBuilder b = new StringBuilder();		
+		renderRow(b, components.get(index), new String[headers.size()]);		
+		return b.toString();
+	}
+	
+	private void renderRow(StringBuilder b, String id, String[] row) {
+		Map<String, String> map = values.get(id);
+		int i = 0;
+		for (String description : headers) {
+			row[i++] = map.get(description);
+		}
+		renderRow(b, row);		
 	}
 	
 	private void renderRow(StringBuilder builder, String[] row) {
