@@ -50,7 +50,7 @@ public class ExportCSVAction extends ContextAwareAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (target != null) {
-			//System.out.println(new CSVExporter(target).render());
+			System.out.println(new CSVExporter(target).render());
 		}
 	}
 

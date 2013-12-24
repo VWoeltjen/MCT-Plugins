@@ -23,7 +23,6 @@ package gov.nasa.arc.mct.scenario.actions;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
-import gov.nasa.arc.mct.util.LinkedHashSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,13 +30,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CSVExporter {
 	private static final String CHILD_PREFIX = "Reference ";
 	
-	private Set<String> headers = new LinkedHashSet<String>();
-	private Set<String> components = new LinkedHashSet<String>();
+	private Collection<String> headers = new ArrayList<String>();
+	private Collection<String> components = new ArrayList<String>();
 	private Map<String, Map<String, String>> values = 
 			new HashMap<String, Map<String, String>>();
 	private int maxChildren = 0;
@@ -48,13 +46,12 @@ public class CSVExporter {
 	}
 	
 	public String render() {
-		List<String> headers = reverse(this.headers);
 		StringBuilder builder = new StringBuilder("");
 		String[] row = new String[headers.size()];
 
 		renderRow(builder, headers.toArray(row));
 		
-		for (String id : reverse(components)) {
+		for (String id : components) {
 			Map<String, String> map = values.get(id);
 			int i = 0;
 			for (String description : headers) {
@@ -126,13 +123,14 @@ public class CSVExporter {
 	
 	private void addProperty(String id, String description, String value) {
 		if (description != null && value != null) {
-			headers.add(description);
+			if (!headers.contains(description)) {
+				headers.add(description);
+			}
 			values.get(id).put(description, value);			
 		}
 	}
 
 	private void addPropertyDescriptor(String id, PropertyDescriptor pd) {
-		Map<String, String> map = values.get(id);
 		String description = null;
 		String value = null;
 		
@@ -140,7 +138,7 @@ public class CSVExporter {
 			description = pd.getShortDescription();
 			value = pd.getPropertyEditor().getAsText();
 		} catch (IllegalArgumentException iae) {
-			// If getAsTextis unsupported for a property, skip it
+			// If getAsText is unsupported for a property, skip it
 		}
 		
 		addProperty(id, description, value);		
@@ -150,16 +148,5 @@ public class CSVExporter {
 		for (int i = 0; i < maxChildren; i++) {
 			headers.add(childPrefix(i));
 		}
-	}
-	
-	
-	// Utility method to reverse collection from iteration order.
-	// Used because LinkedHashSet retains insertion order with 
-	// most recent first.
-	private <T> List<T> reverse (Collection<T> collection) {
-		List<T> reversed = new ArrayList<T>(collection.size());
-		reversed.addAll(collection);
-		Collections.reverse(reversed);
-		return reversed;
 	}
 }
