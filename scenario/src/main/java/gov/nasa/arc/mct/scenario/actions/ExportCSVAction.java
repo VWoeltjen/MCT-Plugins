@@ -30,9 +30,6 @@ import gov.nasa.arc.mct.gui.View;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,32 +61,14 @@ public abstract class ExportCSVAction extends ContextAwareAction {
 	public void actionPerformed(ActionEvent e) {
 		if (targets != null) {
 			Object src = e.getSource();
-			File file = selectFile((src instanceof Component) ? (Component) src : null);
+			Component c = (src instanceof Component) ? (Component) src : null;
+			File file = selectFile(c);
 			if (file != null) {
-				try {					
-					writeCSV(file);
-				} catch (IOException ioe) {
-					// TODO: Show failure dialog
-				}
+				new CSVExporter(c, targets, file).export();
 			}
 		}
 	}
 	
-	private void writeCSV(File file) throws IOException {
-		String csv = new CSVRenderer(targets).render();
-
-		Writer writer = null;
-		try {
-			writer = new FileWriter(file);
-			writer.write(csv);
-			writer.close();
-		} finally {
-			if (writer != null) {
-				writer.close();
-			}
-		}
-	}	
-
 	// Adapted from ImportExportProvider
 	private File selectFile(Component source) {
 		// create a save as dialog
