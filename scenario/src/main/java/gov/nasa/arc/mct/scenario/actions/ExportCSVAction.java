@@ -76,7 +76,7 @@ public abstract class ExportCSVAction extends ContextAwareAction {
 	}
 	
 	private void writeCSV(File file) throws IOException {
-		String csv = new CSVExporter(targets).render();
+		String csv = new CSVRenderer(targets).render();
 
 		Writer writer = null;
 		try {

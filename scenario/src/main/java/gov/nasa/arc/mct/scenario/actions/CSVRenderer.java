@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CSVExporter {
+public class CSVRenderer {
 	private static final String CHILD_PREFIX = "Reference ";
 	
 	private Collection<String> headers = new ArrayList<String>();
@@ -40,14 +40,14 @@ public class CSVExporter {
 			new HashMap<String, Map<String, String>>();
 	private int maxChildren = 0;
 
-	public CSVExporter(Collection<AbstractComponent> components) {
+	public CSVRenderer(Collection<AbstractComponent> components) {
 		for (AbstractComponent ac : components) {
 			add(ac);
 		}
 		addChildHeaders();
 	}
 	
-	public CSVExporter(AbstractComponent ac) {
+	public CSVRenderer(AbstractComponent ac) {
 		this(Collections.singleton(ac));
 	}
 	
