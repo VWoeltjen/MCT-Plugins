@@ -24,34 +24,81 @@ package gov.nasa.arc.mct.scenario.actions;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.ActionContext;
 import gov.nasa.arc.mct.gui.ContextAwareAction;
+import gov.nasa.arc.mct.gui.View;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
-public class ExportCSVAction extends ContextAwareAction {
+public abstract class ExportCSVAction extends ContextAwareAction {
 	private static final long serialVersionUID = 1364579701311592635L;
-	private AbstractComponent target;
-	
+	private Collection<AbstractComponent> targets;
+
 	public ExportCSVAction() {
 		super("CSV...");
-	}
+	}	 
+	
+	protected abstract Collection<AbstractComponent> 
+			getTargets(ActionContext context);
 	
 	@Override
 	public boolean canHandle(ActionContext context) {
-		target = 
-			context.getWindowManifestation().getManifestedComponent();
-		return true;
+		targets = getTargets(context);
+		return targets != null;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return true;
+		return targets != null && !targets.isEmpty();
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (target != null) {
-			System.out.println(new CSVExporter(target).render());
+		if (targets != null) {
+			System.out.println(new CSVExporter(targets).render());
 		}
+	}
+	
+
+	public static class ThisExportCSVAction extends ExportCSVAction {
+		private static final long serialVersionUID = -4715218932910019818L;
+
+		@Override
+		protected Collection<AbstractComponent> 
+				getTargets(ActionContext context) {
+			
+			if (context.getWindowManifestation() != null) {
+				return Collections.singleton(
+						context.getWindowManifestation()
+						       .getManifestedComponent());
+			}
+			return null;
+			
+		}
+		
+	}
+	
+	public static class ObjectsExportCSVAction extends ExportCSVAction {
+		private static final long serialVersionUID = -4715218932910019818L;
+
+		@Override
+		protected Collection<AbstractComponent> 
+				getTargets(ActionContext context) {
+			
+			if (context.getSelectedManifestations() != null) {
+				List<AbstractComponent> selected = 
+						new ArrayList<AbstractComponent>();
+				for (View v : context.getSelectedManifestations()) {
+					selected.add(v.getManifestedComponent());
+				}
+				return selected;
+			}
+			return null;
+			
+		}
+		
 	}
 
 }

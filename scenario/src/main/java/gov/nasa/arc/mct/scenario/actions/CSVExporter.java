@@ -26,7 +26,9 @@ import gov.nasa.arc.mct.components.PropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CSVExporter {
@@ -37,10 +39,16 @@ public class CSVExporter {
 	private Map<String, Map<String, String>> values = 
 			new HashMap<String, Map<String, String>>();
 	private int maxChildren = 0;
+
+	public CSVExporter(Collection<AbstractComponent> components) {
+		for (AbstractComponent ac : components) {
+			add(ac);
+		}
+		addChildHeaders();
+	}
 	
 	public CSVExporter(AbstractComponent ac) {
-		add(ac);
-		addChildHeaders();
+		this(Collections.singleton(ac));
 	}
 	
 	public String render() {
@@ -99,8 +107,12 @@ public class CSVExporter {
 			addProperty(id, "MCT Id", ac.getComponentId());
 			
 			// Add values from property descriptors
-			for (PropertyDescriptor pd : ac.getFieldDescriptors()) {
-				addPropertyDescriptor(id, pd);
+			List<PropertyDescriptor> descriptors = 
+					ac.getFieldDescriptors();
+			if (descriptors != null) {
+				for (PropertyDescriptor pd : descriptors) {
+					addPropertyDescriptor(id, pd);
+				}
 			}
 			
 			// Store references to children
