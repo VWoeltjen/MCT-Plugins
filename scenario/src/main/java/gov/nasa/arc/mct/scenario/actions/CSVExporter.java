@@ -31,11 +31,26 @@ import java.util.Collection;
 
 import javax.swing.ProgressMonitor;
 
+/**
+ * Responsible for managing the export of a CSV. 
+ * Serves as an intermediary between the worker which 
+ * handles the background export and the progress 
+ * monitor which updates the user.
+ * 
+ * @author vwoeltje
+ *
+ */
 public class CSVExporter {
 	private Component component;
 	private Collection<AbstractComponent> components;
 	private File file;
 	
+	/**
+	 * Create a new CSV exporter.
+	 * @param component an AWT component (for progress monitor)
+	 * @param components MCT components to export
+	 * @param file the file to which components should be written
+	 */
 	public CSVExporter(Component component,
 			Collection<AbstractComponent> components, File file) {
 		super();
@@ -44,6 +59,12 @@ public class CSVExporter {
 		this.file = file;
 	}
 	
+	/**
+	 * Perform the export of items defined in the constructor. 
+	 * The preparation of the CSV data and writing to disk 
+	 * occur on a background thread, and a progress monitor 
+	 * is provided if necessary.
+	 */
 	public void export() {
 		final CSVExportWorker worker = new CSVExportWorker(components, file);
 		final ProgressMonitor monitor = new ProgressMonitor(component, "Exporting...", "", 0, 100);

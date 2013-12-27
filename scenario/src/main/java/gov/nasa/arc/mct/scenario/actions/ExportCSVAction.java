@@ -37,6 +37,19 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 
+/**
+ * Represents the "Export > CSV" action, used to output 
+ * MCT objects as CSV (comma-separated value) files. 
+ * 
+ * As the implementation for this action varies depending 
+ * on whether it is accessed via the This menu or the 
+ * Objects menu, this is simply an abstract superclass; 
+ * implementations for those menus are provided as static 
+ * inner classes.
+ * 
+ * @author vwoeltje
+ *
+ */
 public abstract class ExportCSVAction extends ContextAwareAction {
 	private static final long serialVersionUID = 1364579701311592635L;
 	private Collection<AbstractComponent> targets;
@@ -45,6 +58,13 @@ public abstract class ExportCSVAction extends ContextAwareAction {
 		super("CSV...");
 	}	 
 	
+	/**
+	 * Used to determine which components are to be exported.
+	 * Varies depending on whether the action is accessed via 
+	 * the Objects menu or the This menu. 
+	 * @param context the context of the action, from {@link #canHandle(ActionContext)}
+	 * @return the components which this action should export
+	 */
 	protected abstract Collection<AbstractComponent> 
 			getTargets(ActionContext context);
 	
@@ -78,6 +98,9 @@ public abstract class ExportCSVAction extends ContextAwareAction {
 				fileChooser.getSelectedFile() : null;
 	}
 
+	/**
+	 * Export as CSV, from the This menu.
+	 */
 	public static class ThisExportCSVAction extends ExportCSVAction {
 		private static final long serialVersionUID = -4715218932910019818L;
 
@@ -95,7 +118,10 @@ public abstract class ExportCSVAction extends ContextAwareAction {
 		}
 		
 	}
-	
+
+	/**
+	 * Export as CSV, from the Objects menu.
+	 */
 	public static class ObjectsExportCSVAction extends ExportCSVAction {
 		private static final long serialVersionUID = -4715218932910019818L;
 

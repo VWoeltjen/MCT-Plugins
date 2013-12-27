@@ -31,6 +31,14 @@ import java.util.Collection;
 
 import javax.swing.SwingWorker;
 
+/**
+ * A SwingWorker responsible for managing the background 
+ * activities of CSV export. These include "rendering" the CSV 
+ * and writing it to disk. 
+ * 
+ * @author vwoeltje
+ *
+ */
 public class CSVExportWorker extends SwingWorker<Boolean, Void> {
 	private Collection<AbstractComponent> components;
 	private File file;

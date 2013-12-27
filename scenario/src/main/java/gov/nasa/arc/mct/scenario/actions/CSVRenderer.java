@@ -32,6 +32,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Responsible for rendering MCT objects to CSV format.
+ *  
+ * Included in the CSV text are:
+ * - Base display name, type, MCT ID.
+ * - Any object-specific fields (as seen in Info View).
+ * - Any Tags (as strings).
+ * - Component IDs of referenced child components.
+ * 
+ * @author vwoeltje
+ */
 public class CSVRenderer {
 	private static final String CHILD_PREFIX = "Reference ";
 	private static final String TAG_PREFIX = "Tag ";
@@ -43,6 +54,18 @@ public class CSVRenderer {
 	private int maxChildren = 0;
 	private int maxTags = 0;
 
+	/**
+	 * Create a renderer which will express the specified
+	 * group of components in CSV format. This includes all of 
+	 * their children.
+	 * 
+	 * Data about components used to support CSV rendering 
+	 * will be assembled at the time of the constructor call, 
+	 * including visitation of all children. As such, this 
+	 * should not be called from a user interface thread. 
+	 * 
+	 * @param components the components to render
+	 */
 	public CSVRenderer(Collection<AbstractComponent> components) {
 		for (AbstractComponent ac : components) {
 			add(ac);
@@ -51,10 +74,36 @@ public class CSVRenderer {
 		addChildHeaders();
 	}
 	
+	/**
+	 * Create a renderer which will express the specified 
+	 * component in CSV format. This includes all of 
+	 * its children.
+	 * 
+	 * Data about components used to support CSV rendering 
+	 * will be assembled at the time of the constructor call, 
+	 * including visitation of all children. As such, this 
+	 * should not be called from a user interface thread. 
+	 * 
+	 * @param ac the component to render
+	 */
 	public CSVRenderer(AbstractComponent ac) {
 		this(Collections.singleton(ac));
 	}
 	
+	/**
+	 * Return a full CSV representation of all 
+	 * components specified in the constructor. 
+	 * The first line of the returned string will 
+	 * contain column headers.
+	 * 
+	 * This is potentially a very large String depending 
+	 * on the number of components involved; it may 
+	 * make sense to render the CSV piece-wise using 
+	 * {@link #renderHeaders()} and {@link #renderRow(int)}, 
+	 * particularly if writing to a stream.
+	 * 
+	 * @return a CSV representation of all components
+	 */
 	public String render() {
 		StringBuilder builder = new StringBuilder("");
 		String[] row = new String[headers.size()];
@@ -68,16 +117,37 @@ public class CSVRenderer {
 		return builder.toString();
 	}
 	
+	/**
+	 * Get the number of rows in the resulting CSV text. This does not 
+	 * include the row which contains column headers.
+	 * 
+	 * @return the number of non-header rows in the rendered CSV 
+	 */
 	public int getRowCount() {
 		return components.size();
 	}
 	
+	/**
+	 * Get a line of CSV text containing column headers. 
+	 * 
+	 * @return comma-separated column headers
+	 */
 	public String renderHeaders() {
 		StringBuilder b = new StringBuilder();		
 		renderRow(b, headers.toArray(new String[headers.size()]));		
 		return b.toString();	
 	}
 	
+	/**
+	 * Return a specific row (corresponding to one MCT object) in 
+	 * CSV format.
+	 * 
+	 * The meaning of columns in each row is given in column 
+	 * headers, retrieved using {@link #renderHeaders()}.
+	 * 
+	 * @param index the row's index; 0 <= index < {@link #getRowCount()}
+	 * @return CSV text for the specified row
+	 */
 	public String renderRow(int index) {
 		if (index < 0 || index >= getRowCount()) {
 			throw new IllegalArgumentException();

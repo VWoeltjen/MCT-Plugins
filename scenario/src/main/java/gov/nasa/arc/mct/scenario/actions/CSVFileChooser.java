@@ -28,6 +28,13 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
+/**
+ * A file chooser for CSV files, to support 
+ * CSV export.
+ * 
+ * @author vwoeltje
+ *
+ */
 public class CSVFileChooser extends JFileChooser {
 	private static final long serialVersionUID = 3795457853362472291L;
 
