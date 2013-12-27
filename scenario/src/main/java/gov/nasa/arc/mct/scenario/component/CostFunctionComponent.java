@@ -54,6 +54,14 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 	};
 	
 	/**
+	 * Get any intrinsic costs associated with this specific component.
+	 * @return a list of cost functions specific to this component
+	 */
+	public List<CostCapability> getInternalCosts() {
+		return Collections.emptyList();
+	}
+
+	/**
 	 * Get any cost functions associated with this specific component. Users 
 	 * of this component should generally use getCapabilities(CostFunctionCapability.class), 
 	 * which will include the cost functions of children as well.
@@ -63,20 +71,22 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 		return Collections.emptyList();
 	}
 	
-
+	
 	@Override
 	public List<PropertyDescriptor> getFieldDescriptors()  {
 		// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
 		List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
 
 		// Add property editors for all internal cost functions
-		for (CostFunctionCapability capability : getInternalCostFunctions()) {
+		for (CostCapability capability : getInternalCosts()) {
 			PropertyDescriptor cost = new PropertyDescriptor(
 					capability.getName() + 
 					    " (" + capability.getUnits() + ")",
 					new CostPropertyEditor(capability),
-					VisualControlDescriptor.TextField);
-			cost.setFieldMutable(true);
+					capability.isMutable() ?
+							VisualControlDescriptor.TextField :
+							VisualControlDescriptor.Label);
+			cost.setFieldMutable(capability.isMutable());
 			fields.add(cost);
 		}
 
@@ -180,13 +190,6 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 			}
 			return sum;
 		}
-
-		@Override
-		public void setValue(double value) {
-			String msg = 
-					"Cannot set the value of a generated cost function";
-			throw new UnsupportedOperationException(msg);
-		}
 		
 		@Override
 		public Collection<Long> getChangeTimes() {
@@ -195,7 +198,6 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 				changeTimes.addAll(c.getChangeTimes());
 			}
 			return changeTimes;
-		}
-		
+		}		
 	}
 }
