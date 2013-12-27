@@ -203,7 +203,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				Map<Class<?>, ComponentTypeInfo> types = 
 						new HashMap<Class<?>, ComponentTypeInfo>();
 				types.put(TagCapability.class, tagComponentType);
-				types.put(CostFunctionCapability.class, activityTypeComponentType);
+				types.put(CostCapability.class, activityTypeComponentType);
 				return assetClass.cast(new CompositeActivityVisualControl(types));
 			} else if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
 				return assetClass.cast(new LinkVisualControl());
