@@ -67,7 +67,7 @@ public class CSVExportWorker extends SwingWorker<Boolean, Void> {
 		try {
 			w = new FileWriter(file);
 			w.write(r.renderHeaders());
-			for (int i = 0; i < rowCount; i++) {
+			for (int i = 0; i < rowCount && !isCancelled(); i++) {
 				setProgress((i * 100) / rowCount);
 				w.write(r.renderRow(i));
 			}
@@ -87,7 +87,7 @@ public class CSVExportWorker extends SwingWorker<Boolean, Void> {
 		
 		setProgress(100);
 		
-		return success;
+		return success & !isCancelled();
 	}
 
 	public IOException getException() {

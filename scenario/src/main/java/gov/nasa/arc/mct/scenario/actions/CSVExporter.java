@@ -77,7 +77,11 @@ public class CSVExporter {
 		worker.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
-				monitor.setProgress(worker.getProgress());
+				if (monitor.isCanceled()) {
+					worker.cancel(true);
+				} else {
+					monitor.setProgress(worker.getProgress());
+				} 
 			}			
 		});
 		
