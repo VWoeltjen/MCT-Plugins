@@ -62,7 +62,6 @@ public class CSVExportWorker extends SwingWorker<Boolean, Void> {
 			for (int i = 0; i < rowCount; i++) {
 				setProgress((i * 100) / rowCount);
 				w.write(r.renderRow(i));
-				Thread.sleep(500);
 			}
 		} catch (IOException ioe) {
 			success = false;
