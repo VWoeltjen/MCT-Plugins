@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -137,10 +139,17 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	}
 
 	private List<CostWrapper> getCostWrappers() {
+		Map<String, CostWrapper> costMap = new HashMap<String, CostWrapper>();
 		List<CostWrapper> costs = new ArrayList<CostWrapper>();
 		for (AbstractComponent child : getComponents()) {
 			for (CostCapability c : child.getCapabilities(CostCapability.class)) {
-				costs.add(new CostWrapper(c));
+				if (costMap.containsKey(c.getName())) {
+					costMap.get(c.getName()).addCost(c);
+				} else {
+					CostWrapper wrapper = new CostWrapper(c);
+					costMap.put(c.getName(), wrapper);
+					costs.add(wrapper);
+				}
 			}
 		}
 		return costs;
@@ -288,27 +297,45 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	}
 	
 	private class CostWrapper implements CostFunctionCapability, CostCapability {
-		private CostCapability cost;
+		private CostCapability baseCost;
+		private Collection<CostCapability> costs = new HashSet<CostCapability>();
 
 		public CostWrapper(CostCapability cost) {
 			super();
-			this.cost = cost;
+			this.baseCost = cost;
+			this.costs.add(cost);			
+		}
+		
+		public void addCost(CostCapability cost) {
+			costs.add(cost);
 		}
 
+		@Override
 		public String getName() {
-			return cost.getName();
+			return baseCost.getName();
 		}
 
+		@Override
 		public String getUnits() {
-			return cost.getUnits();
+			return baseCost.getUnits();
 		}
 
+		@Override
 		public double getValue(long time) {
 			// Report zero outside of activity duration
 			return time < getStart() || time >= getEnd() ?
-					0.0 : cost.getValue();			
+					0.0 : getSum();			
+		}
+		
+		private double getSum() {
+			double sum = 0.0;
+			for (CostCapability cost : costs) {
+				sum += cost.getValue();
+			}
+			return sum;
 		}
 
+		@Override
 		public Collection<Long> getChangeTimes() {
 			List<Long> result = new ArrayList<Long>();
 			result.add(getStart());
@@ -318,7 +345,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public double getValue() {
-			return cost.getValue();
+			return getSum();
 		}
 
 		@Override
