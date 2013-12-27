@@ -26,6 +26,7 @@ import gov.nasa.arc.mct.gui.FileChooser;
 import java.io.File;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 public class CSVFileChooser extends JFileChooser {
 	private static final long serialVersionUID = 3795457853362472291L;
@@ -52,5 +53,24 @@ public class CSVFileChooser extends JFileChooser {
 		
 		return file;
 	}
-	
+
+	// Overridden to allow pop up if file exists
+	// Recommended in http://stackoverflow.com/questions/3651494
+	@Override
+	public void approveSelection() {
+		File file = getSelectedFile();
+
+		// Allow if there is no selection, or
+		// if the file doesn't exist, or
+		// if the user confirms the overwrite.
+		if (file == null || 
+			!file.exists() ||
+		    JOptionPane.showConfirmDialog(
+				this, 
+				"File already exists. Overwrite existing file?", 
+				"Overwrite file?", 
+				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			super.approveSelection();
+		}		
+	}
 }
