@@ -44,14 +44,14 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ActivityTypeComponent extends CostFunctionComponent {
 	private AtomicReference<ActivityTypeModel> model = 
 			new AtomicReference<ActivityTypeModel>(new ActivityTypeModel());
-	private List<CostFunctionCapability> internalCostFunctions = 
-			Arrays.<CostFunctionCapability> asList(
+	private List<CostCapability> internalCosts = 
+			Arrays.<CostCapability> asList(
 					new ActivityTypeCost(false),
 					new ActivityTypeCost(true));
 
 	@Override
-	public List<CostFunctionCapability> getInternalCostFunctions() {
-		return internalCostFunctions;
+	public List<CostCapability> getInternalCosts() {
+		return internalCosts;
 	}
 
 	@Override
@@ -92,6 +92,18 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 	}
 	
 	@Override
+	protected <T> List<T> handleGetCapabilities(Class<T> capability) {
+		if (capability.isAssignableFrom(CostCapability.class)) {
+			List<T> list = new ArrayList<T>();
+			for (CostCapability cost : internalCosts) {
+				list.add(capability.cast(cost));
+			}
+			return list;
+		}
+		return super.handleGetCapabilities(capability);
+	}
+
+	@Override
 	public List<PropertyDescriptor> getFieldDescriptors()  {
 		// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
 		List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
@@ -108,7 +120,7 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 		return fields;
 	}
 	
-	private class ActivityTypeCost implements CostFunctionCapability {
+	private class ActivityTypeCost implements CostCapability {
 		// Short-term approach; this should be changed to permit more variety
 		// (i.e. not just Power/Comms)
 		private boolean isComm;
@@ -128,17 +140,6 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 		}
 
 		@Override
-		public double getValue(long time) {
-			ActivityTypeModel m = model.get();
-			return isComm ? m.getComms() : m.getPower();
-		}
-
-		@Override
-		public Collection<Long> getChangeTimes() {
-			return Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE);
-		}
-
-		@Override
 		public void setValue(double value) {
 			ActivityTypeModel m = model.get();
 			if (isComm) {
@@ -148,6 +149,16 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 			}
 		}
 
+		@Override
+		public boolean isMutable() {
+			return true;
+		}
+
+		@Override
+		public double getValue() {
+			ActivityTypeModel m = model.get();
+			return (isComm) ? m.getComms() : m.getPower();
+		}
 	}
 	
 	private class URLPropertyEditor implements PropertyEditor<String> {

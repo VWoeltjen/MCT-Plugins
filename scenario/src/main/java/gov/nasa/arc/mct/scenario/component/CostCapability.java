@@ -21,22 +21,7 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
-import java.util.Collection;
-
-/**
- * Represents some cost function associated with a component. For instance, an 
- * Activity may have Comms or Power costs associated with it which should be 
- * tracked and presented along with timelines. 
- * 
- * This should be exposed via the getCapabilities (plural) method of 
- * AbstractComponent. Note that such a component may be configured to have 
- * multiple costs (Comms and Power, for instance), in which case it should 
- * return one instance of CostFunctionCapability for each cost. 
- * 
- * @author vwoeltje
- *
- */
-public interface CostFunctionCapability {
+public interface CostCapability {
 	/**
 	 * Get the name of this cost.
 	 * @return the name of this cost
@@ -48,22 +33,24 @@ public interface CostFunctionCapability {
 	 * @return the units used by this cost
 	 */
 	public String getUnits();
-	
+
 	/**
 	 * Assess this cost at the specified time. 
 	 * @param time the time, in milliseconds since start of timeline
 	 * @return the cost at the specified time
 	 */
-	public double getValue(long time);
-
+	public double getValue();
 	
 	/**
-	 * Get the times at which this cost function changes. Since costs 
-	 * are handled step-wise, having a list of points at which costs 
-	 * change makes it simple to draw/label these transitions.
-	 * Times returned here are in milliseconds after the start 
-	 * of timeline.
-	 * @return a collection of times at which costs change
+	 * Set the value associated with this cost.
+	 * May throw an exception if setting is not supported.
+	 * @throws UnsupportedOperationException
 	 */
-	public Collection<Long> getChangeTimes();
+	public void setValue(double value);	
+
+	/**
+	 * Indicates whether or not setValue will be supported.
+	 * @return true if setValue is supported; otherwise false.
+	 */
+	public boolean isMutable();
 }
