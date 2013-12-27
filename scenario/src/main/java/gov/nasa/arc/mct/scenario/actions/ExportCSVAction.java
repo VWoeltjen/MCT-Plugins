@@ -76,21 +76,24 @@ public abstract class ExportCSVAction extends ContextAwareAction {
 		fileChooser.setDialogTitle("Export as CSV");
 		fileChooser.setApproveButtonText("Export");
 		fileChooser.setFileSelectionMode(FileChooser.FILES_ONLY);
+		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.setFileFilter(new CSVFileFilter());
 
-		int returnVal = fileChooser.showOpenDialog(source);
+		int returnVal = fileChooser.showDialog(source, "Export");
 
 		if (returnVal == FileChooser.APPROVE_OPTION) {
 			File file = fileChooser.getSelectedFile();
 
-			// check if the selected file ends with the extension
-			// if not then add it
-			String path = file.getAbsolutePath();
-			// TODO add .xml to bundle?
-			if (!path.endsWith(".csv")) {
-				file = new File(path + ".csv");
+			if (file != null) {
+				// check if the selected file ends with the extension
+				// if not then add it
+				String path = file.getAbsolutePath();
+				// TODO add .xml to bundle?
+				if (!path.endsWith(".csv")) {
+					file = new File(path + ".csv");
+				}
+				return file;
 			}
-			return file;
 		}
 		return null;
 	}
