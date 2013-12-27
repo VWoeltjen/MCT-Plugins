@@ -83,7 +83,9 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 					capability.getName() + 
 					    " (" + capability.getUnits() + ")",
 					new CostPropertyEditor(capability),
-					VisualControlDescriptor.TextField);
+					capability.isMutable() ?
+							VisualControlDescriptor.TextField :
+							VisualControlDescriptor.Label);
 			cost.setFieldMutable(capability.isMutable());
 			fields.add(cost);
 		}
