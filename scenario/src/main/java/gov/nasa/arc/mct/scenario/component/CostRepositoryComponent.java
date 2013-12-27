@@ -48,7 +48,7 @@ public class CostRepositoryComponent extends AbstractComponent implements Reposi
 	
 	@Override
 	public Class<?> getCapabilityClass() {
-		return CostFunctionCapability.class;
+		return CostCapability.class;
 	}
 
 	// TODO: Use this to support the Group capability
