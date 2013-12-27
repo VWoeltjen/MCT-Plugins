@@ -23,6 +23,7 @@ package gov.nasa.arc.mct.scenario.actions;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
+import gov.nasa.arc.mct.scenario.component.TagCapability;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,17 +34,20 @@ import java.util.Map;
 
 public class CSVRenderer {
 	private static final String CHILD_PREFIX = "Reference ";
+	private static final String TAG_PREFIX = "Tag ";
 	
 	private Collection<String> headers = new ArrayList<String>();
 	private List<String> components = new ArrayList<String>();
 	private Map<String, Map<String, String>> values = 
 			new HashMap<String, Map<String, String>>();
 	private int maxChildren = 0;
+	private int maxTags = 0;
 
 	public CSVRenderer(Collection<AbstractComponent> components) {
 		for (AbstractComponent ac : components) {
 			add(ac);
 		}
+		addTagHeaders();
 		addChildHeaders();
 	}
 	
@@ -139,6 +143,17 @@ public class CSVRenderer {
 				}
 			}
 			
+			// Look up tags explicitly
+			Collection<TagCapability> tags = 
+					ac.getCapabilities(TagCapability.class);
+			if (tags != null) {
+				int t = 0;
+				for (TagCapability tag : tags) {
+					map.put(tagPrefix(t++), tag.getTag());
+					maxTags = Math.max(maxTags, t);
+				}
+			}
+			
 			// Store references to children
 			// Headers are not added until later, to ensure these
 			// come at the end.
@@ -149,10 +164,6 @@ public class CSVRenderer {
 				add(child);
 			}
 		}
-	}
-	
-	private String childPrefix(int index) {
-		return CHILD_PREFIX + (index + 1);
 	}
 	
 	private void addProperty(String id, String description, String value) {
@@ -176,6 +187,24 @@ public class CSVRenderer {
 		}
 		
 		addProperty(id, description, value);		
+	}
+
+	// Tags and children are handled specially, to ensure they 
+	// appear grouped and in order.
+	// These should be consolidated if more such properties emerge...
+	
+	private String tagPrefix(int index) {
+		return TAG_PREFIX + (index + 1);
+	}
+	
+	private String childPrefix(int index) {
+		return CHILD_PREFIX + (index + 1);
+	}
+	
+	private void addTagHeaders() {
+		for (int i = 0; i < maxTags; i++) {
+			headers.add(tagPrefix(i));
+		}
 	}
 	
 	private void addChildHeaders() {
