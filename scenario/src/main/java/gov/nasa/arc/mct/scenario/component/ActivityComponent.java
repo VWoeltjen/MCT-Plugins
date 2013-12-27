@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -78,15 +80,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				return tagCapabilities;
 			}
 		}
-		if (capability.isAssignableFrom(CostFunctionCapability.class)) {
-			// Wrap aggregated cost functions
-			List<T> costFunctions = new ArrayList<T>();
-			for (CostFunctionCapability cost : 
-				super.handleGetCapabilities(CostFunctionCapability.class)) {
-				costFunctions.add(capability.cast(new CostFunctionWrapper(cost)));
-			}	
-			return costFunctions;
-		}
+
 		return super.handleGetCapabilities(capability);
 	}
 
@@ -133,9 +127,34 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		if (getModel().getData().getPower() != 0.0) {
 			internal.add(new CostFunctionStub(false));
 		}
+		internal.addAll(getCostWrappers());
 		return internal;
 	}
+	
+	@Override
+	public List<CostCapability> getInternalCosts() {
+		List<CostCapability> result = new ArrayList<CostCapability>();
+		result.addAll(getCostWrappers());
+		return result;
+	}
 
+	private List<CostWrapper> getCostWrappers() {
+		Map<String, CostWrapper> costMap = new HashMap<String, CostWrapper>();
+		List<CostWrapper> costs = new ArrayList<CostWrapper>();
+		for (AbstractComponent child : getComponents()) {
+			for (CostCapability c : child.getCapabilities(CostCapability.class)) {
+				if (costMap.containsKey(c.getName())) {
+					costMap.get(c.getName()).addCost(c);
+				} else {
+					CostWrapper wrapper = new CostWrapper(c);
+					costMap.put(c.getName(), wrapper);
+					costs.add(wrapper);
+				}
+			}
+		}
+		return costs;
+	}
+	
 	/**
 	 * Get the container for underlying Activity data
 	 * @return the container for underlying Activity data (its model)
@@ -224,7 +243,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	 * @author vwoeltje
 	 *
 	 */
-	private class CostFunctionStub implements CostFunctionCapability {
+	private class CostFunctionStub implements CostFunctionCapability, CostCapability {
 		private boolean isComm; //Otherwise, is power
 		
 		public CostFunctionStub(boolean isComm) {
@@ -243,11 +262,16 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		}
 
 		@Override
+		public double getValue() {
+			return isComm ? getData().getComm() : getData().getPower();
+		}
+		
+		@Override
 		public double getValue(long time) {
 			if (time < getStart() || time >= getEnd()) {
 				return 0;
 			} else {
-				return isComm ? getData().getComm() : getData().getPower();
+				return getValue();
 			}
 		}
 
@@ -261,72 +285,77 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			
 		}
 		
+		public boolean isMutable() {
+			return true;
+		}
+		
 		@Override
 		public Collection<Long> getChangeTimes() {
 			return Arrays.asList(getStart(), getEnd());
 		}
 		
 	}
+	
+	private class CostWrapper implements CostFunctionCapability, CostCapability {
+		private CostCapability baseCost;
+		private Collection<CostCapability> costs = new HashSet<CostCapability>();
 
-	private class CostFunctionWrapper implements CostFunctionCapability {
-		private CostFunctionCapability cost;
-
-		public CostFunctionWrapper(CostFunctionCapability cost) {
+		public CostWrapper(CostCapability cost) {
 			super();
-			this.cost = cost;
+			this.baseCost = cost;
+			this.costs.add(cost);			
+		}
+		
+		public void addCost(CostCapability cost) {
+			costs.add(cost);
 		}
 
+		@Override
 		public String getName() {
-			return cost.getName();
+			return baseCost.getName();
 		}
 
+		@Override
 		public String getUnits() {
-			return cost.getUnits();
+			return baseCost.getUnits();
 		}
 
+		@Override
 		public double getValue(long time) {
 			// Report zero outside of activity duration
 			return time < getStart() || time >= getEnd() ?
-					0.0 : cost.getValue(time);			
+					0.0 : getSum();			
+		}
+		
+		private double getSum() {
+			double sum = 0.0;
+			for (CostCapability cost : costs) {
+				sum += cost.getValue();
+			}
+			return sum;
 		}
 
+		@Override
+		public Collection<Long> getChangeTimes() {
+			List<Long> result = new ArrayList<Long>();
+			result.add(getStart());
+			result.add(getEnd());
+			return result;
+		}
+
+		@Override
+		public double getValue() {
+			return getSum();
+		}
+
+		@Override
 		public void setValue(double value) {
 			throw new UnsupportedOperationException();
 		}
 
-		public Collection<Long> getChangeTimes() {
-			// Ensure all exposed change times fall within this activity
-			Collection<Long> times = cost.getChangeTimes();
-			
-			long min = Long.MAX_VALUE;
-			long max = Long.MIN_VALUE;
-			
-			for (Long time : times) {
-				if (time < min) {
-					min = time;
-				}
-				if (time > max) {
-					max = time;
-				}
-			}
-			
-			long start = getStart();
-			long end   = getEnd();
-			
-			// Trim if necessary
-			if (min < start || max > end) {
-				List<Long> result = new ArrayList<Long>();
-				result.add(start);
-				for (Long time : times) {
-					if (time > start && time < end) {
-						result.add(time);
-					}
-				}
-				result.add(end);
-				return result;
-			} else {
-				return times;
-			}
+		@Override
+		public boolean isMutable() {
+			return false;
 		}
 		
 		
