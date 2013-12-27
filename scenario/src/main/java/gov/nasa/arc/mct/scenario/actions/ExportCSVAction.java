@@ -35,6 +35,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.JFileChooser;
+
 public abstract class ExportCSVAction extends ContextAwareAction {
 	private static final long serialVersionUID = 1364579701311592635L;
 	private Collection<AbstractComponent> targets;
@@ -69,33 +71,11 @@ public abstract class ExportCSVAction extends ContextAwareAction {
 		}
 	}
 	
-	// Adapted from ImportExportProvider
 	private File selectFile(Component source) {
 		// create a save as dialog
-		final FileChooser fileChooser = new FileChooser();
-		fileChooser.setDialogTitle("Export as CSV");
-		fileChooser.setApproveButtonText("Export");
-		fileChooser.setFileSelectionMode(FileChooser.FILES_ONLY);
-		fileChooser.setMultiSelectionEnabled(false);
-		fileChooser.setFileFilter(new CSVFileFilter());
-
-		int returnVal = fileChooser.showDialog(source, "Export");
-
-		if (returnVal == FileChooser.APPROVE_OPTION) {
-			File file = fileChooser.getSelectedFile();
-
-			if (file != null) {
-				// check if the selected file ends with the extension
-				// if not then add it
-				String path = file.getAbsolutePath();
-				// TODO add .xml to bundle?
-				if (!path.endsWith(".csv")) {
-					file = new File(path + ".csv");
-				}
-				return file;
-			}
-		}
-		return null;
+		JFileChooser fileChooser = new CSVFileChooser();
+		return fileChooser.showDialog(source, "Export") == FileChooser.APPROVE_OPTION ?
+				fileChooser.getSelectedFile() : null;
 	}
 
 	public static class ThisExportCSVAction extends ExportCSVAction {
