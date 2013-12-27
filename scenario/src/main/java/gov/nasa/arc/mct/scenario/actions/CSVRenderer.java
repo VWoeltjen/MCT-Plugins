@@ -44,8 +44,10 @@ import java.util.Map;
  * @author vwoeltje
  */
 public class CSVRenderer {
-	private static final String CHILD_PREFIX = "Reference ";
-	private static final String TAG_PREFIX = "Tag ";
+	private static final String CHILD_PREFIX = 
+			BundleAccess.BUNDLE.getString("csv_child_prefix");
+	private static final String TAG_PREFIX = 
+			BundleAccess.BUNDLE.getString("csv_tag_prefix");
 	
 	private Collection<String> headers = new ArrayList<String>();
 	private List<String> components = new ArrayList<String>();

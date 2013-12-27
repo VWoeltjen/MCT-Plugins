@@ -31,7 +31,6 @@ import javax.swing.filechooser.FileFilter;
  * Adapted from similar class in ImportExportProvider
  */
 public class CSVFileFilter extends FileFilter {
-
 	/**
 	 * Tests if file ends with .csv, indicating it is a csv file.
 	 * 
@@ -39,13 +38,16 @@ public class CSVFileFilter extends FileFilter {
 	 *            file to be tested
 	 * @return boolean if file ends with ".csv"
 	 */
+	@Override
 	public boolean accept(File f) {
 		assert f != null;
-		return f.isDirectory()
-				|| f.getName().toLowerCase().endsWith(".csv");
+		return f.isDirectory() || 
+				f.getName().toLowerCase().endsWith(
+						BundleAccess.BUNDLE.getString("csv_extension"));
 	}
 
+	@Override
 	public String getDescription() {
-		return ".csv files";
+		return BundleAccess.BUNDLE.getString("csv_extension_description");
 	}
 }

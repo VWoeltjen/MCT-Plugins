@@ -37,10 +37,12 @@ import javax.swing.JOptionPane;
  */
 public class CSVFileChooser extends JFileChooser {
 	private static final long serialVersionUID = 3795457853362472291L;
-
+	private static final String EXTENSION =
+			BundleAccess.BUNDLE.getString("csv_extension");
+	
 	public CSVFileChooser() {
-		setDialogTitle("Export as CSV");
-		setApproveButtonText("Export");
+		setDialogTitle(BundleAccess.BUNDLE.getString("csv_chooser_title"));
+		setApproveButtonText(BundleAccess.BUNDLE.getString("csv_chooser_ok"));
 		setFileSelectionMode(FileChooser.FILES_ONLY);
 		setMultiSelectionEnabled(false);
 		setFileFilter(new CSVFileFilter());
@@ -53,8 +55,8 @@ public class CSVFileChooser extends JFileChooser {
 		if (file != null) {
 			// Ensure file ends with CSV extension
 			String path = file.getAbsolutePath();
-			if (!path.endsWith(".csv")) {
-				file = new File(path + ".csv");
+			if (!path.endsWith(EXTENSION)) {
+				file = new File(path + EXTENSION);
 			}
 		}
 		
@@ -76,8 +78,8 @@ public class CSVFileChooser extends JFileChooser {
 			!file.exists() ||
 		    JOptionPane.showConfirmDialog(
 				this, 
-				"File already exists. Overwrite existing file?", 
-				"Overwrite file?", 
+				BundleAccess.BUNDLE.getString("csv_exists_warning"), 
+				BundleAccess.BUNDLE.getString("csv_exists_title"), 
 				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 			super.approveSelection();
 		}		

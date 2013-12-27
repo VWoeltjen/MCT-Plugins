@@ -55,7 +55,7 @@ public abstract class ExportCSVAction extends ContextAwareAction {
 	private Collection<AbstractComponent> targets;
 
 	public ExportCSVAction() {
-		super("CSV...");
+		super(BundleAccess.BUNDLE.getString("csv_export_action"));
 	}	 
 	
 	/**

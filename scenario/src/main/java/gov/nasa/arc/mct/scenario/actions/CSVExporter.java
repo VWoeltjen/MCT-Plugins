@@ -67,7 +67,10 @@ public class CSVExporter {
 	 */
 	public void export() {
 		final CSVExportWorker worker = new CSVExportWorker(components, file);
-		final ProgressMonitor monitor = new ProgressMonitor(component, "Exporting...", "", 0, 100);
+		final ProgressMonitor monitor = new ProgressMonitor(component,
+				BundleAccess.BUNDLE.getString("csv_progress_message"), 
+				"", 0, 100);
+		
 		monitor.setMillisToDecideToPopup(200);
 		monitor.setMillisToPopup(750);
 		
