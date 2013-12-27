@@ -318,8 +318,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public double getValue() {
-			// TODO Auto-generated method stub
-			return 0;
+			return cost.getValue();
 		}
 
 		@Override
