@@ -74,7 +74,7 @@ public abstract class ExportCSVAction extends ContextAwareAction {
 	private File selectFile(Component source) {
 		// create a save as dialog
 		JFileChooser fileChooser = new CSVFileChooser();
-		return fileChooser.showDialog(source, "Export") == FileChooser.APPROVE_OPTION ?
+		return fileChooser.showSaveDialog(source) == FileChooser.APPROVE_OPTION ?
 				fileChooser.getSelectedFile() : null;
 	}
 

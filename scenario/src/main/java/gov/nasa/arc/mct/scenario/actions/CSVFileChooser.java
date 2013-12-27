@@ -60,10 +60,12 @@ public class CSVFileChooser extends JFileChooser {
 	public void approveSelection() {
 		File file = getSelectedFile();
 
-		// Allow if there is no selection, or
+		// Allow if we're not saving, or 
+		// if there is no selection, or
 		// if the file doesn't exist, or
 		// if the user confirms the overwrite.
-		if (file == null || 
+		if (getDialogType() != JFileChooser.SAVE_DIALOG ||
+			file == null || 			
 			!file.exists() ||
 		    JOptionPane.showConfirmDialog(
 				this, 
