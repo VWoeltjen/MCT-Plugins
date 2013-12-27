@@ -28,7 +28,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
+import java.util.concurrent.ExecutionException;
 
+import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
 /**
@@ -77,7 +79,9 @@ public class CSVExporter {
 		worker.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
-				if (monitor.isCanceled()) {
+				if (worker.isDone() && evt.getPropertyName().equals("state")) {
+					notifyComplete(worker);
+				} else if (monitor.isCanceled()) {
 					worker.cancel(true);
 				} else {
 					monitor.setProgress(worker.getProgress());
@@ -88,4 +92,21 @@ public class CSVExporter {
 		worker.execute();
 	}
 	
+	private void notifyComplete(CSVExportWorker worker) {
+		try {
+			// Should return true on success; we only want to notify on false.
+			// Also, if there is no exception, assume export was cancelled.
+			if (!worker.get() && worker.getException() != null) {
+				Exception e = worker.getException();
+				String message = BundleAccess.BUNDLE.getString("csv_error_message") +
+						(e.getMessage() != null ? "\n" + e.getMessage() : "");
+				String title = BundleAccess.BUNDLE.getString("csv_error_title");						
+				JOptionPane.showMessageDialog(component, message, title, JOptionPane.ERROR_MESSAGE);
+			}
+		} catch (InterruptedException e) {
+			// Should not occur - already checked isDone
+		} catch (ExecutionException e) {
+			// Should not occur - already checked isDone
+		}
+	}
 }
