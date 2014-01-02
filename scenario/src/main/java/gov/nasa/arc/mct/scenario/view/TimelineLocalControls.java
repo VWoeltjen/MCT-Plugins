@@ -42,6 +42,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,6 +78,8 @@ import javax.swing.event.ChangeListener;
 public class TimelineLocalControls extends JPanel implements DurationCapability, ChangeListener, SelectionProvider {
 	public static final int LEFT_MARGIN = 80;
 	public static final int RIGHT_MARGIN = 12;
+	
+	private static final NumberFormat FORMAT = new DecimalFormat();
 	
 	private static final double ZOOM_MAX_POWER = 7; // 2 ^ 7
 	private static final int SLIDER_MAX = 100;
@@ -540,7 +544,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 							List<CostFunctionCapability> costs = ((CostOverlay) c).getCostFunctions();
 							String costString = "";
 							for (CostFunctionCapability cost : costs) {
-								costString += cost.getValue(time) + "" + cost.getUnits() + " ";
+								costString += FORMAT.format(cost.getValue(time)) + "" + cost.getUnits() + " ";
 							}
 							if (!costString.isEmpty()) {
 								int leftX = x + getLeftPadding();
