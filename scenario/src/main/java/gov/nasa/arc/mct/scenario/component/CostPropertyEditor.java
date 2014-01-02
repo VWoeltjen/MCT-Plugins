@@ -23,10 +23,13 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.PropertyEditor;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
 
 public class CostPropertyEditor implements PropertyEditor<Object> {
+	private static final NumberFormat FORMAT = new DecimalFormat();
 	private CostCapability cost;
 
 	public CostPropertyEditor(CostCapability cost) {
@@ -36,7 +39,7 @@ public class CostPropertyEditor implements PropertyEditor<Object> {
 
 	@Override
 	public String getAsText() {		
-		return String.valueOf(cost.getValue());
+		return FORMAT.format(cost.getValue());
 	}
 
 	/**
