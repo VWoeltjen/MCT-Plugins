@@ -27,7 +27,13 @@ import gov.nasa.arc.mct.policy.Policy;
 import gov.nasa.arc.mct.policy.PolicyContext;
 import gov.nasa.arc.mct.scenario.component.RepositoryCapability;
 
-
+/**
+ * Policy preventing removal of objects from object repositories.
+ * 
+ * Any repository-bound object must exist in exactly one repository, 
+ * so there is no valid usage of Remove Manifestation when the object 
+ * being removed from is a repository.
+ */
 public class RepositoryRemovalPolicy implements Policy {
 
 	@Override
