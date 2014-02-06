@@ -57,35 +57,24 @@ import javax.swing.event.DocumentListener;
  */
 public class TagCreationWizardUI extends CreateWizardUI {
 
-    private static final ResourceBundle bundle;
+	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle"); 
     
     private static final int ICON_HEIGHT = 16;
     private static final int ICON_WIDTH = 16;
     private static final int COL_SIZE = 30;
-    private static final int MIN_LENGTH, MAX_LENGTH;
-
-    private static final String ERRORMSG;
-     
     
-    static {
-        bundle = ResourceBundle.getBundle("NewObjectResource"); //NOI18N
-        MIN_LENGTH = Integer.parseInt(bundle.getString("MIN_LENGTH")); //NOI18N
-        MAX_LENGTH = Integer.parseInt(bundle.getString("MAX_LENGTH")); //NOI18N
-        ERRORMSG = String.format(bundle.getString("ERRMSG_LENGTH"), MIN_LENGTH, MAX_LENGTH); //NOI18N
-    }
-    
+	private static final int MIN_LENGTH = Integer.parseInt(BUNDLE.getString("MIN_LENGTH")); //NOI18N
+	private static final int MAX_LENGTH = Integer.parseInt(BUNDLE.getString("MAX_LENGTH")); //NOI18N
+	private static final String ERRORMSG = String.format(BUNDLE.getString("ERRMSG_LENGTH"), MIN_LENGTH, MAX_LENGTH); //NOI18N
+	    
     private final JLabel message = new JLabel();
     private final JTextField name = new JTextField();
-    private Class<? extends AbstractComponent> componentClass;
     
-    public TagCreationWizardUI(){
-        this.componentClass = TagComponent.class;
-    }
     
     @Override
     public AbstractComponent createComp(ComponentRegistry comp, AbstractComponent targetComponent) {    
         String displayName = name.getText().trim();
-        AbstractComponent component = comp.newInstance(componentClass, targetComponent);
+        AbstractComponent component = comp.newInstance(TagComponent.class, targetComponent);
         component.setDisplayName(displayName);
         
         return component;
@@ -94,8 +83,9 @@ public class TagCreationWizardUI extends CreateWizardUI {
     @Override
     public JComponent getUI(final JButton create) {   
         JPanel contentPanel = new JPanel();
-        JLabel prompt = new JLabel(bundle.getString("TEXT_FIELD_LABEL")); //NOI18N
-        name.setText(bundle.getString("DEFAULT_OBJECT_NAME")); //NOI18N
+        JLabel prompt = new JLabel(BUNDLE.getString("TEXT_FIELD_LABEL")); //NOI18N
+        name.setText(BUNDLE.getString("wizard_default_bdn_prefix") + 
+        		     BUNDLE.getString("display_name_tag").toLowerCase()); //NOI18N
         prompt.setLabelFor(name);
         name.selectAll();
         name.setColumns(COL_SIZE);
@@ -123,9 +113,9 @@ public class TagCreationWizardUI extends CreateWizardUI {
 
                 boolean flag = verify(name.getText().trim());
                 create.setEnabled(flag);
-                message.setIcon((flag) ? null : MCTIcons.getErrorIcon(ICON_WIDTH, ICON_HEIGHT));
-                message.setText((flag) ? "" : ERRORMSG);
-                
+                message.setIcon((flag) ? null : MCTIcons.getErrorIcon(ICON_WIDTH, ICON_HEIGHT));                
+				message.setText((flag) ? "" : ERRORMSG);
+				
                 ExecutionResult exResult = checkReservedWordsNamingPolicy(name.getText().trim());
                 if (!exResult.getStatus()) {
                     create.setEnabled(false);
