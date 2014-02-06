@@ -34,18 +34,9 @@ public class RepositoryRemovalPolicy implements Policy {
 	public ExecutionResult execute(PolicyContext context) {
 		AbstractComponent parentComponent = context.getProperty(
 				PolicyContext.PropertyName.TARGET_COMPONENT.getName(), AbstractComponent.class);
-
-		String message = "";
-		boolean allow = true;
 		
-		if (parentComponent != null) {
-			RepositoryCapability repo = parentComponent.getCapability(RepositoryCapability.class);			
-			if (repo != null) {
-				allow = false;
-				message = "Cannot remove objects from repository (can only delete)";
-			}
-		}
-		
-		return new ExecutionResult(context, allow, message);
+		return new ExecutionResult(context, 
+				parentComponent == null || parentComponent.getCapability(RepositoryCapability.class) == null, 
+				"Cannot remove objects from repository (can only delete)");
 	}
 }
