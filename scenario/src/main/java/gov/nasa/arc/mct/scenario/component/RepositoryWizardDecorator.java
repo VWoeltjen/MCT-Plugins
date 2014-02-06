@@ -43,6 +43,12 @@ public class RepositoryWizardDecorator extends CreateWizardUI {
 	private CreateWizardUI wizard;
 	private String repositoryID;
 	
+	public RepositoryWizardDecorator(CreateWizardUI wizard, String repositoryID) {
+		super();
+		this.wizard = wizard;
+		this.repositoryID = repositoryID;
+	}
+
 	public AbstractComponent createComp(ComponentRegistry comp,
 			AbstractComponent parentComp) {
 		AbstractComponent created = wizard.createComp(comp, parentComp);
