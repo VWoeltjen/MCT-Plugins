@@ -32,6 +32,13 @@ import java.util.Collections;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 
+/**
+ * 
+ * Decorates an object creation wizard such that, when the object is 
+ * created, it is added as a child to some other object (specified 
+ * at construction time by component ID.)
+ *
+ */
 public class RepositoryWizardDecorator extends CreateWizardUI {
 	private CreateWizardUI wizard;
 	private String repositoryID;
