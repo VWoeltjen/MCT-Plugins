@@ -22,12 +22,8 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.platform.spi.PersistenceProvider;
-import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
 import gov.nasa.arc.mct.services.component.CreateWizardUI;
-
-import java.util.Collections;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
