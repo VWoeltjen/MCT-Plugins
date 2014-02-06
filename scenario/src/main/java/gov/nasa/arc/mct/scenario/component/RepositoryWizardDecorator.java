@@ -54,11 +54,9 @@ public class RepositoryWizardDecorator extends CreateWizardUI {
 		AbstractComponent created = wizard.createComp(comp, parentComp);
 		
 		// Also persist the created component to the designated repository
-		PersistenceProvider persistence = PlatformAccess.getPlatform().getPersistenceProvider();
-		AbstractComponent repository = persistence.getComponent(repositoryID);
+		AbstractComponent repository = comp.getComponent(repositoryID);		
 		repository.addDelegateComponent(created);
 		repository.save();
-		persistence.persist(Collections.singleton(repository));
 		
 		return created;
 	}

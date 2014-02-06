@@ -192,13 +192,18 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				return assetClass.cast(new DecisionCreationWizardUI());
 			}
 			if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
-				return assetClass.cast(new ActivityTypeCreationWizardUI());
-			}
-			if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
-				return assetClass.cast(new ActivityTypeCreationWizardUI());
+				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
+				return assetClass.cast(new RepositoryWizardDecorator(
+						new ActivityTypeCreationWizardUI(),
+						bundle.getString("prefix_typerepo") + user
+						));
 			}
 			if (TagComponent.class.isAssignableFrom(type.getTypeClass())) {
-				return assetClass.cast(new TagCreationWizardUI());
+				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
+				return assetClass.cast(new RepositoryWizardDecorator(
+						new TagCreationWizardUI(),
+						bundle.getString("prefix_tagrepo") + user
+						));
 			}
 		}
 		
