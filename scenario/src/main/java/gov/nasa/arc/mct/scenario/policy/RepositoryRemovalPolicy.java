@@ -19,16 +19,30 @@
  * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
  * information. 
  *******************************************************************************/
-package gov.nasa.arc.mct.scenario.component;
+package gov.nasa.arc.mct.scenario.policy;
+
+import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.policy.ExecutionResult;
+import gov.nasa.arc.mct.policy.Policy;
+import gov.nasa.arc.mct.policy.PolicyContext;
+import gov.nasa.arc.mct.scenario.component.RepositoryCapability;
 
 /**
- * Defines a repository for components which supply tags  
- * (Tag components); these appear as User Tags and 
- * Mission Tags. 
+ * Policy preventing removal of objects from object repositories.
+ * 
+ * Any repository-bound object must exist in exactly one repository, 
+ * so there is no valid usage of Remove Manifestation when the object 
+ * being removed from is a repository.
  */
-public class TagRepositoryComponent extends RepositoryComponent {
+public class RepositoryRemovalPolicy implements Policy {
+
 	@Override
-	public Class<?> getCapabilityClass() {
-		return TagCapability.class;
+	public ExecutionResult execute(PolicyContext context) {
+		AbstractComponent parentComponent = context.getProperty(
+				PolicyContext.PropertyName.TARGET_COMPONENT.getName(), AbstractComponent.class);
+		
+		return new ExecutionResult(context, 
+				parentComponent == null || parentComponent.getCapability(RepositoryCapability.class) == null, 
+				"Cannot remove objects from repository (can only delete)");
 	}
 }

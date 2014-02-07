@@ -21,90 +21,14 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
-import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.components.Bootstrap;
-import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
-import gov.nasa.arc.mct.components.ModelStatePersistence;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-
-public class CostRepositoryComponent extends AbstractComponent implements RepositoryCapability, Bootstrap {
-	private AtomicReference<CostRepositoryModel> model =
-			new AtomicReference<CostRepositoryModel>(new CostRepositoryModel());
-
-	@Override
-	public <T> T handleGetCapability(Class<T> capabilityClass) {	
-		return
-			capabilityClass.isAssignableFrom(getClass()) ? 
-					capabilityClass.cast(this) :
-			capabilityClass.isAssignableFrom(ModelStatePersistence.class) ? 
-					capabilityClass.cast(persistence) :
-			super.handleGetCapability(capabilityClass);
-	}
-	
+/**
+ * Defines a repository for components which expose costs 
+ * (Activity Types); these appear as User Activity Types and 
+ * Mission Activity Types. 
+ */
+public class CostRepositoryComponent extends RepositoryComponent {
 	@Override
 	public Class<?> getCapabilityClass() {
 		return CostCapability.class;
-	}
-
-	// TODO: Use this to support the Group capability
-	@Override
-	public String getUserScope() {
-		return getCreator(); //model.get().scope;
-	}
-	
-	public void setUserScope(String scope) {
-		model.get().scope = scope;
-	}
-	
-	@XmlRootElement
-	@XmlAccessorType(XmlAccessType.FIELD)
-	public static class CostRepositoryModel {
-		@SuppressWarnings("unused") // Used by JAXB
-		private String scope = "";
-	}
-	
-	private final ModelStatePersistence persistence = 
-			new JAXBModelStatePersistence<CostRepositoryModel>() {
-		@Override
-		protected CostRepositoryModel getStateToPersist() {
-			return model.get();
-		}
-
-		@Override
-		protected void setPersistentState(CostRepositoryModel modelState) {
-			model.set(modelState);
-		}
-
-		@Override
-		protected Class<CostRepositoryModel> getJAXBClass() {
-			return CostRepositoryModel.class;
-		}		
-	};
-
-	@Override
-	public boolean isGlobal() {
-		return getCreator().equals("*");
-	}
-
-	@Override
-	public boolean isSandbox() {
-		return false;
-	}
-
-	@Override
-	public int categoryIndex() {
-		// Categorize by package - "somewhere in the middle",
-		// but grouped with other components from the same package.
-		return getClass().getPackage().getName().hashCode() & 0xFFFF;
-	}
-
-	@Override
-	public int componentIndex() {
-		return isGlobal() ? 2 : 3;
 	}
 }

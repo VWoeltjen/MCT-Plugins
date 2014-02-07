@@ -29,6 +29,7 @@ import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.policy.PolicyInfo;
 import gov.nasa.arc.mct.scenario.actions.ExportCSVAction.ObjectsExportCSVAction;
 import gov.nasa.arc.mct.scenario.actions.ExportCSVAction.ThisExportCSVAction;
+import gov.nasa.arc.mct.scenario.policy.RepositoryRemovalPolicy;
 import gov.nasa.arc.mct.scenario.policy.ScenarioContainmentPolicy;
 import gov.nasa.arc.mct.scenario.policy.TimelineFilterViewPolicy;
 import gov.nasa.arc.mct.scenario.view.ScenarioView;
@@ -115,6 +116,10 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			PolicyInfo.CategoryType.COMPOSITION_POLICY_CATEGORY.getKey(), 
 			ScenarioContainmentPolicy.class);
 	
+	private static final PolicyInfo repositoryPolicy = new PolicyInfo(
+			PolicyInfo.CategoryType.CAN_REMOVE_MANIFESTATION_CATEGORY.getKey(), 
+			RepositoryRemovalPolicy.class);
+	
 	
 	private Map<Class<?>, ImageIcon> iconMap = new HashMap<Class<?>, ImageIcon>();
 	
@@ -170,7 +175,9 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 	@Override
 	public Collection<PolicyInfo> getPolicyInfos() {
 		return Arrays.asList(
-				timelineViewPolicy, containmentPolicy
+				timelineViewPolicy, 
+				containmentPolicy, 
+				repositoryPolicy
 				);
 	}
 
@@ -185,7 +192,18 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				return assetClass.cast(new DecisionCreationWizardUI());
 			}
 			if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
-				return assetClass.cast(new ActivityTypeCreationWizardUI());
+				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
+				return assetClass.cast(new RepositoryWizardDecorator(
+						new ActivityTypeCreationWizardUI(),
+						bundle.getString("prefix_typerepo") + user
+						));
+			}
+			if (TagComponent.class.isAssignableFrom(type.getTypeClass())) {
+				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
+				return assetClass.cast(new RepositoryWizardDecorator(
+						new TagCreationWizardUI(),
+						bundle.getString("prefix_tagrepo") + user
+						));
 			}
 		}
 		

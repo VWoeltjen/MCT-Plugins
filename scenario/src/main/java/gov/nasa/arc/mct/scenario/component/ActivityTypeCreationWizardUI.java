@@ -107,7 +107,8 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 		// Previous validation should ensure that no NFE is thrown
 		activityType.setCosts(
 				Double.parseDouble(power.getText()), 
-				Double.parseDouble(comms.getText()));
+				Double.parseDouble(comms.getText()));	
+		
 		return activityType;
 	}
 	
