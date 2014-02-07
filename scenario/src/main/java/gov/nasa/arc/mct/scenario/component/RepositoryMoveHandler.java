@@ -73,6 +73,9 @@ public class RepositoryMoveHandler {
 		this.addedComponents = addedComponents;
 	}
 	
+	/**
+	 * Initiate the movement of objects out of previous repositories.
+	 */
 	public void handle() {
 		final SwingWorker<Map<String, Collection<String>>, ?> w = new RepositoryMoveWorker();
 		
@@ -85,6 +88,8 @@ public class RepositoryMoveHandler {
 		w.execute();
 	}
 	
+	// Dialog to display while moving. Handles display of both progress bar 
+	// and user notification when operation is complete.
 	private class RepositoryMoveDialog extends JDialog {
 		private static final long serialVersionUID = 7688596759924866708L;
 		
@@ -190,6 +195,8 @@ public class RepositoryMoveHandler {
 		}
 	}
 	
+	// Handles the actual process of removing components from old repositories.
+	// Implemented as a SwingWorker to make use of standard progress reporting approach.
 	private class RepositoryMoveWorker extends SwingWorker<Map<String, Collection<String>>, Void> {
 		@Override
 		protected Map<String, Collection<String>> doInBackground() throws Exception {
