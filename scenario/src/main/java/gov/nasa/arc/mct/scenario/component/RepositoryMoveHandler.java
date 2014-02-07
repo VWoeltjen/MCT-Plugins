@@ -118,13 +118,15 @@ public class RepositoryMoveHandler {
 							String summary = "<html>";
 							for (Entry<String, Collection<String>> moved : result.entrySet()) {
 								String repoName = moved.getKey();
-								summary += "<p> The following objects were moved out of " + repoName + ":";
+								summary += "<p> The following objects were moved out of " + repoName + " and into " + repositoryComponent.getDisplayName() + ":";
 								summary += "<ul>";
 								for (String childName : moved.getValue()) {
 									summary += "<li>" + childName + "</li>";
 								}
 								summary += "</ul></p>";
 							}
+							summary += "<p>If this is not what you wanted, you can drag and drop these objects <br/>";
+							summary += "from " + repositoryComponent.getDisplayName() + " back to their original location.</p>";
 							summary += "</html>";
 							details.add(new JLabel(summary));
 						} catch (InterruptedException e) {
