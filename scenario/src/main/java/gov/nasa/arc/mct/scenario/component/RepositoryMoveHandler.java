@@ -24,6 +24,7 @@ package gov.nasa.arc.mct.scenario.component;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -38,6 +39,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -105,6 +107,7 @@ public class RepositoryMoveHandler {
 				@Override
 				public void propertyChange(PropertyChangeEvent event) {
 					progress.setValue(worker.getProgress());
+					label.setVisible(!worker.isDone());
 					progress.setVisible(!worker.isDone());
 					details.setVisible(worker.isDone());
 					button.setEnabled(worker.isDone());
@@ -136,6 +139,14 @@ public class RepositoryMoveHandler {
 			panel.add(progress);
 			panel.add(details);
 			panel.add(button);
+			// Center all components
+			for (Component c : panel.getComponents()) {				
+				if (c instanceof JComponent) {
+					((JComponent) c).setAlignmentX(JComponent.CENTER_ALIGNMENT);
+				}
+			}
+			// Add some padding with a border
+			panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 			add(panel);
 			pack();
 		}
