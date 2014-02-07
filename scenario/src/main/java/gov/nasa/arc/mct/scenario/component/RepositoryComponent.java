@@ -21,10 +21,43 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.Bootstrap;
 
-public class CostRepositoryComponent extends RepositoryComponent {
+public abstract class RepositoryComponent extends AbstractComponent implements RepositoryCapability, Bootstrap {
 	@Override
-	public Class<?> getCapabilityClass() {
-		return CostCapability.class;
+	public <T> T handleGetCapability(Class<T> capabilityClass) {	
+		return
+			capabilityClass.isAssignableFrom(getClass()) ? 
+					capabilityClass.cast(this) :
+			super.handleGetCapability(capabilityClass);
+	}
+
+	// TODO: Use this to support the Group capability
+	@Override
+	public String getUserScope() {
+		return getCreator(); //model.get().scope;
+	}
+	
+	@Override
+	public boolean isGlobal() {
+		return getCreator().equals("*");
+	}
+
+	@Override
+	public boolean isSandbox() {
+		return false;
+	}
+
+	@Override
+	public int categoryIndex() {
+		// Categorize by package - "somewhere in the middle",
+		// but grouped with other components from the same package.
+		return getClass().getPackage().getName().hashCode() & 0xFFFF;
+	}
+
+	@Override
+	public int componentIndex() {
+		return (getClass().getName().hashCode() << 1) + (isGlobal() ? 0 : 1);
 	}
 }
