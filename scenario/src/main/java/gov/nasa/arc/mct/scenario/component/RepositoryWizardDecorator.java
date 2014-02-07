@@ -45,22 +45,28 @@ public class RepositoryWizardDecorator extends CreateWizardUI {
 		this.repositoryID = repositoryID;
 	}
 
+	@Override
 	public AbstractComponent createComp(ComponentRegistry comp,
 			AbstractComponent parentComp) {
 		AbstractComponent created = wizard.createComp(comp, parentComp);
 		
-		// Also persist the created component to the designated repository
-		AbstractComponent repository = comp.getComponent(repositoryID);		
-		repository.addDelegateComponent(created);
-		repository.save();
+		// Also persist the created component to the designated repository,
+		// unless the component was created in a repository.
+		if (parentComp.getCapability(RepositoryCapability.class) == null) {
+			AbstractComponent repository = comp.getComponent(repositoryID);		
+			repository.addDelegateComponent(created);
+			repository.save();
+		}
 		
 		return created;
 	}
 
+	@Override
 	public JComponent getUI(JButton create) {
 		return wizard.getUI(create);
 	}
 
+	@Override
 	public String toString() {
 		return wizard.toString();
 	}
