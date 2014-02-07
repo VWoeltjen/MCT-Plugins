@@ -37,6 +37,7 @@ import java.util.Set;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -83,8 +84,14 @@ public class RepositoryMoveHandler {
 			
 			final JPanel panel = new JPanel();
 			final JLabel label = new JLabel("Warning");
+			final JComponent details = new JLabel("Placeholder");
 			final JProgressBar progress = new JProgressBar(0, 100);
 			final JButton button = new JButton("OK");
+			
+			button.setEnabled(false);
+			progress.setVisible(true);
+			details.setVisible(false);
+			
 			button.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -95,11 +102,15 @@ public class RepositoryMoveHandler {
 				@Override
 				public void propertyChange(PropertyChangeEvent event) {
 					progress.setValue(worker.getProgress());
+					progress.setVisible(!worker.isDone());
+					details.setVisible(worker.isDone());
+					button.setEnabled(worker.isDone());
 				}				
 			});
 			panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 			panel.add(label);
 			panel.add(progress);
+			panel.add(details);
 			panel.add(button);
 			add(panel);
 			pack();
@@ -142,7 +153,7 @@ public class RepositoryMoveHandler {
 							}
 							toRemove.get(parentId).add(child);
 						}					
-					}
+					}					
 					parentIndex++;
 					setProgress((100 * childIndex + (parentIndex*childIndex/parentCount)) / childCount);
 				}
