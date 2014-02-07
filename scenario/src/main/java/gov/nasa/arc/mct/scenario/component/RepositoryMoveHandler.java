@@ -115,9 +115,16 @@ public class RepositoryMoveHandler {
 					setDefaultCloseOperation(worker.isDone() ? DISPOSE_ON_CLOSE : DO_NOTHING_ON_CLOSE);
 					if (worker.isDone()) {
 						try {
-							details.setText(summarize(worker.get()));
-						} catch (InterruptedException e) {
-						} catch (ExecutionException e) {
+							Map<String, Collection<String>> result = worker.get();
+							if (result.isEmpty()) {
+								dispose();
+							} else {
+								details.setText(summarize(result));
+							}
+						} catch (InterruptedException e) { // Fall back to default summary
+							details.setText(summarize(null));
+						} catch (ExecutionException e) {   // Fall back to default summary
+							details.setText(summarize(null));
 						}
 					}
 					pack();
@@ -147,15 +154,21 @@ public class RepositoryMoveHandler {
 		
 		private String summarize(Map<String, Collection<String>> result) {
 			String summary = "<html>";
-			for (Entry<String, Collection<String>> moved : result.entrySet()) {
-				String repoName = moved.getKey();
-				summary += "<p> The following objects were moved out of " + repoName + " and into " + repositoryComponent.getDisplayName() + ":";
-				summary += "<ul>";
-				for (String childName : moved.getValue()) {
-					summary += "<li>" + childName + "</li>";
+			if (result != null && result.size() > 0) {
+				for (Entry<String, Collection<String>> moved : result.entrySet()) {
+					String repoName = moved.getKey();
+					summary += "<p> The following objects were moved out of " + repoName + " and into " + repositoryComponent.getDisplayName() + ":";
+					summary += "<ul>";
+					for (String childName : moved.getValue()) {
+						summary += "<li>" + childName + "</li>";
+					}
+					summary += "</ul></p>";
 				}
-				summary += "</ul></p>";
+			} else {
+				// This is fallback behavior in case of exception or empty result set
+				summary += "<p>Finished moving obejcts to " + repositoryComponent.getDisplayName() + ".</p>";
 			}
+			
 			summary += "<p>If this is not what you wanted, you can drag and drop these objects <br/>";
 			summary += "from " + repositoryComponent.getDisplayName() + " back to their original location.</p>";
 			summary += "</html>";
@@ -203,7 +216,6 @@ public class RepositoryMoveHandler {
 					parentIndex++;
 					setProgress((100 * childIndex + (parentIndex*childIndex/parentCount)) / childCount);
 				}
-				Thread.sleep(250);
 				childIndex++;
 				setProgress(100 * childIndex / childCount);
 			}
