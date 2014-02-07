@@ -29,11 +29,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -65,7 +68,7 @@ public class RepositoryMoveHandler {
 	}
 	
 	public void handle() {
-		final SwingWorker<Void, Void> w = new RepositoryMoveWorker();
+		final SwingWorker<Map<String, Collection<String>>, ?> w = new RepositoryMoveWorker();
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -76,15 +79,15 @@ public class RepositoryMoveHandler {
 		w.execute();
 	}
 	
-	private static class RepositoryMoveDialog extends JDialog {
+	private class RepositoryMoveDialog extends JDialog {
 		private static final long serialVersionUID = 7688596759924866708L;
 		
-		public RepositoryMoveDialog(final SwingWorker<?,?> worker) {
+		public RepositoryMoveDialog(final SwingWorker<Map<String, Collection<String>>,?> worker) {
 			super(null, Dialog.ModalityType.APPLICATION_MODAL);
 			
 			final JPanel panel = new JPanel();
-			final JLabel label = new JLabel("Warning");
-			final JComponent details = new JLabel("Placeholder");
+			final JLabel label = new JLabel("Moving objects to " + repositoryComponent.getDisplayName() + "...");
+			final JComponent details = new JPanel();
 			final JProgressBar progress = new JProgressBar(0, 100);
 			final JButton button = new JButton("OK");
 			
@@ -105,6 +108,27 @@ public class RepositoryMoveHandler {
 					progress.setVisible(!worker.isDone());
 					details.setVisible(worker.isDone());
 					button.setEnabled(worker.isDone());
+					if (worker.isDone()) {
+						details.removeAll();
+						try {
+							Map<String, Collection<String>> result = worker.get();
+							String summary = "<html>";
+							for (Entry<String, Collection<String>> moved : result.entrySet()) {
+								String repoName = moved.getKey();
+								summary += "<p> The following objects were moved out of " + repoName + ":";
+								summary += "<ul>";
+								for (String childName : moved.getValue()) {
+									summary += "<li>" + childName + "</li>";
+								}
+								summary += "</ul></p>";
+							}
+							summary += "</html>";
+							details.add(new JLabel(summary));
+						} catch (InterruptedException e) {
+						} catch (ExecutionException e) {
+						}
+					}
+					pack();
 				}				
 			});
 			panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
@@ -117,9 +141,9 @@ public class RepositoryMoveHandler {
 		}
 	}
 	
-	private class RepositoryMoveWorker extends SwingWorker<Void, Void> {
+	private class RepositoryMoveWorker extends SwingWorker<Map<String, Collection<String>>, Void> {
 		@Override
-		protected Void doInBackground() throws Exception {
+		protected Map<String, Collection<String>> doInBackground() throws Exception {
 			// Store lists of components to remove from parents,
 			// where parents are indicated by id (key to map)
 			Map<String, Set<AbstractComponent>> toRemove = 
@@ -169,7 +193,18 @@ public class RepositoryMoveHandler {
 			// Finally, persist
 			PlatformAccess.getPlatform().getPersistenceProvider().persist(parentRepos.values());
 			
-			return null;
+			// Then, prepare return values (display names)
+			Map<String, Collection<String>> result = new HashMap<String, Collection<String>>();
+			for (String id : parentRepos.keySet()) {
+				Collection<String> removed = new ArrayList<String>();
+				String name = parentRepos.get(id).getDisplayName();
+				for (AbstractComponent child : toRemove.get(id)) {
+					removed.add(child.getDisplayName());
+				}
+				result.put(name, removed);
+			}		
+			
+			return result;
 		}		
 	}
 	
