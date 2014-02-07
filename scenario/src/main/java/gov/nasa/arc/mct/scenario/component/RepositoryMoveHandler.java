@@ -136,6 +136,7 @@ public class RepositoryMoveHandler {
 						}
 					}
 					pack();
+					setLocationRelativeTo(null); // Re-center
 				}				
 			});
 			panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
@@ -159,8 +160,9 @@ public class RepositoryMoveHandler {
 			setResizable(false);
 			setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 			
-			// Add title from bundle
+			// Add title from bundle, and center dialog on screen
 			setTitle(BUNDLE.getString("repo_move_title"));
+			setLocationRelativeTo(null);
 		}
 		
 		// Prepares a summary message describing the move that has taken place.
