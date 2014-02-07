@@ -27,6 +27,8 @@ import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,9 +36,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
@@ -74,21 +79,32 @@ public class RepositoryMoveHandler {
 	
 	private static class RepositoryMoveDialog extends JDialog {
 		private static final long serialVersionUID = 7688596759924866708L;
-		private SwingWorker worker;
 		
-		public RepositoryMoveDialog(SwingWorker worker) {
+		public RepositoryMoveDialog(final SwingWorker worker) {
 			super(null, Dialog.ModalityType.APPLICATION_MODAL);
-			this.worker = worker;
 			
-			JLabel label = new JLabel("Warning");
-			JButton button = new JButton("OK");
+			final JPanel panel = new JPanel();
+			final JLabel label = new JLabel("Warning");
+			final JProgressBar progress = new JProgressBar(0, 100);
+			final JButton button = new JButton("OK");
 			button.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					RepositoryMoveDialog.this.dispose();					
 				}				
 			});
-			add(button);
+			worker.addPropertyChangeListener(new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent event) {
+					progress.setValue(worker.getProgress());
+				}				
+			});
+			panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+			panel.add(label);
+			panel.add(progress);
+			panel.add(button);
+			add(panel);
+			pack();
 		}
 	}
 	
