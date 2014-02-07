@@ -21,7 +21,11 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
-
+/**
+ * Defines a repository for components which supply tags  
+ * (Tag components); these appear as User Tags and 
+ * Mission Tags. 
+ */
 public class TagRepositoryComponent extends RepositoryComponent {
 	@Override
 	public Class<?> getCapabilityClass() {

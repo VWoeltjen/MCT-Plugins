@@ -21,7 +21,11 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
-
+/**
+ * Defines a repository for components which expose costs 
+ * (Activity Types); these appear as User Activity Types and 
+ * Mission Activity Types. 
+ */
 public class CostRepositoryComponent extends RepositoryComponent {
 	@Override
 	public Class<?> getCapabilityClass() {

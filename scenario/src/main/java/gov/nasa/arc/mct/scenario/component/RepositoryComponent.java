@@ -24,6 +24,11 @@ package gov.nasa.arc.mct.scenario.component;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.Bootstrap;
 
+/**
+ * Abstract superclass for components which serve as canonical 
+ * repositories for objects of other types. (e.g. User Tags, 
+ * Mission Activity Types, et cetera...)
+ */
 public abstract class RepositoryComponent extends AbstractComponent implements RepositoryCapability, Bootstrap {
 	@Override
 	public <T> T handleGetCapability(Class<T> capabilityClass) {	
