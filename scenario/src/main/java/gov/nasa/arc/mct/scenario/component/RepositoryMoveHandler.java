@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -89,7 +90,7 @@ public class RepositoryMoveHandler {
 			
 			final JPanel panel = new JPanel();
 			final JLabel label = new JLabel("Moving objects to " + repositoryComponent.getDisplayName() + "...");
-			final JComponent details = new JPanel();
+			final JLabel details = new JLabel("");
 			final JProgressBar progress = new JProgressBar(0, 100);
 			final JButton button = new JButton("OK");
 			
@@ -112,23 +113,8 @@ public class RepositoryMoveHandler {
 					details.setVisible(worker.isDone());
 					button.setEnabled(worker.isDone());
 					if (worker.isDone()) {
-						details.removeAll();
 						try {
-							Map<String, Collection<String>> result = worker.get();
-							String summary = "<html>";
-							for (Entry<String, Collection<String>> moved : result.entrySet()) {
-								String repoName = moved.getKey();
-								summary += "<p> The following objects were moved out of " + repoName + " and into " + repositoryComponent.getDisplayName() + ":";
-								summary += "<ul>";
-								for (String childName : moved.getValue()) {
-									summary += "<li>" + childName + "</li>";
-								}
-								summary += "</ul></p>";
-							}
-							summary += "<p>If this is not what you wanted, you can drag and drop these objects <br/>";
-							summary += "from " + repositoryComponent.getDisplayName() + " back to their original location.</p>";
-							summary += "</html>";
-							details.add(new JLabel(summary));
+							details.setText(summarize(worker.get()));
 						} catch (InterruptedException e) {
 						} catch (ExecutionException e) {
 						}
@@ -140,6 +126,7 @@ public class RepositoryMoveHandler {
 			panel.add(label);
 			panel.add(progress);
 			panel.add(details);
+			panel.add(Box.createVerticalStrut(17));
 			panel.add(button);
 			// Center all components
 			for (Component c : panel.getComponents()) {				
@@ -151,6 +138,23 @@ public class RepositoryMoveHandler {
 			panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 			add(panel);
 			pack();
+		}
+		
+		private String summarize(Map<String, Collection<String>> result) {
+			String summary = "<html>";
+			for (Entry<String, Collection<String>> moved : result.entrySet()) {
+				String repoName = moved.getKey();
+				summary += "<p> The following objects were moved out of " + repoName + " and into " + repositoryComponent.getDisplayName() + ":";
+				summary += "<ul>";
+				for (String childName : moved.getValue()) {
+					summary += "<li>" + childName + "</li>";
+				}
+				summary += "</ul></p>";
+			}
+			summary += "<p>If this is not what you wanted, you can drag and drop these objects <br/>";
+			summary += "from " + repositoryComponent.getDisplayName() + " back to their original location.</p>";
+			summary += "</html>";
+			return summary;
 		}
 	}
 	
@@ -194,6 +198,7 @@ public class RepositoryMoveHandler {
 					parentIndex++;
 					setProgress((100 * childIndex + (parentIndex*childIndex/parentCount)) / childCount);
 				}
+				Thread.sleep(250);
 				childIndex++;
 				setProgress(100 * childIndex / childCount);
 			}
