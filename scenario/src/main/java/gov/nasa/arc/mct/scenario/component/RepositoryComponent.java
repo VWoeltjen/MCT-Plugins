@@ -23,14 +23,8 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.Bootstrap;
-import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Abstract superclass for components which serve as canonical 
@@ -44,34 +38,7 @@ public abstract class RepositoryComponent extends AbstractComponent implements R
 			Collection<AbstractComponent> childComponents) {
 		super.addDelegateComponentsCallback(childComponents);
 		
-		Map<AbstractComponent, Set<AbstractComponent>> otherRepositories = 
-				new HashMap<AbstractComponent, Set<AbstractComponent>>();
-		
-		// Build a list of things to remove
-		for (AbstractComponent child : childComponents) {
-			for (AbstractComponent parent : child.getReferencingComponents()) {
-				RepositoryCapability parentRepo = parent.getCapability(RepositoryCapability.class);				
-				// Is another parent the same kind of repository?
-				if (parentRepo != null && 
-					parentRepo.getCapabilityClass().isAssignableFrom(getCapabilityClass())) {
-					// Make sure we are not just looking at ourself
-					if (!(getComponentId().equals(parent.getComponentId()))) {
-						if (!otherRepositories.containsKey(parent)) {
-							otherRepositories.put(parent, new HashSet<AbstractComponent>());
-						}
-						otherRepositories.get(parent).add(child);
-					}					
-				}
-			}
-		}
-		
-		// Now, remove them
-		for (Entry<AbstractComponent, Set<AbstractComponent>> otherRepo : otherRepositories.entrySet()) {
-			otherRepo.getKey().removeDelegateComponents(otherRepo.getValue());
-		}
-		
-		// Finally, persist
-		PlatformAccess.getPlatform().getPersistenceProvider().persist(otherRepositories.keySet());
+		new RepositoryMoveHandler(this, childComponents).handle();
 	}
 
 	@Override
