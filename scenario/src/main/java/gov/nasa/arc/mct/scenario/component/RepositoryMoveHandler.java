@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -60,6 +61,8 @@ import javax.swing.SwingWorker;
  *
  */
 public class RepositoryMoveHandler {
+	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
+	
 	private RepositoryComponent repositoryComponent;
 	private Collection<AbstractComponent> addedComponents;
 	
@@ -89,7 +92,7 @@ public class RepositoryMoveHandler {
 			super(null, Dialog.ModalityType.APPLICATION_MODAL);
 			
 			final JPanel panel = new JPanel();
-			final JLabel label = new JLabel("Moving objects to " + repositoryComponent.getDisplayName() + "...");
+			final JLabel label = new JLabel(String.format(BUNDLE.getString("repo_move_progress_message"), repositoryComponent.getDisplayName()));
 			final JLabel details = new JLabel("");
 			final JProgressBar progress = new JProgressBar(0, 100);
 			final JButton button = new JButton("OK");
@@ -150,29 +153,40 @@ public class RepositoryMoveHandler {
 			// Disable resize, premature close
 			setResizable(false);
 			setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+			
+			// Add title from bundle
+			setTitle(BUNDLE.getString("repo_move_title"));
 		}
 		
-		private String summarize(Map<String, Collection<String>> result) {
-			String summary = "<html>";
+		// Prepares a summary message describing the move that has taken place.
+		private String summarize(Map<String, Collection<String>> result) {			
+			String summary = "";
 			if (result != null && result.size() > 0) {
 				for (Entry<String, Collection<String>> moved : result.entrySet()) {
-					String repoName = moved.getKey();
-					summary += "<p> The following objects were moved out of " + repoName + " and into " + repositoryComponent.getDisplayName() + ":";
-					summary += "<ul>";
+					String children = "";
 					for (String childName : moved.getValue()) {
-						summary += "<li>" + childName + "</li>";
+						children += String.format(
+								BUNDLE.getString("repo_move_summary_object"),
+								childName);
 					}
-					summary += "</ul></p>";
+					summary += String.format(
+							BUNDLE.getString("repo_move_summary_repo"), 
+							moved.getKey(), // Name of previous repository parent 
+							repositoryComponent.getDisplayName(), 
+							children);
 				}
 			} else {
 				// This is fallback behavior in case of exception or empty result set
-				summary += "<p>Finished moving obejcts to " + repositoryComponent.getDisplayName() + ".</p>";
+				summary = String.format(
+						BUNDLE.getString("repo_move_summary_default"),
+						repositoryComponent.getDisplayName());
 			}
 			
-			summary += "<p>If this is not what you wanted, you can drag and drop these objects <br/>";
-			summary += "from " + repositoryComponent.getDisplayName() + " back to their original location.</p>";
-			summary += "</html>";
-			return summary;
+			return String.format(
+					BUNDLE.getString("repo_move_summary"),
+					summary,
+					repositoryComponent.getDisplayName()
+					);
 		}
 	}
 	
