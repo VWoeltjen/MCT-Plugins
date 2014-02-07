@@ -112,6 +112,7 @@ public class RepositoryMoveHandler {
 					progress.setVisible(!worker.isDone());
 					details.setVisible(worker.isDone());
 					button.setEnabled(worker.isDone());
+					setDefaultCloseOperation(worker.isDone() ? DISPOSE_ON_CLOSE : DO_NOTHING_ON_CLOSE);
 					if (worker.isDone()) {
 						try {
 							details.setText(summarize(worker.get()));
@@ -138,6 +139,10 @@ public class RepositoryMoveHandler {
 			panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 			add(panel);
 			pack();
+			
+			// Disable resize, premature close
+			setResizable(false);
+			setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		}
 		
 		private String summarize(Map<String, Collection<String>> result) {
