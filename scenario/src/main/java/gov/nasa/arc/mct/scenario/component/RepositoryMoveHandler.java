@@ -24,13 +24,19 @@ package gov.nasa.arc.mct.scenario.component;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
@@ -54,9 +60,36 @@ public class RepositoryMoveHandler {
 	}
 	
 	public void handle() {
-		SwingWorker<Void, Void> w = new RepositoryMoveWorker();
+		final SwingWorker<Void, Void> w = new RepositoryMoveWorker();
+		
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				new RepositoryMoveDialog(w).setVisible(true);				
+			}
+		});
 		
 		w.execute();
+	}
+	
+	private static class RepositoryMoveDialog extends JDialog {
+		private static final long serialVersionUID = 7688596759924866708L;
+		private SwingWorker worker;
+		
+		public RepositoryMoveDialog(SwingWorker worker) {
+			super(null, Dialog.ModalityType.APPLICATION_MODAL);
+			this.worker = worker;
+			
+			JLabel label = new JLabel("Warning");
+			JButton button = new JButton("OK");
+			button.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					RepositoryMoveDialog.this.dispose();					
+				}				
+			});
+			add(button);
+		}
 	}
 	
 	private class RepositoryMoveWorker extends SwingWorker<Void, Void> {
