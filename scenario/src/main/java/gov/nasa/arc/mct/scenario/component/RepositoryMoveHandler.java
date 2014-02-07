@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.BoxLayout;
@@ -67,7 +66,6 @@ public class RepositoryMoveHandler {
 	public void handle() {
 		final SwingWorker<Void, Void> w = new RepositoryMoveWorker();
 		
-		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				new RepositoryMoveDialog(w).setVisible(true);				
@@ -80,7 +78,7 @@ public class RepositoryMoveHandler {
 	private static class RepositoryMoveDialog extends JDialog {
 		private static final long serialVersionUID = 7688596759924866708L;
 		
-		public RepositoryMoveDialog(final SwingWorker worker) {
+		public RepositoryMoveDialog(final SwingWorker<?,?> worker) {
 			super(null, Dialog.ModalityType.APPLICATION_MODAL);
 			
 			final JPanel panel = new JPanel();
@@ -111,42 +109,54 @@ public class RepositoryMoveHandler {
 	private class RepositoryMoveWorker extends SwingWorker<Void, Void> {
 		@Override
 		protected Void doInBackground() throws Exception {
-			Map<AbstractComponent, Set<AbstractComponent>> otherRepositories = 
-					new HashMap<AbstractComponent, Set<AbstractComponent>>();
+			// Store lists of components to remove from parents,
+			// where parents are indicated by id (key to map)
+			Map<String, Set<AbstractComponent>> toRemove = 
+					new HashMap<String, Set<AbstractComponent>>();
 			
-			int i = 0, j = 0;
+			// getReferencingComponents may return different instances each time,
+			// so store the latest returned instance in relation to its id
+			Map<String, AbstractComponent> parentRepos = 
+					new HashMap<String, AbstractComponent>();
+			
+			// For progress reporting
+			int childIndex = 0;
 			int childCount = addedComponents.size();
 			
 			// Build a list of things to remove
 			for (AbstractComponent child : addedComponents) {
 				Collection<AbstractComponent> parents = child.getReferencingComponents();
+				int parentIndex = 0;
 				int parentCount = parents.size();
 				for (AbstractComponent parent : parents) {
 					RepositoryCapability parentRepo = parent.getCapability(RepositoryCapability.class);				
 					// Is another parent the same kind of repository?
 					if (parentRepo != null && 
 						parentRepo.getCapabilityClass().isAssignableFrom(repositoryComponent.getCapabilityClass())) {
+						String parentId = parent.getComponentId();
 						// Make sure we are not just looking at ourself
-						if (!(repositoryComponent.getComponentId().equals(parent.getComponentId()))) {
-							if (!otherRepositories.containsKey(parent)) {
-								otherRepositories.put(parent, new HashSet<AbstractComponent>());
+						if (!(repositoryComponent.getComponentId().equals(parentId))) {
+							parentRepos.put(parentId, parent);
+							if (!toRemove.containsKey(parentId)) {
+								toRemove.put(parentId, new HashSet<AbstractComponent>());
 							}
-							otherRepositories.get(parent).add(child);
+							toRemove.get(parentId).add(child);
 						}					
 					}
-					setProgress((100 * i + (j*i/parentCount)) / childCount);
+					parentIndex++;
+					setProgress((100 * childIndex + (parentIndex*childIndex/parentCount)) / childCount);
 				}
-				i++;
-				setProgress(100 * i / childCount);
+				childIndex++;
+				setProgress(100 * childIndex / childCount);
 			}
 			
 			// Now, remove them
-			for (Entry<AbstractComponent, Set<AbstractComponent>> otherRepo : otherRepositories.entrySet()) {
-				otherRepo.getKey().removeDelegateComponents(otherRepo.getValue());
+			for (String id : parentRepos.keySet()) {
+				parentRepos.get(id).removeDelegateComponents(toRemove.get(id));
 			}
 			
 			// Finally, persist
-			PlatformAccess.getPlatform().getPersistenceProvider().persist(otherRepositories.keySet());
+			PlatformAccess.getPlatform().getPersistenceProvider().persist(parentRepos.values());
 			
 			return null;
 		}		
