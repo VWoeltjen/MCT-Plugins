@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -63,6 +64,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 		this.componentInfo = componentInfo;
 		
 		setLayout(new BorderLayout());
+		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		foreground = new JLabel().getForeground();
 		add(panel, BorderLayout.CENTER);
 	}
