@@ -28,7 +28,10 @@ import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -36,6 +39,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 /**
  * Provides the user interface for editing an activity's 
@@ -51,7 +55,6 @@ public class ActivityVisualControl extends CustomVisualControl {
 	private JButton editButton = new JButton("+");
 	private Color foreground;
 	private boolean isMutable = true;
-	private Class<?> capabilityClass;
 	private ComponentTypeInfo componentInfo;
 	
 	/**
@@ -60,9 +63,8 @@ public class ActivityVisualControl extends CustomVisualControl {
 	 * @param capabilityClass the exposed capability
 	 * @param componentClass class to be used for create actions (null to disallow create)
 	 */
-	public ActivityVisualControl(Class<?> capabilityClass, 
-			ComponentTypeInfo componentInfo) {
-		this.capabilityClass = capabilityClass;
+	public ActivityVisualControl(ComponentTypeInfo componentInfo,
+			final List<AbstractComponent> repositories) {
 		this.componentInfo = componentInfo;
 		
 		setLayout(new BorderLayout());
@@ -70,6 +72,14 @@ public class ActivityVisualControl extends CustomVisualControl {
 		foreground = new JLabel().getForeground();
 		add(panel, BorderLayout.CENTER);
 		add(editButton, BorderLayout.EAST);
+		
+		editButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				TagSelectionDialog dialog = new TagSelectionDialog(repositories, tags, SwingUtilities.getWindowAncestor(editButton));
+				dialog.setVisible(true);
+			}			
+		});
 	}
 	
 	@Override

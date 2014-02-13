@@ -26,6 +26,7 @@ import gov.nasa.arc.mct.gui.CustomVisualControl;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent.ActivityCustomProperty;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,17 +48,17 @@ import javax.swing.event.ChangeListener;
  */
 public class CompositeActivityVisualControl extends CustomVisualControl implements ChangeListener {
 	private static final long serialVersionUID = 1944674986744108472L;
-	private Map<Class<?>, CustomVisualControl> controls = 
-			new HashMap<Class<?>, CustomVisualControl>();
+	private Map<ComponentTypeInfo, CustomVisualControl> controls = 
+			new HashMap<ComponentTypeInfo, CustomVisualControl>();
 	private CustomVisualControl linkControl;
 	
-	public CompositeActivityVisualControl(Map<Class<?>, ComponentTypeInfo> capabilities) {
+	public CompositeActivityVisualControl(Map<ComponentTypeInfo, List<AbstractComponent>> capabilities) {
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		
-		for (Entry<Class<?>, ComponentTypeInfo> capability : capabilities.entrySet()) {
+		for (Entry<ComponentTypeInfo, List<AbstractComponent>> capability : capabilities.entrySet()) {
 			CustomVisualControl control = addControl(
 					new ActivityVisualControl(capability.getKey(), capability.getValue()),
-					capability.getValue().getDisplayName() + "s");
+					capability.getKey().getDisplayName() + "s");
 			controls.put(capability.getKey(), control);
 		}
 		
@@ -78,9 +79,9 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 		if (value instanceof ActivityCustomProperty) {
 			ActivityCustomProperty property = 
 					((ActivityCustomProperty) value);
-			Map<Class<?>, List<AbstractComponent>> map = 
+			Map<ComponentTypeInfo, List<AbstractComponent>> map = 
 					property.getTagStyleChildren();
-			for (Entry<Class<?>, CustomVisualControl> entry : controls.entrySet()) {
+			for (Entry<ComponentTypeInfo, CustomVisualControl> entry : controls.entrySet()) {
 				Object v = map.get(entry.getKey());
 				if (v != null) {
 					entry.getValue().setValue(v);
@@ -94,9 +95,9 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object getValue() {
-		Map<Class<?>, List<AbstractComponent>> value = 
-				new HashMap<Class<?>, List<AbstractComponent>>();
-		for (Entry<Class<?>, CustomVisualControl> entry : controls.entrySet()) {
+		Map<ComponentTypeInfo, List<AbstractComponent>> value = 
+				new HashMap<ComponentTypeInfo, List<AbstractComponent>>();
+		for (Entry<ComponentTypeInfo, CustomVisualControl> entry : controls.entrySet()) {
 			value.put(entry.getKey(), 
 					(List<AbstractComponent>) entry.getValue().getValue());
 		}

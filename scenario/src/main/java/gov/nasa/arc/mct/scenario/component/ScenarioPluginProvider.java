@@ -36,6 +36,7 @@ import gov.nasa.arc.mct.scenario.view.ScenarioView;
 import gov.nasa.arc.mct.scenario.view.TimelineInspector;
 import gov.nasa.arc.mct.scenario.view.TimelineView;
 import gov.nasa.arc.mct.services.component.AbstractComponentProvider;
+import gov.nasa.arc.mct.services.component.ComponentRegistry;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 import gov.nasa.arc.mct.services.component.CreateWizardUI;
 import gov.nasa.arc.mct.services.component.TypeInfo;
@@ -46,6 +47,7 @@ import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -86,7 +88,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			ScenarioComponent.class,
 			true);
 	
-	private static final ComponentTypeInfo tagComponentType = new ComponentTypeInfo(
+	public static final ComponentTypeInfo tagComponentType = new ComponentTypeInfo(
 			bundle.getString("display_name_tag"),  
 			bundle.getString("description_tag"), 
 			TagComponent.class);
@@ -103,7 +105,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			CostRepositoryComponent.class,
 			false);
 	
-	private static final ComponentTypeInfo activityTypeComponentType = new ComponentTypeInfo(
+	public static final ComponentTypeInfo activityTypeComponentType = new ComponentTypeInfo(
 			bundle.getString("display_name_activity_type"),  
 			bundle.getString("description_activity_type"), 
 			ActivityTypeComponent.class);
@@ -218,10 +220,20 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		// Custom editors
 		if (assetClass.isAssignableFrom(CustomVisualControl.class)) {
 			if (ActivityComponent.class.isAssignableFrom(type.getTypeClass())) {
-				Map<Class<?>, ComponentTypeInfo> types = 
-						new HashMap<Class<?>, ComponentTypeInfo>();
-				types.put(TagCapability.class, tagComponentType);
-				types.put(CostCapability.class, activityTypeComponentType);
+				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
+				String wild = "*";
+				ComponentRegistry registry = PlatformAccess.getPlatform().getComponentRegistry();
+				
+				Map<ComponentTypeInfo, List<AbstractComponent>> types = 
+						new HashMap<ComponentTypeInfo, List<AbstractComponent>>();
+				types.put(tagComponentType, Arrays.asList(
+						registry.getComponent(bundle.getString("prefix_tagrepo") + wild),
+						registry.getComponent(bundle.getString("prefix_tagrepo") + user)
+						));
+				types.put(activityTypeComponentType, Arrays.asList(
+						registry.getComponent(bundle.getString("prefix_typerepo") + wild),
+						registry.getComponent(bundle.getString("prefix_typerepo") + user)
+						));				
 				return assetClass.cast(new CompositeActivityVisualControl(types));
 			} else if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
 				return assetClass.cast(new LinkVisualControl());

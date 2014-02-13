@@ -29,6 +29,7 @@ import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 import gov.nasa.arc.mct.components.PropertyEditor;
 import gov.nasa.arc.mct.scenario.component.TimePropertyEditor.TimeProperty;
+import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -186,8 +187,9 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		notes.setFieldMutable(true);
 		PropertyDescriptor tags = new PropertyDescriptor("Associations", 
 				new ActivityCustomPropertyEditor( 
-						Arrays.<Class<?>>asList(TagCapability.class, 
-								      CostFunctionCapability.class)), 
+						Arrays.asList(
+								ScenarioPluginProvider.tagComponentType, 
+								ScenarioPluginProvider.activityTypeComponentType)), 
 				VisualControlDescriptor.Custom);
 		tags.setFieldMutable(true);
 
@@ -364,7 +366,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	private class ActivityCustomPropertyEditor implements PropertyEditor<ActivityCustomProperty> {
 		private TagPropertyEditor tagPropertyEditor;
 		
-		public ActivityCustomPropertyEditor(Collection<Class<?>> capabilities) {
+		public ActivityCustomPropertyEditor(Collection<ComponentTypeInfo> capabilities) {
 			tagPropertyEditor = 
 					new TagPropertyEditor(ActivityComponent.this, capabilities);
 		}
@@ -407,16 +409,16 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	}
 
 	public static class ActivityCustomProperty {
-		private Map<Class<?>, List<AbstractComponent>> tagStyleChildren;
+		private Map<ComponentTypeInfo, List<AbstractComponent>> tagStyleChildren;
 		private String url;
 		public ActivityCustomProperty(
-				Map<Class<?>, List<AbstractComponent>> tagStyleChildren,
+				Map<ComponentTypeInfo, List<AbstractComponent>> tagStyleChildren,
 				String url) {
 			super();
 			this.tagStyleChildren = tagStyleChildren;
 			this.url = url;
 		}
-		public Map<Class<?>, List<AbstractComponent>> getTagStyleChildren() {
+		public Map<ComponentTypeInfo, List<AbstractComponent>> getTagStyleChildren() {
 			return tagStyleChildren;
 		}
 		public String getUrl() {
