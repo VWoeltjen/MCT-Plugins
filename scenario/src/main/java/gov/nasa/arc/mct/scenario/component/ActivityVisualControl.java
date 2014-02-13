@@ -93,6 +93,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 	@Override
 	public void setMutable(boolean mutable) {
 		isMutable = mutable;
+		editButton.setEnabled(mutable);
 		rebuildTagPanel();
 	}
 
