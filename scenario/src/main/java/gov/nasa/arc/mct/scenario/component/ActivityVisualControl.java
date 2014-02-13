@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -47,6 +48,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle"); 
 	private List<AbstractComponent> tags = new ArrayList<AbstractComponent>();
 	private JPanel panel = new JPanel();
+	private JButton editButton = new JButton("+");
 	private Color foreground;
 	private boolean isMutable = true;
 	private Class<?> capabilityClass;
@@ -67,6 +69,7 @@ public class ActivityVisualControl extends CustomVisualControl {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		foreground = new JLabel().getForeground();
 		add(panel, BorderLayout.CENTER);
+		add(editButton, BorderLayout.EAST);
 	}
 	
 	@Override
