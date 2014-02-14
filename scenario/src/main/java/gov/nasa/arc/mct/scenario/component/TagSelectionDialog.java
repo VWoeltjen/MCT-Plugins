@@ -23,6 +23,8 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -93,7 +96,7 @@ public class TagSelectionDialog extends JDialog {
 		p.add(cancel);
 		p.add(ok);
 		p.setBorder(BorderFactory.createEmptyBorder(17, 0, 0, 0));
-		
+		p.setAlignmentX(CENTER_ALIGNMENT);
 		return p;
 	}
 	
@@ -106,9 +109,16 @@ public class TagSelectionDialog extends JDialog {
 			JCheckBox checkBox = new JCheckBox(child.getDisplayName());
 			checkBox.setSelected( selectedIds.contains(child.getComponentId()) );
 			checkBox.addActionListener( new Selector(child.getComponentId()) );
+			checkBox.setAlignmentX(LEFT_ALIGNMENT);
 			p.add(checkBox);
-		}
+		}	
+		JPanel rigid = new JPanel();
+		p.add(rigid);
+		rigid.setAlignmentX(LEFT_ALIGNMENT);
+		rigid.add(Box.createRigidArea(new Dimension(240,1)));
 		
+		
+		p.setAlignmentX(CENTER_ALIGNMENT);
 		return p;
 	}
 
