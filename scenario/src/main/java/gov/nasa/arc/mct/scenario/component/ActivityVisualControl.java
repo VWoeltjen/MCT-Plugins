@@ -28,6 +28,7 @@ import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -66,13 +67,17 @@ public class ActivityVisualControl extends CustomVisualControl {
 	public ActivityVisualControl(ComponentTypeInfo componentInfo,
 			final List<AbstractComponent> repositories) {
 		this.componentInfo = componentInfo;
+
+		JPanel editButtonPanel = new JPanel(new BorderLayout());
 		
 		setLayout(new BorderLayout());
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		foreground = new JLabel().getForeground();
 		add(panel, BorderLayout.CENTER);
-		add(editButton, BorderLayout.EAST);
+		add(editButtonPanel, BorderLayout.EAST);
 		
+		editButtonPanel.add(editButton, BorderLayout.NORTH);
+		editButton.setMargin(new Insets(0,3,0,3));
 		editButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
