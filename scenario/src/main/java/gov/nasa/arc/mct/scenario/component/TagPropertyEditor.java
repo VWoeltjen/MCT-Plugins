@@ -23,6 +23,7 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyEditor;
+import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,11 +41,11 @@ import java.util.Map.Entry;
  * by probing its children; makes modifications to 
  * this list by adding and removing children.
  */
-public class TagPropertyEditor implements PropertyEditor<Map<Class<?>, List<AbstractComponent>>> {
+public class TagPropertyEditor implements PropertyEditor<Map<ComponentTypeInfo, List<AbstractComponent>>> {
 	private AbstractComponent component;
-	private List<Class<?>> capabilities = new ArrayList<Class<?>>();
+	private List<ComponentTypeInfo> capabilities = new ArrayList<ComponentTypeInfo>();
 	
-	public TagPropertyEditor(AbstractComponent component, Collection<Class<?>> capabilities) {
+	public TagPropertyEditor(AbstractComponent component, Collection<ComponentTypeInfo> capabilities) {
 		super();
 		this.component = component;
 		this.capabilities.addAll(capabilities);
@@ -62,15 +63,14 @@ public class TagPropertyEditor implements PropertyEditor<Map<Class<?>, List<Abst
 	}
 
 	@Override
-	public Map<Class<?>, List<AbstractComponent>> getValue() {
-		Map<Class<?>, List<AbstractComponent>> result = 
-				new HashMap<Class<?>, List<AbstractComponent>>();
-		for (Class<?> c : capabilities) {
+	public Map<ComponentTypeInfo, List<AbstractComponent>> getValue() {
+		Map<ComponentTypeInfo, List<AbstractComponent>> result = 
+				new HashMap<ComponentTypeInfo, List<AbstractComponent>>();
+		for (ComponentTypeInfo c : capabilities) {
 			List<AbstractComponent> current = 
 					new ArrayList<AbstractComponent>();
 			for (AbstractComponent child : component.getComponents()) {
-				if (child.getCapability(c) != null || 
-					!child.getCapabilities(c).isEmpty()) {
+				if (c.getTypeClass().isAssignableFrom(child.getClass())) {
 					// TODO: Need to find a better way of distinguishing 
 					// objects which originate capabilities from objects 
 					// which aggregate capabilities.
@@ -112,7 +112,7 @@ public class TagPropertyEditor implements PropertyEditor<Map<Class<?>, List<Abst
 		
 		// Don't bother adding any current children
 		// And identify children to remove
-		Map<Class<?>, List<AbstractComponent>> current = getValue();
+		Map<ComponentTypeInfo, List<AbstractComponent>> current = getValue();
 		List<AbstractComponent> toRemove = new ArrayList<AbstractComponent>();
 		for (List<AbstractComponent> list : current.values()) {
 			toRemove.addAll(list);
@@ -131,7 +131,7 @@ public class TagPropertyEditor implements PropertyEditor<Map<Class<?>, List<Abst
 	}
 
 	@Override
-	public List<Map<Class<?>, List<AbstractComponent>>> getTags() {
+	public List<Map<ComponentTypeInfo, List<AbstractComponent>>> getTags() {
 		// Unused
 		return Collections.emptyList();
 	}
