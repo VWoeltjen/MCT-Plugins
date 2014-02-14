@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -61,9 +62,38 @@ public class TagSelectionDialog extends JDialog {
 			panel.add(makeCheckBoxPanel(repo));
 		}
 		
+		panel.add(makeButtons());
+		
 		getContentPane().add(panel);
 		
 		pack();
+	}
+	
+	private JComponent makeButtons() {
+		JPanel p = new JPanel();
+		
+		JButton cancel = new JButton("Cancel");
+		JButton ok = new JButton("OK");
+		
+		cancel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				TagSelectionDialog.this.dispose();
+			}			
+		});
+		
+		ok.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				// TODO: Notify parent object
+				TagSelectionDialog.this.dispose();
+			}			
+		});
+		
+		p.add(cancel);
+		p.add(ok);
+		
+		return p;
 	}
 	
 	private JComponent makeCheckBoxPanel(AbstractComponent repository) {
