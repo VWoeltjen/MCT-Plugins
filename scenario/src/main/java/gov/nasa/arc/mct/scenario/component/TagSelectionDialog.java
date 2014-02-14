@@ -23,14 +23,16 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -46,16 +48,32 @@ public class TagSelectionDialog extends JDialog {
 	private static final long serialVersionUID = 270779787729717592L;
 
 	// Maintain selection by id
+	private Set<String> originalIds = new HashSet<String>();
 	private Set<String> selectedIds = new HashSet<String>();
+	
+	// Refer to components that were part of original selection first
+	private Map<String, AbstractComponent> originalComponents = 
+			new HashMap<String, AbstractComponent>();
+	// Then, refer to components which were loaded by way of repository
+	private Map<String, AbstractComponent> loadedComponents = 
+			new HashMap<String, AbstractComponent>();
+	
+	private ActivityVisualControl control;
 	
 	public TagSelectionDialog(
 			List<AbstractComponent> repositories, 
 			Collection<AbstractComponent> selected,
+			ActivityVisualControl control,
 			Window parent) {
 		super(parent);
 		
+		this.control = control;
+		
 		for (AbstractComponent c : selected) {
-			selectedIds.add(c.getComponentId());
+			String id = c.getComponentId();
+			selectedIds.add(id);
+			originalIds.add(id);
+			originalComponents.put(id, c);
 		}
 		
 		JPanel panel = new JPanel();
@@ -70,6 +88,14 @@ public class TagSelectionDialog extends JDialog {
 		getContentPane().add(panel);
 		
 		pack();
+	}
+	
+	private boolean isModified() {
+		boolean m = false;
+		for (String id : originalIds) {
+			m |= !(selectedIds.contains(id));
+		}
+		return m || (originalIds.size() != selectedIds.size());
 	}
 	
 	private JComponent makeButtons() {
@@ -88,7 +114,18 @@ public class TagSelectionDialog extends JDialog {
 		ok.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
-				// TODO: Notify parent object
+				if (isModified()) {
+					List<AbstractComponent> value = new ArrayList<AbstractComponent>();
+					
+					for (String id : selectedIds) {
+						value.add(originalComponents.containsKey(id) ?
+								originalComponents.get(id) : 
+								loadedComponents.get(id)
+								);
+					}
+					
+					control.setContents(value);
+				}
 				TagSelectionDialog.this.dispose();
 			}			
 		});
@@ -106,17 +143,19 @@ public class TagSelectionDialog extends JDialog {
 		p.setBorder(BorderFactory.createTitledBorder(repository.getDisplayName()));
 		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
 		for (AbstractComponent child : repository.getComponents()) {
+			String id = child.getComponentId();
+			loadedComponents.put(id, child);
+			
 			JCheckBox checkBox = new JCheckBox(child.getDisplayName());
-			checkBox.setSelected( selectedIds.contains(child.getComponentId()) );
-			checkBox.addActionListener( new Selector(child.getComponentId()) );
+			checkBox.setSelected( selectedIds.contains(id) );
+			checkBox.addActionListener( new Selector(id) );
 			checkBox.setAlignmentX(LEFT_ALIGNMENT);
 			p.add(checkBox);
 		}	
 		JPanel rigid = new JPanel();
 		p.add(rigid);
 		rigid.setAlignmentX(LEFT_ALIGNMENT);
-		rigid.add(Box.createRigidArea(new Dimension(240,1)));
-		
+		rigid.add(Box.createRigidArea(new Dimension(240,1)));		
 		
 		p.setAlignmentX(CENTER_ALIGNMENT);
 		return p;

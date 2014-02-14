@@ -31,12 +31,12 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -76,8 +76,12 @@ public class ActivityVisualControl extends CustomVisualControl {
 		editButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				TagSelectionDialog dialog = new TagSelectionDialog(repositories, tags, SwingUtilities.getWindowAncestor(editButton));
-				dialog.setVisible(true);
+				new TagSelectionDialog(
+						repositories, 
+						tags, 
+						ActivityVisualControl.this, 
+						SwingUtilities.getWindowAncestor(editButton))
+					.setVisible(true);
 			}			
 		});
 	}
@@ -106,31 +110,20 @@ public class ActivityVisualControl extends CustomVisualControl {
 		editButton.setEnabled(mutable);
 		rebuildTagPanel();
 	}
+	
+	public void setContents(List<AbstractComponent> contents) {
+		setValue(contents);
+		fireChange();
+	}
 
 	private void rebuildTagPanel() {
 		panel.removeAll();
 		for (AbstractComponent t : tags) {
-			panel.add(LabelView.VIEW_INFO.createView(t));
+			JComponent view = LabelView.VIEW_INFO.createView(t);
+			view.setForeground(foreground);
+			panel.add(view);
 		}
-	}
-	
-	private void addTag(AbstractComponent tag) {
-		if (!tags.contains(tag)) {
-			tags.add(tag);
-		}		
-		rebuildTagPanel();
 		panel.revalidate();
 		panel.repaint();
-		fireChange();
-	}
-	
-	private void removeTag(AbstractComponent tag) {
-		if (tags.contains(tag)) {
-			tags.remove(tag);
-		}		
-		rebuildTagPanel();
-		panel.revalidate();
-		panel.repaint();
-		fireChange();
 	}
 }
