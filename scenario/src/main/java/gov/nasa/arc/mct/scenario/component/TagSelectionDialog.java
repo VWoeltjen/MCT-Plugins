@@ -62,6 +62,8 @@ public class TagSelectionDialog extends JDialog {
 		}
 		
 		getContentPane().add(panel);
+		
+		pack();
 	}
 	
 	private JComponent makeCheckBoxPanel(AbstractComponent repository) {
