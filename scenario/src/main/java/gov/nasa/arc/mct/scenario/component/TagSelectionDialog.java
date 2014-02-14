@@ -23,6 +23,7 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -71,6 +72,8 @@ public class TagSelectionDialog extends JDialog {
 			ActivityVisualControl control,
 			Window parent) {
 		super(parent);
+		
+		this.setModalityType(Dialog.ModalityType.DOCUMENT_MODAL);
 		
 		this.control = control;
 		
