@@ -44,6 +44,11 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
+/**
+ * Check box dialog for specifying which tags (or activity types) 
+ * apply to a given Activity. This is triggered from the Info View 
+ * for an Activity, by way of its custom visual control.
+ */
 public class TagSelectionDialog extends JDialog {
 	private static final long serialVersionUID = 270779787729717592L;
 
