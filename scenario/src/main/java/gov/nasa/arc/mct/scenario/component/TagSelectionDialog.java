@@ -70,7 +70,7 @@ public class TagSelectionDialog extends JDialog {
 		JPanel p = new JPanel();
 		
 		p.setBorder(BorderFactory.createTitledBorder(repository.getDisplayName()));
-		
+		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
 		for (AbstractComponent child : repository.getComponents()) {
 			JCheckBox checkBox = new JCheckBox(child.getDisplayName());
 			checkBox.setSelected( selectedIds.contains(child.getComponentId()) );
