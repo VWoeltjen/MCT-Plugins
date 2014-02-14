@@ -63,7 +63,7 @@ public class TagSelectionDialog extends JDialog {
 		}
 		
 		panel.add(makeButtons());
-		
+		panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 		getContentPane().add(panel);
 		
 		pack();
@@ -92,6 +92,7 @@ public class TagSelectionDialog extends JDialog {
 		
 		p.add(cancel);
 		p.add(ok);
+		p.setBorder(BorderFactory.createEmptyBorder(17, 0, 0, 0));
 		
 		return p;
 	}
