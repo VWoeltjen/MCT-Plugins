@@ -114,7 +114,7 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 	}
 
 	@Override
-	public void stateChanged(ChangeEvent arg0) {
+	public void stateChanged(ChangeEvent evt) {
 		fireChange();
 	}
 
