@@ -33,7 +33,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -50,13 +49,10 @@ import javax.swing.SwingUtilities;
  */
 public class ActivityVisualControl extends CustomVisualControl {
 	private static final long serialVersionUID = 260628819696786275L;
-	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle"); 
 	private List<AbstractComponent> tags = new ArrayList<AbstractComponent>();
 	private JPanel panel = new JPanel();
 	private JButton editButton = new JButton("+");
 	private Color foreground;
-	private boolean isMutable = true;
-	private ComponentTypeInfo componentInfo;
 	
 	/**
 	 * Create a new visual control for editing children of an activity, 
@@ -66,7 +62,6 @@ public class ActivityVisualControl extends CustomVisualControl {
 	 */
 	public ActivityVisualControl(ComponentTypeInfo componentInfo,
 			final List<AbstractComponent> repositories) {
-		this.componentInfo = componentInfo;
 
 		JPanel editButtonPanel = new JPanel(new BorderLayout());
 		
@@ -111,7 +106,6 @@ public class ActivityVisualControl extends CustomVisualControl {
 
 	@Override
 	public void setMutable(boolean mutable) {
-		isMutable = mutable;
 		editButton.setEnabled(mutable);
 		rebuildTagPanel();
 	}
