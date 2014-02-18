@@ -174,49 +174,73 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		c.anchor = GridBagConstraints.FIRST_LINE_START;
 		
 		c.gridy = 0;
-		c.weightx = 0.01;
+		c.gridwidth = 1;
+		c.weightx = 1.0;
 		UIPanel.add (prompt, c);
 		
 		c.gridx = 1;
-		c.weightx = 0.99;
-		c.insets = new Insets (10,0,0,10);
+		c.weightx = 1.0;
+		c.insets = new Insets (10,10,0,10);
 		UIPanel.add (name,c);
 		
-		c.gridx = 0;
-		c.gridy = 1;
-		c.weightx = 1;
-		c.gridwidth = 2;
 		c.insets = new Insets(0,10,0,10);
 
 		c.gridx = 0;
 		c.gridy = 2;
 		c.weightx = 1;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		UIPanel.add(new JLabel("Start:"),c);
 		
 		c.gridx = 1;
 		c.gridy = 2;
 		c.weightx = 1;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		UIPanel.add(startTime,c);
 		
 		c.gridx = 0;
 		c.gridy = 3;
 		c.weightx = 1;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		UIPanel.add(new JLabel("Duration:"),c);
 		
 		c.gridx = 1;
 		c.gridy = 3;
 		c.weightx = 1;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		UIPanel.add(duration,c);
 		
 		c.gridx = 0;
 		c.gridy = 4;
 		c.weightx = 1;
 		c.gridwidth = 2;
+		c.fill = GridBagConstraints.HORIZONTAL;
 		UIPanel.add(messagePanel,c);
+		
+		c.gridx = 0;
+		c.gridy = 5;
+		c.weightx = 1;
+		c.gridwidth = 1;
+		c.fill = GridBagConstraints.NONE;
+		c.anchor = GridBagConstraints.WEST;
+		UIPanel.add(new JLabel("Activity Types:"),c);
+		
+		c.gridx = 1;
+		c.gridy = 5;
+		c.weightx = 1;
+		c.gridwidth = 1;
+		UIPanel.add(new JButton("+"),c);
+
+		c.gridx = 0;
+		c.gridy = 6;
+		c.weightx = 1;
+		c.gridwidth = 1;
+		UIPanel.add(new JLabel("Tags:"),c);
+		
+		c.gridx = 1;
+		c.gridy = 6;
+		c.weightx = 1;
+		c.gridwidth = 1;
+		UIPanel.add(new JButton("+"),c);
 		
 		// Enable/disable Create button for valid user input
 		DocumentListener buttonEnabler = new DocumentListener() {
