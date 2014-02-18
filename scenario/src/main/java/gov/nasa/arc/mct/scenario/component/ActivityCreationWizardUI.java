@@ -34,10 +34,18 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,6 +57,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -83,10 +92,16 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
     private Class<? extends AbstractComponent> componentClass;
     private Map<ComponentTypeInfo, List<AbstractComponent>> repositories;
     
+    // Children which the activity should have upon creation (tags, types)
+    private Map<ComponentTypeInfo, List<AbstractComponent>> children = 
+    		new HashMap<ComponentTypeInfo, List<AbstractComponent>>();
     
 	public ActivityCreationWizardUI(Map<ComponentTypeInfo, List<AbstractComponent>> repositories) {
 		this.componentClass = ActivityComponent.class;
 		this.repositories = repositories;
+		for (ComponentTypeInfo type : repositories.keySet()) {
+			children.put(type, new ArrayList<AbstractComponent>());
+		}
 	}
 	
 	@Override
@@ -233,7 +248,7 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 			c.gridx = 1;
 			c.weightx = 1;
 			c.gridwidth = 1;
-			UIPanel.add(new JButton("+"),c);
+			UIPanel.add(createTypeSelectionButton(repo.getKey()),c);
 		}
 		
 		c.gridx = 0;
@@ -266,4 +281,31 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		return UIPanel;
 	}	
 
+	private JButton createTypeSelectionButton(final ComponentTypeInfo type) {
+		final JButton button = new JButton("+");
+		
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				Window window = SwingUtilities.getWindowAncestor(button);
+				final TagSelectionDialog dialog = new TagSelectionDialog(
+						repositories.get(type), children.get(type), window);
+				dialog.addWindowListener(new WindowAdapter() {
+
+					@Override
+					public void windowClosed(WindowEvent evt) {
+						Collection<AbstractComponent> result = dialog.getResult();
+						if (result != null) {
+							children.get(type).clear();
+							children.get(type).addAll(result);
+						}
+					}
+					
+				});
+				dialog.setVisible(true);				
+			}			
+		});
+		
+		return button;
+	}
 }
