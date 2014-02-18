@@ -24,6 +24,7 @@ package gov.nasa.arc.mct.scenario.component;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.scenario.util.DurationFormatter;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
+import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 import gov.nasa.arc.mct.services.component.CreateWizardUI;
 import gov.nasa.arc.mct.util.DataValidation;
 import gov.nasa.arc.mct.util.MCTIcons;
@@ -37,6 +38,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
 import javax.swing.Box;
@@ -77,9 +81,12 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
     private final JTextField startTime = new JTextField("00:00");
     private final JTextField duration = new JTextField("01:00");
     private Class<? extends AbstractComponent> componentClass;
-	
-	public ActivityCreationWizardUI() {
+    private Map<ComponentTypeInfo, List<AbstractComponent>> repositories;
+    
+    
+	public ActivityCreationWizardUI(Map<ComponentTypeInfo, List<AbstractComponent>> repositories) {
 		this.componentClass = ActivityComponent.class;
+		this.repositories = repositories;
 	}
 	
 	@Override
@@ -212,34 +219,25 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		c.gridwidth = 1;
 		UIPanel.add(duration,c);
 		
-		c.gridx = 0;
-		c.gridy = 4;
-		c.weightx = 1;
-		c.gridwidth = 1;
-		c.fill = GridBagConstraints.NONE;
-		c.anchor = GridBagConstraints.WEST;
-		UIPanel.add(new JLabel("Activity Types:"),c);
+		for (Entry<ComponentTypeInfo, List<AbstractComponent>> repo : repositories.entrySet()) {
+			c.gridy = c.gridy + 1;
+			
+			c.gridx = 0;
+			c.weightx = 1;
+			c.gridwidth = 1;
+			c.fill = GridBagConstraints.NONE;
+			c.anchor = GridBagConstraints.WEST;
+			// TODO: Safer plural?
+			UIPanel.add(new JLabel(repo.getKey().getDisplayName() + "(s):"),c);
+			
+			c.gridx = 1;
+			c.weightx = 1;
+			c.gridwidth = 1;
+			UIPanel.add(new JButton("+"),c);
+		}
 		
-		c.gridx = 1;
-		c.gridy = 4;
-		c.weightx = 1;
-		c.gridwidth = 1;
-		UIPanel.add(new JButton("+"),c);
-
 		c.gridx = 0;
-		c.gridy = 5;
-		c.weightx = 1;
-		c.gridwidth = 1;
-		UIPanel.add(new JLabel("Tags:"),c);
-		
-		c.gridx = 1;
-		c.gridy = 5;
-		c.weightx = 1;
-		c.gridwidth = 1;
-		UIPanel.add(new JButton("+"),c);
-
-		c.gridx = 0;
-		c.gridy = 6;
+		c.gridy = c.gridy + 1;
 		c.weightx = 1;
 		c.gridwidth = 2;
 		c.fill = GridBagConstraints.HORIZONTAL;
