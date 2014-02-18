@@ -24,25 +24,40 @@ package gov.nasa.arc.mct.scenario.component;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.scenario.util.DurationFormatter;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
+import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 import gov.nasa.arc.mct.services.component.CreateWizardUI;
 import gov.nasa.arc.mct.util.DataValidation;
 import gov.nasa.arc.mct.util.MCTIcons;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -75,9 +90,18 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
     private final JTextField startTime = new JTextField("00:00");
     private final JTextField duration = new JTextField("01:00");
     private Class<? extends AbstractComponent> componentClass;
-	
-	public ActivityCreationWizardUI() {
+    private Map<ComponentTypeInfo, List<AbstractComponent>> repositories;
+    
+    // Children which the activity should have upon creation (tags, types)
+    private Map<ComponentTypeInfo, List<AbstractComponent>> children = 
+    		new HashMap<ComponentTypeInfo, List<AbstractComponent>>();
+    
+	public ActivityCreationWizardUI(Map<ComponentTypeInfo, List<AbstractComponent>> repositories) {
 		this.componentClass = ActivityComponent.class;
+		this.repositories = repositories;
+		for (ComponentTypeInfo type : repositories.keySet()) {
+			children.put(type, new ArrayList<AbstractComponent>());
+		}
 	}
 	
 	@Override
@@ -104,6 +128,11 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		data.setEndDate(endDate);
 		data.setPower(0);
 		data.setComm(0);
+		
+		for (List<AbstractComponent> comps : children.values()) {
+			component.addDelegateComponents(comps);
+		}
+		
 		component.save();
 		
         return component;
@@ -164,6 +193,7 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 	        
 		
 		JPanel messagePanel = new JPanel();
+		messagePanel.add(Box.createRigidArea(new Dimension(2, 17)));
 		messagePanel.add(message);
 		
 		JPanel UIPanel = new JPanel();
@@ -174,48 +204,63 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		c.anchor = GridBagConstraints.FIRST_LINE_START;
 		
 		c.gridy = 0;
-		c.weightx = 0.01;
+		c.gridwidth = 1;
+		c.weightx = 1.0;
 		UIPanel.add (prompt, c);
 		
 		c.gridx = 1;
-		c.weightx = 0.99;
-		c.insets = new Insets (10,0,0,10);
+		c.weightx = 1.0;
+		c.insets = new Insets (10,10,4,10);
 		UIPanel.add (name,c);
 		
-		c.gridx = 0;
-		c.gridy = 1;
-		c.weightx = 1;
-		c.gridwidth = 2;
-		c.insets = new Insets(0,10,0,10);
+		c.insets = new Insets(0,10,4,10);
 
 		c.gridx = 0;
 		c.gridy = 2;
 		c.weightx = 1;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		UIPanel.add(new JLabel("Start:"),c);
 		
 		c.gridx = 1;
 		c.gridy = 2;
 		c.weightx = 1;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		UIPanel.add(startTime,c);
 		
 		c.gridx = 0;
 		c.gridy = 3;
 		c.weightx = 1;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		UIPanel.add(new JLabel("Duration:"),c);
 		
 		c.gridx = 1;
 		c.gridy = 3;
 		c.weightx = 1;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		UIPanel.add(duration,c);
 		
+		for (Entry<ComponentTypeInfo, List<AbstractComponent>> repo : repositories.entrySet()) {
+			c.gridy = c.gridy + 1;
+			
+			c.gridx = 0;
+			c.weightx = 1;
+			c.gridwidth = 1;
+			c.fill = GridBagConstraints.NONE;
+			c.anchor = GridBagConstraints.WEST;
+			// TODO: Safer plural?
+			UIPanel.add(new JLabel(repo.getKey().getDisplayName() + "(s):"),c);
+			
+			c.gridx = 1;
+			c.weightx = 1;
+			c.gridwidth = 1;
+			UIPanel.add(createTypeSelectionButton(repo.getKey()),c);
+		}
+		
 		c.gridx = 0;
-		c.gridy = 4;
+		c.gridy = c.gridy + 1;
 		c.weightx = 1;
 		c.gridwidth = 2;
+		c.fill = GridBagConstraints.HORIZONTAL;
 		UIPanel.add(messagePanel,c);
 		
 		// Enable/disable Create button for valid user input
@@ -241,4 +286,31 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		return UIPanel;
 	}	
 
+	private JButton createTypeSelectionButton(final ComponentTypeInfo type) {
+		final JButton button = new JButton("+");
+		
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				Window window = SwingUtilities.getWindowAncestor(button);
+				final TagSelectionDialog dialog = new TagSelectionDialog(
+						repositories.get(type), children.get(type), window);
+				dialog.addWindowListener(new WindowAdapter() {
+
+					@Override
+					public void windowClosed(WindowEvent evt) {
+						Collection<AbstractComponent> result = dialog.getResult();
+						if (result != null) {
+							children.get(type).clear();
+							children.get(type).addAll(result);
+						}
+					}
+					
+				});
+				dialog.setVisible(true);				
+			}			
+		});
+		
+		return button;
+	}
 }

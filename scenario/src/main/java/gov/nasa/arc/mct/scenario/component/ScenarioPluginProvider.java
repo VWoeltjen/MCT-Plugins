@@ -188,7 +188,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		// Create wizards
 		if (assetClass.isAssignableFrom(CreateWizardUI.class)) {
 			if (ActivityComponent.class.isAssignableFrom(type.getTypeClass())) {
-				return assetClass.cast(new ActivityCreationWizardUI());
+				return assetClass.cast(new ActivityCreationWizardUI(getRepositoryMap()));
 			}
 			if (DecisionComponent.class.isAssignableFrom(type.getTypeClass())) {
 				return assetClass.cast(new DecisionCreationWizardUI());
@@ -219,22 +219,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 	
 		// Custom editors
 		if (assetClass.isAssignableFrom(CustomVisualControl.class)) {
-			if (ActivityComponent.class.isAssignableFrom(type.getTypeClass())) {
-				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
-				String wild = "*";
-				ComponentRegistry registry = PlatformAccess.getPlatform().getComponentRegistry();
-				
-				Map<ComponentTypeInfo, List<AbstractComponent>> types = 
-						new HashMap<ComponentTypeInfo, List<AbstractComponent>>();
-				types.put(tagComponentType, Arrays.asList(
-						registry.getComponent(bundle.getString("prefix_tagrepo") + wild),
-						registry.getComponent(bundle.getString("prefix_tagrepo") + user)
-						));
-				types.put(activityTypeComponentType, Arrays.asList(
-						registry.getComponent(bundle.getString("prefix_typerepo") + wild),
-						registry.getComponent(bundle.getString("prefix_typerepo") + user)
-						));				
-				return assetClass.cast(new CompositeActivityVisualControl(types));
+			if (ActivityComponent.class.isAssignableFrom(type.getTypeClass())) {				
+				return assetClass.cast(new CompositeActivityVisualControl(getRepositoryMap()));
 			} else if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
 				return assetClass.cast(new LinkVisualControl());
 			}
@@ -244,6 +230,25 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		return super.getAsset(type, assetClass);
 	}
 
+	private Map<ComponentTypeInfo, List<AbstractComponent>> getRepositoryMap() {
+		String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
+		String wild = "*";
+		ComponentRegistry registry = PlatformAccess.getPlatform().getComponentRegistry();
+		
+		Map<ComponentTypeInfo, List<AbstractComponent>> types = 
+				new HashMap<ComponentTypeInfo, List<AbstractComponent>>();
+		types.put(tagComponentType, Arrays.asList(
+				registry.getComponent(bundle.getString("prefix_tagrepo") + wild),
+				registry.getComponent(bundle.getString("prefix_tagrepo") + user)
+				));
+		types.put(activityTypeComponentType, Arrays.asList(
+				registry.getComponent(bundle.getString("prefix_typerepo") + wild),
+				registry.getComponent(bundle.getString("prefix_typerepo") + user)
+				));
+		
+		return types;
+	}
+	
 	@Override
 	public Collection<AbstractComponent> getBootstrapComponents() {
 		String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();

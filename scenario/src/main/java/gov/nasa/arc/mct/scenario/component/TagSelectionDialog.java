@@ -64,18 +64,17 @@ public class TagSelectionDialog extends JDialog {
 	private Map<String, AbstractComponent> loadedComponents = 
 			new HashMap<String, AbstractComponent>();
 	
-	private ActivityVisualControl control;
+	// Result of the selection; null if canceled or incomplete
+	private List<AbstractComponent> result = null;
+	
 	
 	public TagSelectionDialog(
 			List<AbstractComponent> repositories, 
 			Collection<AbstractComponent> selected,
-			ActivityVisualControl control,
 			Window parent) {
 		super(parent);
 		
-		this.setModalityType(Dialog.ModalityType.DOCUMENT_MODAL);
-		
-		this.control = control;
+		this.setModalityType(Dialog.ModalityType.DOCUMENT_MODAL);		
 		
 		for (AbstractComponent c : selected) {
 			String id = c.getComponentId();
@@ -132,7 +131,7 @@ public class TagSelectionDialog extends JDialog {
 								);
 					}
 					
-					control.setContents(value);
+					result = value;
 				}
 				TagSelectionDialog.this.dispose();
 			}			
@@ -143,6 +142,17 @@ public class TagSelectionDialog extends JDialog {
 		p.setBorder(BorderFactory.createEmptyBorder(17, 0, 0, 0));
 		p.setAlignmentX(CENTER_ALIGNMENT);
 		return p;
+	}
+	
+	/**
+	 * Get the list of components selected by the user during the 
+	 * operation of this dialog. If the user cancelled or otherwise has 
+	 * not confirmed the operation by clicking "OK", the result 
+	 * will be null.
+	 * @return a list of selected components, or null if cancelled
+	 */
+	public List<AbstractComponent> getResult() {
+		return result;
 	}
 	
 	private JComponent makeCheckBoxPanel(AbstractComponent repository) {
