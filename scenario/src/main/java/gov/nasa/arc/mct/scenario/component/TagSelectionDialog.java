@@ -144,6 +144,13 @@ public class TagSelectionDialog extends JDialog {
 		return p;
 	}
 	
+	/**
+	 * Get the list of components selected by the user during the 
+	 * operation of this dialog. If the user cancelled or otherwise has 
+	 * not confirmed the operation by clicking "OK", the result 
+	 * will be null.
+	 * @return a list of selected components, or null if cancelled
+	 */
 	public List<AbstractComponent> getResult() {
 		return result;
 	}
