@@ -29,6 +29,7 @@ import gov.nasa.arc.mct.util.DataValidation;
 import gov.nasa.arc.mct.util.MCTIcons;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -38,6 +39,7 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.ResourceBundle;
 
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -164,6 +166,7 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 	        
 		
 		JPanel messagePanel = new JPanel();
+		messagePanel.add(Box.createRigidArea(new Dimension(2, 17)));
 		messagePanel.add(message);
 		
 		JPanel UIPanel = new JPanel();
@@ -180,10 +183,10 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		
 		c.gridx = 1;
 		c.weightx = 1.0;
-		c.insets = new Insets (10,10,0,10);
+		c.insets = new Insets (10,10,4,10);
 		UIPanel.add (name,c);
 		
-		c.insets = new Insets(0,10,0,10);
+		c.insets = new Insets(0,10,4,10);
 
 		c.gridx = 0;
 		c.gridy = 2;
@@ -212,17 +215,22 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		c.gridx = 0;
 		c.gridy = 4;
 		c.weightx = 1;
-		c.gridwidth = 2;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		UIPanel.add(messagePanel,c);
-		
-		c.gridx = 0;
-		c.gridy = 5;
-		c.weightx = 1;
 		c.gridwidth = 1;
 		c.fill = GridBagConstraints.NONE;
 		c.anchor = GridBagConstraints.WEST;
 		UIPanel.add(new JLabel("Activity Types:"),c);
+		
+		c.gridx = 1;
+		c.gridy = 4;
+		c.weightx = 1;
+		c.gridwidth = 1;
+		UIPanel.add(new JButton("+"),c);
+
+		c.gridx = 0;
+		c.gridy = 5;
+		c.weightx = 1;
+		c.gridwidth = 1;
+		UIPanel.add(new JLabel("Tags:"),c);
 		
 		c.gridx = 1;
 		c.gridy = 5;
@@ -233,14 +241,9 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		c.gridx = 0;
 		c.gridy = 6;
 		c.weightx = 1;
-		c.gridwidth = 1;
-		UIPanel.add(new JLabel("Tags:"),c);
-		
-		c.gridx = 1;
-		c.gridy = 6;
-		c.weightx = 1;
-		c.gridwidth = 1;
-		UIPanel.add(new JButton("+"),c);
+		c.gridwidth = 2;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		UIPanel.add(messagePanel,c);
 		
 		// Enable/disable Create button for valid user input
 		DocumentListener buttonEnabler = new DocumentListener() {
