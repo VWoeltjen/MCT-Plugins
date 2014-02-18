@@ -31,6 +31,8 @@ import java.awt.Color;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,12 +78,17 @@ public class ActivityVisualControl extends CustomVisualControl {
 		editButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new TagSelectionDialog(
+				final TagSelectionDialog dialog = new TagSelectionDialog(
 						repositories, 
 						tags, 
-						ActivityVisualControl.this, 
-						SwingUtilities.getWindowAncestor(editButton))
-					.setVisible(true);
+						SwingUtilities.getWindowAncestor(editButton));
+				dialog.addWindowListener(new WindowAdapter() {
+					@Override
+					public void windowClosed(WindowEvent evt) {
+						setContents(dialog.getResult());
+					}					
+				});
+				dialog.setVisible(true);
 			}			
 		});
 	}
@@ -110,9 +117,11 @@ public class ActivityVisualControl extends CustomVisualControl {
 		rebuildTagPanel();
 	}
 	
-	public void setContents(List<AbstractComponent> contents) {
-		setValue(contents);
-		fireChange();
+	private void setContents(List<AbstractComponent> contents) {
+		if (contents != null) {
+			setValue(contents);
+			fireChange();
+		}
 	}
 
 	private void rebuildTagPanel() {
