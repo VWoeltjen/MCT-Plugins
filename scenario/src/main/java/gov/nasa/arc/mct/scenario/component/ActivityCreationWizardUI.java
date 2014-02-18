@@ -128,6 +128,11 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
 		data.setEndDate(endDate);
 		data.setPower(0);
 		data.setComm(0);
+		
+		for (List<AbstractComponent> comps : children.values()) {
+			component.addDelegateComponents(comps);
+		}
+		
 		component.save();
 		
         return component;
