@@ -26,4 +26,15 @@
 			interface="gov.nasa.arc.mct.scenario.spi.ActivityProvider"
 			cardinality="0..n" policy="dynamic" bind="addProvider" unbind="removeProvider" />
 	</scr:component>
+	<scr:component
+	   name="gov.nasa.arc.mct.scenario.roles.ScenarioRoleService">
+	   <implementation
+	       class="gov.nasa.arc.mct.scenario.roles.ScenarioRoleService" />
+	    <service>
+            <provide interface="gov.nasa.arc.mct.platform.spi.RoleService" />
+        </service>
+	   <reference name="persistenceProvider"
+	       interface="gov.nasa.arc.mct.platform.spi.PersistenceProvider"
+	       cardinality="1..1" policy="dynamic" bind="bind" unbind="unbind" />
+	</scr:component>
 </root>
