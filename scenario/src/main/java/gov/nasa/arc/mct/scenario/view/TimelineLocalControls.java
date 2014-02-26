@@ -297,7 +297,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
         rightButton.setBorder(BorderFactory.createEmptyBorder());
         rightButton.addActionListener(new Panner(1));
 		tickPanel.setOpaque(false);
-		
+		compositeControl.setOpaque(false);
+		compositeControl.setBackground(EDGE_COLOR.brighter().brighter());
+		compositeControl.setForeground(EDGE_COLOR.darker());
 		
 		lowerPanel.add(timeLabel);
 		lowerPanel.add(tickPanel);
