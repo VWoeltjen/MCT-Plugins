@@ -300,6 +300,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		compositeControl.setOpaque(false);
 		compositeControl.setBackground(EDGE_COLOR.brighter().brighter());
 		compositeControl.setForeground(EDGE_COLOR.darker());
+		compositeControl.addActionListener(new CompositePanZoomListener());
 		
 		lowerPanel.add(timeLabel);
 		lowerPanel.add(tickPanel);
@@ -410,6 +411,14 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	
 	private double getZoom() {
 		return Math.pow(2, ((double) zoomControl.getValue()) / ((double) SLIDER_MAX) * ZOOM_MAX_POWER);
+	}
+	
+	private void setZoom(double value) {
+		// v = 2 ^ ( (n / M) * P)
+		// log2(v) = (n/M) * P
+		// n = (M*log2(v))/P
+		int n = (int) ( ((double) SLIDER_MAX * (Math.log(value) / Math.log(2.0))) / (double) ZOOM_MAX_POWER);
+		zoomControl.setValue(n); // Will also trigger listener
 	}
 	
 	// Utility functions to pick out meaningful tick sizes
@@ -674,6 +683,20 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 
 		
 
+	}
+	
+	private class CompositePanZoomListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent evt) {
+			float min = compositeControl.getLowProportion();
+			float max = compositeControl.getHighProportion();
+			long span = getEnd() - getStart();
+			long minTime = getStart() + (long) (span * min);
+			long maxTime = getStart() + (long) (span * max);
+			
+			// Set the zoom; will also fire listeners to update
+			setZoom( (double) span / (double) (maxTime-minTime)  );
+		}
 	}
 	
 	/**
