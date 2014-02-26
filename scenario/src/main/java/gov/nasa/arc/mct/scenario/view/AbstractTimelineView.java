@@ -242,7 +242,7 @@ public abstract class AbstractTimelineView extends View implements ChangeListene
 
 	@Override
 	public boolean getScrollableTracksViewportWidth() {
-		return true;
+		return getParent().getWidth() > timelineContainer.getPreferredSize().width;
 	}
 
 	protected PropertyChangeListener getStaleListener() {
