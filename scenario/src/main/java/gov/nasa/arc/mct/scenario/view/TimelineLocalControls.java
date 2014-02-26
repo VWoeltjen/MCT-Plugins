@@ -133,6 +133,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	
 	private JSlider zoomControl;
 	private JLabel durationLabel;
+	private MultiSlider compositeControl = new MultiSlider();
 	
 	private JLabel timeLabel;
 	
@@ -302,6 +303,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		lowerPanel.add(tickPanel);
 		lowerPanel.add(leftButton);
 		lowerPanel.add(rightButton);
+		lowerPanel.add(compositeControl);
 		
 		springLayout.putConstraint(SpringLayout.WEST, tickPanel, getLeftPadding(), SpringLayout.WEST, lowerPanel);
 		springLayout.putConstraint(SpringLayout.EAST, tickPanel, -getRightPadding(), SpringLayout.EAST, lowerPanel);
@@ -310,9 +312,13 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		springLayout.putConstraint(SpringLayout.WEST, rightButton, 0, SpringLayout.EAST, tickPanel);
 		springLayout.putConstraint(SpringLayout.EAST, timeLabel, 0, SpringLayout.WEST, leftButton);
 		
-		springLayout.putConstraint(SpringLayout.SOUTH, lowerPanel, TICK_AREA_HEIGHT, SpringLayout.NORTH, lowerPanel);
-		springLayout.putConstraint(SpringLayout.SOUTH, tickPanel, 0, SpringLayout.SOUTH, lowerPanel);
 		springLayout.putConstraint(SpringLayout.NORTH, tickPanel, 0, SpringLayout.NORTH, lowerPanel);
+		springLayout.putConstraint(SpringLayout.SOUTH, tickPanel, 0, SpringLayout.NORTH, compositeControl);
+		
+		springLayout.putConstraint(SpringLayout.WEST, compositeControl, getLeftPadding(), SpringLayout.WEST, lowerPanel);
+		springLayout.putConstraint(SpringLayout.EAST, compositeControl, getRightPadding(), SpringLayout.EAST, lowerPanel);		
+		springLayout.putConstraint(SpringLayout.NORTH, compositeControl, TICK_AREA_HEIGHT, SpringLayout.NORTH, lowerPanel);
+		springLayout.putConstraint(SpringLayout.SOUTH, lowerPanel, 0, SpringLayout.SOUTH, compositeControl);
 		
 		springLayout.putConstraint(SpringLayout.VERTICAL_CENTER, timeLabel, 0, SpringLayout.VERTICAL_CENTER, lowerPanel);
 		springLayout.putConstraint(SpringLayout.VERTICAL_CENTER, leftButton, 0, SpringLayout.VERTICAL_CENTER, lowerPanel);
