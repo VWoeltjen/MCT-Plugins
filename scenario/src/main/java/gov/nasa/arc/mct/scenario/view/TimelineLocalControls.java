@@ -678,6 +678,10 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 						timer.stop();
 						timer = null;
 					}
+					if (speed * sign <= getPixelScale()) {
+						timer.stop();
+						timer = null;
+					}
 					stateChanged(new ChangeEvent(e.getSource()));
 				}
 			});
