@@ -85,6 +85,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private static final double ZOOM_MAX_POWER = 7; // 2 ^ 7
 	private static final int SLIDER_MAX = 10000; // For finer resolution
 	private static final int TICK_AREA_HEIGHT = 40;
+	private static final int CONNECTOR_HEIGHT = 12;
 	private static final int PAN_ICON_SIZE = 12;
 
 	private static final long PAN_INTERVAL = 1000L / 50L; // pan at 30 fps
@@ -322,7 +323,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		springLayout.putConstraint(SpringLayout.SOUTH, tickPanel, 0, SpringLayout.NORTH, connector);
 		springLayout.putConstraint(SpringLayout.SOUTH, connector, 0, SpringLayout.NORTH, compositeControl);
 		springLayout.putConstraint(SpringLayout.NORTH, connector, TICK_AREA_HEIGHT, SpringLayout.NORTH, lowerPanel);
-		springLayout.putConstraint(SpringLayout.NORTH, compositeControl, TICK_AREA_HEIGHT+64, SpringLayout.NORTH, lowerPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, compositeControl, CONNECTOR_HEIGHT, SpringLayout.SOUTH, tickPanel);
 		springLayout.putConstraint(SpringLayout.SOUTH, lowerPanel, 0, SpringLayout.SOUTH, compositeControl);
 		
 		springLayout.putConstraint(SpringLayout.WEST, compositeControl, getLeftPadding(), SpringLayout.WEST, lowerPanel);
