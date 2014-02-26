@@ -120,6 +120,16 @@ public class MultiSlider extends JPanel {
 	}
 	
 	/**
+	 * Get the width allocated to the edges of the slider (that is, 
+	 * the number of pixels on each side not allocated to the 
+	 * track between minimum and maximum.)
+	 * @return number of pixels used on edges
+	 */
+	public int getEdgeWidth() {
+		return EDGE_WIDTH;
+	}
+	
+	/**
 	 * Inform action listeners that some action has occurred
 	 * @param actionEvent the action to broadcast to this component's listeners
 	 */
