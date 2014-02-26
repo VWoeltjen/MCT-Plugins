@@ -58,6 +58,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.OverlayLayout;
 import javax.swing.SpringLayout;
@@ -77,13 +78,14 @@ import javax.swing.event.ChangeListener;
  */
 public class TimelineLocalControls extends JPanel implements DurationCapability, ChangeListener, SelectionProvider {
 	public static final int LEFT_MARGIN = 80;
-	public static final int RIGHT_MARGIN = 12;
+	public static final int RIGHT_MARGIN = 20;
 	
 	private static final NumberFormat FORMAT = new DecimalFormat();
 	
 	private static final double ZOOM_MAX_POWER = 7; // 2 ^ 7
 	private static final int SLIDER_MAX = 100;
 	private static final int TICK_AREA_HEIGHT = 40;
+	private static final int PAN_ICON_SIZE = 12;
 
 	private static final long PAN_INTERVAL = 1000L / 50L; // pan at 30 fps
 	private static final long PAN_TIME = 200L; // pan for half a second per click
@@ -200,6 +202,15 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		}
 		
 		boolean isTopLevelControl = newParent == null;
+		
+		// Remove scroll pane when added to another timeline container
+		if (!isTopLevelControl && middlePanel instanceof JScrollPane) {
+			Component c = ((JScrollPane)middlePanel).getViewport().getComponent(0);
+			remove(middlePanel);
+			middlePanel = (JComponent) c;
+			add(middlePanel, BorderLayout.CENTER);
+		}
+		
 		upperPanel.setVisible(isTopLevelControl);
 		middlePanel.setOpaque(isTopLevelControl);
 		lowerPanel.setVisible(isTopLevelControl);
@@ -230,16 +241,19 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	}
 	
 	
-	private JComponent makeMiddlePanel() {	
+	private JComponent makeMiddlePanel() {
 		JPanel midPanel = new JPanel();// new JPanel(new GridLayout(1,1));//springLayout);
 		midPanel.setLayout(new OverlayLayout(midPanel));
 		midPanel.setBackground(BACKGROUND_COLOR);
 		midPanel.add(overlay);
 		midPanel.add(contentPane);
+		midPanel.setOpaque(false);
 		
 		overlay.setVisible(false);
 		
-		return midPanel;
+		JComponent pane = new JScrollPane(midPanel);
+		pane.setBorder(BorderFactory.createEmptyBorder());
+		return pane;
 	}
 	
 	private JComponent makeUpperPanel() {
@@ -599,12 +613,12 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 
 		@Override
 		public int getIconWidth() {
-			return RIGHT_MARGIN;
+			return PAN_ICON_SIZE;
 		}
 
 		@Override
 		public int getIconHeight() {
-			return RIGHT_MARGIN;
+			return PAN_ICON_SIZE;
 		}
 		
 	}

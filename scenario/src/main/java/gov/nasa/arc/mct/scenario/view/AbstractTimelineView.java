@@ -30,11 +30,14 @@ import gov.nasa.arc.mct.scenario.component.DurationCapability;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
+import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -54,7 +57,7 @@ import org.slf4j.LoggerFactory;
  * @author vwoeltje
  *
  */
-public abstract class AbstractTimelineView extends View implements ChangeListener {
+public abstract class AbstractTimelineView extends View implements ChangeListener, Scrollable {
 
 
 	private static final long serialVersionUID = -5683099761127087080L;
@@ -116,6 +119,15 @@ public abstract class AbstractTimelineView extends View implements ChangeListene
 	
 	public long getTimeOffset() {
 		return timelineContainer != null ? timelineContainer.getTimeOffset() : 0;
+	}
+	
+	/**
+	 * Get the pixel position of the specified time point
+	 * @return
+	 */
+	public int getPixelPosition(long time) {
+		double px = getPixelScale() * (time - getTimeOffset());
+		return (int) px + getLeftPadding();
 	}
 	
 	/**
@@ -213,6 +225,35 @@ public abstract class AbstractTimelineView extends View implements ChangeListene
 	 */
 	protected abstract void rebuild();
 	
+	
+	
+	@Override
+	public Dimension getPreferredScrollableViewportSize() {
+		return getPreferredSize();
+	}
+
+	@Override
+	public int getScrollableBlockIncrement(Rectangle visibleRect,
+			int orientation, int direction) {
+		return 1;
+	}
+
+	@Override
+	public int getScrollableUnitIncrement(Rectangle visibleRect,
+			int orientation, int direction) {
+		return 1;
+	}
+
+	@Override
+	public boolean getScrollableTracksViewportHeight() {
+		return true;
+	}
+
+	@Override
+	public boolean getScrollableTracksViewportWidth() {
+		return getParent().getWidth() > timelineContainer.getPreferredSize().width;
+	}
+
 	protected PropertyChangeListener getStaleListener() {
 		return staleListener;
 	}

@@ -110,6 +110,8 @@ public class GraphView extends AbstractTimelineView {
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			
+			int rightX = getPixelPosition(getEnd());
+			
 			// TODO: Updating may too much computation to do every frame
 			//if (getWidth() != cachedWidth) {
 				updateGraph();
@@ -134,13 +136,13 @@ public class GraphView extends AbstractTimelineView {
 			int charHeight = getFontMetrics(getFont()).getHeight();
 			if (x.length > 1 && x.length == y.length) {
 				for (int i = 0; i < x.length - 1; i++) {
-					if (x[i] >= getLeftPadding() && x[i+1] <= getWidth() - getRightPadding()) {
+					if (x[i] >= getLeftPadding() && x[i+1] <= rightX) {
 						g.drawLine(x[i], y[i], x[i+1], y[i]);
 						g.drawLine(x[i+1], y[i], x[i+1], y[i+1]);
 							
 						double maxValue = Math.max(dataPoints[i], dataPoints[i+1]);
 						double minValue = Math.min(dataPoints[i], dataPoints[i+1]);
-						if (maxValue != minValue && x[i+1] > getLeftPadding() && x[i+1] < getWidth() - getRightPadding()) {
+						if (maxValue != minValue && x[i+1] > getLeftPadding() && x[i+1] < rightX) {
 							int maxY = Math.min(y[i], y[i+1]);
 							int minY = Math.max(y[i], y[i+1]);
 							String maxValueString = FORMAT.format(maxValue);
@@ -166,7 +168,7 @@ public class GraphView extends AbstractTimelineView {
 			String units = cost.getUnits();
 			g.setFont(getFont().deriveFont(Font.BOLD));
 			g.drawString(units, getLeftPadding() - getFontMetrics(getFont()).charsWidth(units.toCharArray(), 0, units.length()) - 8, GRAPH_PAD + GRAPH_HEIGHT /2 + charHeight / 2);
-			g.drawString(name, getWidth() - getRightPadding() - getFontMetrics(getFont()).charsWidth(name.toCharArray(), 0, name.length()), GRAPH_PAD + GRAPH_HEIGHT - 2);
+			g.drawString(name, rightX - getFontMetrics(getFont()).charsWidth(name.toCharArray(), 0, name.length()), GRAPH_PAD + GRAPH_HEIGHT - 2);
 		}
 		
 		private int toX(long t) {
