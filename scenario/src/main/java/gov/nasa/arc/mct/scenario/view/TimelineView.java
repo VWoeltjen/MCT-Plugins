@@ -295,7 +295,7 @@ public class TimelineView extends AbstractTimelineView implements TimelineContex
 		
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
-			g.drawLine(getLeftPadding(), getHeight()-1, getWidth() - getRightPadding(), getHeight()-1);
+			g.drawLine(getPixelPosition(getStart()), getHeight()-1, getPixelPosition(getEnd()), getHeight()-1);
 		}
 	}
 

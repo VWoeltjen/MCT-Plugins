@@ -122,6 +122,15 @@ public abstract class AbstractTimelineView extends View implements ChangeListene
 	}
 	
 	/**
+	 * Get the pixel position of the specified time point
+	 * @return
+	 */
+	public int getPixelPosition(long time) {
+		double px = getPixelScale() * (time - getTimeOffset());
+		return (int) px + getLeftPadding();
+	}
+	
+	/**
 	 * Get the number of pixels used for padding on the left-hand side.
 	 * This, in conjunction with getPixelScale() and getTimeOffset() allows 
 	 * easy conversion from X values to Time values, and vice versa.

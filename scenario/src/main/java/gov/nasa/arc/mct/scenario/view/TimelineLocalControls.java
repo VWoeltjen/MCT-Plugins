@@ -251,7 +251,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		
 		overlay.setVisible(false);
 		
-		return new JScrollPane(midPanel);
+		JComponent pane = new JScrollPane(midPanel);
+		pane.setBorder(BorderFactory.createEmptyBorder());
+		return pane;
 	}
 	
 	private JComponent makeUpperPanel() {
