@@ -129,6 +129,8 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private long centerTime;
 	
 	private static final Color EDGE_COLOR = new Color(228, 240, 255);
+	private static final Color SLIDER_COLOR = new Color(255, 255, 255);	
+	private static final Color TRACK_COLOR = new Color(228, 248, 255);	
 	private static final Color OVERLAY_COLOR = new Color(0,128,255,180);
 	private static final Color OVERLAY_TEXT_COLOR = Color.WHITE;
 	
@@ -300,8 +302,8 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
         rightButton.addActionListener(new Panner(1));
 		tickPanel.setOpaque(false);
 		compositeControl.setOpaque(false);
-		compositeControl.setBackground(EDGE_COLOR.brighter().brighter());
-		compositeControl.setForeground(EDGE_COLOR.darker());
+		compositeControl.setBackground(TRACK_COLOR);
+		compositeControl.setForeground(SLIDER_COLOR);
 		compositeControl.addActionListener(new CompositePanZoomListener());
 		JComponent connector = new CompositeControlConnector();
 		
@@ -324,7 +326,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		springLayout.putConstraint(SpringLayout.SOUTH, connector, 0, SpringLayout.NORTH, compositeControl);
 		springLayout.putConstraint(SpringLayout.NORTH, connector, TICK_AREA_HEIGHT, SpringLayout.NORTH, lowerPanel);
 		springLayout.putConstraint(SpringLayout.NORTH, compositeControl, CONNECTOR_HEIGHT, SpringLayout.SOUTH, tickPanel);
-		springLayout.putConstraint(SpringLayout.SOUTH, lowerPanel, 0, SpringLayout.SOUTH, compositeControl);
+		springLayout.putConstraint(SpringLayout.SOUTH, lowerPanel, CONNECTOR_HEIGHT/4, SpringLayout.SOUTH, compositeControl);
 		
 		springLayout.putConstraint(SpringLayout.WEST, compositeControl, getLeftPadding(), SpringLayout.WEST, lowerPanel);
 		springLayout.putConstraint(SpringLayout.EAST, compositeControl, -getRightPadding(), SpringLayout.EAST, lowerPanel);		
