@@ -742,10 +742,15 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			
 			g.setColor(getForeground());
 			
+			// Compute relevant pixel positions/sizes for connecting lines
+			int edge = compositeControl.getEdgeWidth();
 			int w = getWidth() - 1;
 			int h = getHeight() / 4;
-			int x1 = (int) (compositeControl.getLowProportion() * w);
-			int x2 = (int) (compositeControl.getHighProportion() * w);
+			int w2 = compositeControl.getWidth() - 1 - 2 * edge;
+			int x1 = (int) (compositeControl.getLowProportion() * w2) + edge;
+			int x2 = (int) (compositeControl.getHighProportion() * w2) + edge;
+			
+			// Draw connecting lines
 			g.drawLine(0, 0, 0, h);
 			g.drawLine(0, h, x1, h*3);
 			g.drawLine(x1, h*3, x1, h*4);
