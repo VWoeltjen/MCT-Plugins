@@ -302,12 +302,14 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		compositeControl.setBackground(EDGE_COLOR.brighter().brighter());
 		compositeControl.setForeground(EDGE_COLOR.darker());
 		compositeControl.addActionListener(new CompositePanZoomListener());
+		JComponent connector = new CompositeControlConnector();
 		
 		lowerPanel.add(timeLabel);
 		lowerPanel.add(tickPanel);
 		lowerPanel.add(leftButton);
 		lowerPanel.add(rightButton);
 		lowerPanel.add(compositeControl);
+		lowerPanel.add(connector);
 		
 		springLayout.putConstraint(SpringLayout.WEST, tickPanel, getLeftPadding(), SpringLayout.WEST, lowerPanel);
 		springLayout.putConstraint(SpringLayout.EAST, tickPanel, -getRightPadding(), SpringLayout.EAST, lowerPanel);
@@ -317,12 +319,18 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		springLayout.putConstraint(SpringLayout.EAST, timeLabel, 0, SpringLayout.WEST, leftButton);
 		
 		springLayout.putConstraint(SpringLayout.NORTH, tickPanel, 0, SpringLayout.NORTH, lowerPanel);
-		springLayout.putConstraint(SpringLayout.SOUTH, tickPanel, 0, SpringLayout.NORTH, compositeControl);
+		springLayout.putConstraint(SpringLayout.SOUTH, tickPanel, 0, SpringLayout.NORTH, connector);
+		springLayout.putConstraint(SpringLayout.SOUTH, connector, 0, SpringLayout.NORTH, compositeControl);
+		springLayout.putConstraint(SpringLayout.NORTH, connector, TICK_AREA_HEIGHT, SpringLayout.NORTH, lowerPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, compositeControl, TICK_AREA_HEIGHT+64, SpringLayout.NORTH, lowerPanel);
+		springLayout.putConstraint(SpringLayout.SOUTH, lowerPanel, 0, SpringLayout.SOUTH, compositeControl);
 		
 		springLayout.putConstraint(SpringLayout.WEST, compositeControl, getLeftPadding(), SpringLayout.WEST, lowerPanel);
-		springLayout.putConstraint(SpringLayout.EAST, compositeControl, getRightPadding(), SpringLayout.EAST, lowerPanel);		
-		springLayout.putConstraint(SpringLayout.NORTH, compositeControl, TICK_AREA_HEIGHT, SpringLayout.NORTH, lowerPanel);
-		springLayout.putConstraint(SpringLayout.SOUTH, lowerPanel, 0, SpringLayout.SOUTH, compositeControl);
+		springLayout.putConstraint(SpringLayout.EAST, compositeControl, -getRightPadding(), SpringLayout.EAST, lowerPanel);		
+		
+		springLayout.putConstraint(SpringLayout.WEST, connector, 0, SpringLayout.WEST, compositeControl);
+		springLayout.putConstraint(SpringLayout.EAST, connector, 0, SpringLayout.EAST, compositeControl);		
+
 		
 		springLayout.putConstraint(SpringLayout.VERTICAL_CENTER, timeLabel, 0, SpringLayout.VERTICAL_CENTER, lowerPanel);
 		springLayout.putConstraint(SpringLayout.VERTICAL_CENTER, leftButton, 0, SpringLayout.VERTICAL_CENTER, lowerPanel);
@@ -715,6 +723,42 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			centerTime = (minTime + maxTime) / 2;
 			stateChanged(new ChangeEvent(evt.getSource()));
 		}
+	}
+	
+	private class CompositeControlConnector extends JComponent {
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			
+			// Set rendering hint for antialiasing, caching old value
+			Graphics2D g2d = null;
+			Object oldHint = null;
+			if (g instanceof Graphics2D) {
+				g2d = (Graphics2D) g;
+				oldHint = g2d.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			}
+			
+			g.setColor(getForeground());
+			
+			int w = getWidth() - 1;
+			int h = getHeight() / 4;
+			int x1 = (int) (compositeControl.getLowProportion() * w);
+			int x2 = (int) (compositeControl.getHighProportion() * w);
+			g.drawLine(0, 0, 0, h);
+			g.drawLine(0, h, x1, h*3);
+			g.drawLine(x1, h*3, x1, h*4);
+			g.drawLine(w, 0, w, h);
+			g.drawLine(w, h, x2, h*3);
+			g.drawLine(x2, h*3, x2, h*4);
+			
+			// restore old rendering hint
+			if (g2d != null) {
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, oldHint);
+			}
+		}
+		
 	}
 	
 	/**
