@@ -201,6 +201,15 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		}
 		
 		boolean isTopLevelControl = newParent == null;
+		
+		// Remove scroll pane when added to another timeline container
+		if (!isTopLevelControl && middlePanel instanceof JScrollPane) {
+			Component c = ((JScrollPane)middlePanel).getViewport().getComponent(0);
+			remove(middlePanel);
+			middlePanel = (JComponent) c;
+			add(middlePanel, BorderLayout.CENTER);
+		}
+		
 		upperPanel.setVisible(isTopLevelControl);
 		middlePanel.setOpaque(isTopLevelControl);
 		lowerPanel.setVisible(isTopLevelControl);
@@ -237,6 +246,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		midPanel.setBackground(BACKGROUND_COLOR);
 		midPanel.add(overlay);
 		midPanel.add(contentPane);
+		midPanel.setOpaque(false);
 		
 		overlay.setVisible(false);
 		
