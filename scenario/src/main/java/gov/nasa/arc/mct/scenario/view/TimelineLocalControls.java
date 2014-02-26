@@ -334,6 +334,13 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		return lowerPanel;
 	}	
 	
+	private void updateCompositeControl() {
+		float span = (float) (end - start);
+		float low = ((float) (getStart() - start)) / span;
+		float high = ((float) (getEnd() - start)) / span;
+		compositeControl.setSelectedProportions(low, high);
+	}
+	
 	private void updateLabels() {
 		String label = NAMED_TICK_SIZES.get(findNamedTickSize());
 		if (label == null) {
@@ -735,6 +742,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	public void stateChanged(ChangeEvent e) {
 		// Clamp the center time
 		centerTime = Math.max(Math.min(centerTime, getMaximumCenter()), getMinimumCenter());
+		updateCompositeControl();
 		updateLabels();
 		revalidate();
 		repaint();

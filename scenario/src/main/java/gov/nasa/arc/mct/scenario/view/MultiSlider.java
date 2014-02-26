@@ -106,6 +106,20 @@ public class MultiSlider extends JPanel {
 	}
 	
 	/**
+	 * Set the low (leftmost) and high (rightmost) slider positions, as 
+	 * a proportion of the total size (between 0.0 and 1.0)
+	 * @param low the position of the low slider
+	 * @param high the position of the high slider
+	 */
+	public void setSelectedProportions(float low, float high) {
+		if (low < high) {
+			lowSliderPosition = low;
+			highSliderPosition = high;
+			repaint();
+		}
+	}
+	
+	/**
 	 * Inform action listeners that some action has occurred
 	 * @param actionEvent the action to broadcast to this component's listeners
 	 */
