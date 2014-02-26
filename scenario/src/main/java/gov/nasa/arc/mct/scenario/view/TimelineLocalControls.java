@@ -58,6 +58,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.OverlayLayout;
 import javax.swing.SpringLayout;
@@ -230,7 +231,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	}
 	
 	
-	private JComponent makeMiddlePanel() {	
+	private JComponent makeMiddlePanel() {
 		JPanel midPanel = new JPanel();// new JPanel(new GridLayout(1,1));//springLayout);
 		midPanel.setLayout(new OverlayLayout(midPanel));
 		midPanel.setBackground(BACKGROUND_COLOR);
@@ -239,7 +240,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		
 		overlay.setVisible(false);
 		
-		return midPanel;
+		return new JScrollPane(midPanel);
 	}
 	
 	private JComponent makeUpperPanel() {
