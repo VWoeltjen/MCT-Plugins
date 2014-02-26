@@ -83,7 +83,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private static final NumberFormat FORMAT = new DecimalFormat();
 	
 	private static final double ZOOM_MAX_POWER = 7; // 2 ^ 7
-	private static final int SLIDER_MAX = 100;
+	private static final int SLIDER_MAX = 10000; // For finer resolution
 	private static final int TICK_AREA_HEIGHT = 40;
 	private static final int PAN_ICON_SIZE = 12;
 
@@ -139,6 +139,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	
 	private Collection<ChangeListener> changeListeners = new HashSet<ChangeListener>();
 	
+	// Start and end time of master duration
 	private long start;
 	private long end;
 	
@@ -418,7 +419,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		// log2(v) = (n/M) * P
 		// n = (M*log2(v))/P
 		int n = (int) ( ((double) SLIDER_MAX * (Math.log(value) / Math.log(2.0))) / (double) ZOOM_MAX_POWER);
-		zoomControl.setValue(n); // Will also trigger listener
+
+		// Set value; this will also trigger listeners
+		zoomControl.setValue(n);
 	}
 	
 	// Utility functions to pick out meaningful tick sizes
@@ -690,12 +693,16 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		public void actionPerformed(ActionEvent evt) {
 			float min = compositeControl.getLowProportion();
 			float max = compositeControl.getHighProportion();
-			long span = getEnd() - getStart();
-			long minTime = getStart() + (long) (span * min);
-			long maxTime = getStart() + (long) (span * max);
+			long span = end - start;
+			long minTime = start + (long) (span * min);
+			long maxTime = start + (long) (span * max);			
 			
 			// Set the zoom; will also fire listeners to update
 			setZoom( (double) span / (double) (maxTime-minTime)  );
+			
+			// Set the center time
+			centerTime = (minTime + maxTime) / 2;
+			stateChanged(new ChangeEvent(evt.getSource()));
 		}
 	}
 	
