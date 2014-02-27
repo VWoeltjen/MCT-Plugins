@@ -83,8 +83,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private static final NumberFormat FORMAT = new DecimalFormat();
 	
 	private static final double ZOOM_MAX_POWER = 7; // 2 ^ 7
-	private static final int SLIDER_MAX = 100;
+	private static final int SLIDER_MAX = 10000; // For finer resolution
 	private static final int TICK_AREA_HEIGHT = 40;
+	private static final int CONNECTOR_HEIGHT = 12;
 	private static final int PAN_ICON_SIZE = 12;
 
 	private static final long PAN_INTERVAL = 1000L / 50L; // pan at 30 fps
@@ -128,16 +129,20 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private long centerTime;
 	
 	private static final Color EDGE_COLOR = new Color(228, 240, 255);
+	private static final Color SLIDER_COLOR = EDGE_COLOR.brighter();	
+	private static final Color TRACK_COLOR = EDGE_COLOR.darker();	
 	private static final Color OVERLAY_COLOR = new Color(0,128,255,180);
 	private static final Color OVERLAY_TEXT_COLOR = Color.WHITE;
 	
 	private JSlider zoomControl;
 	private JLabel durationLabel;
+	private MultiSlider compositeControl = new MultiSlider();
 	
 	private JLabel timeLabel;
 	
 	private Collection<ChangeListener> changeListeners = new HashSet<ChangeListener>();
 	
+	// Start and end time of master duration
 	private long start;
 	private long end;
 	
@@ -296,12 +301,18 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
         rightButton.setBorder(BorderFactory.createEmptyBorder());
         rightButton.addActionListener(new Panner(1));
 		tickPanel.setOpaque(false);
-		
+		compositeControl.setOpaque(false);
+		compositeControl.setBackground(TRACK_COLOR);
+		compositeControl.setForeground(SLIDER_COLOR);
+		compositeControl.addActionListener(new CompositePanZoomListener());
+		JComponent connector = new CompositeControlConnector();
 		
 		lowerPanel.add(timeLabel);
 		lowerPanel.add(tickPanel);
 		lowerPanel.add(leftButton);
 		lowerPanel.add(rightButton);
+		lowerPanel.add(compositeControl);
+		lowerPanel.add(connector);
 		
 		springLayout.putConstraint(SpringLayout.WEST, tickPanel, getLeftPadding(), SpringLayout.WEST, lowerPanel);
 		springLayout.putConstraint(SpringLayout.EAST, tickPanel, -getRightPadding(), SpringLayout.EAST, lowerPanel);
@@ -310,9 +321,19 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		springLayout.putConstraint(SpringLayout.WEST, rightButton, 0, SpringLayout.EAST, tickPanel);
 		springLayout.putConstraint(SpringLayout.EAST, timeLabel, 0, SpringLayout.WEST, leftButton);
 		
-		springLayout.putConstraint(SpringLayout.SOUTH, lowerPanel, TICK_AREA_HEIGHT, SpringLayout.NORTH, lowerPanel);
-		springLayout.putConstraint(SpringLayout.SOUTH, tickPanel, 0, SpringLayout.SOUTH, lowerPanel);
 		springLayout.putConstraint(SpringLayout.NORTH, tickPanel, 0, SpringLayout.NORTH, lowerPanel);
+		springLayout.putConstraint(SpringLayout.SOUTH, tickPanel, 0, SpringLayout.NORTH, connector);
+		springLayout.putConstraint(SpringLayout.SOUTH, connector, 0, SpringLayout.NORTH, compositeControl);
+		springLayout.putConstraint(SpringLayout.NORTH, connector, TICK_AREA_HEIGHT, SpringLayout.NORTH, lowerPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, compositeControl, CONNECTOR_HEIGHT, SpringLayout.SOUTH, tickPanel);
+		springLayout.putConstraint(SpringLayout.SOUTH, lowerPanel, CONNECTOR_HEIGHT/4, SpringLayout.SOUTH, compositeControl);
+		
+		springLayout.putConstraint(SpringLayout.WEST, compositeControl, getLeftPadding(), SpringLayout.WEST, lowerPanel);
+		springLayout.putConstraint(SpringLayout.EAST, compositeControl, -getRightPadding(), SpringLayout.EAST, lowerPanel);		
+		
+		springLayout.putConstraint(SpringLayout.WEST, connector, 0, SpringLayout.WEST, compositeControl);
+		springLayout.putConstraint(SpringLayout.EAST, connector, 0, SpringLayout.EAST, compositeControl);		
+
 		
 		springLayout.putConstraint(SpringLayout.VERTICAL_CENTER, timeLabel, 0, SpringLayout.VERTICAL_CENTER, lowerPanel);
 		springLayout.putConstraint(SpringLayout.VERTICAL_CENTER, leftButton, 0, SpringLayout.VERTICAL_CENTER, lowerPanel);
@@ -323,6 +344,13 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		
 		return lowerPanel;
 	}	
+	
+	private void updateCompositeControl() {
+		float span = (float) (end - start);
+		float low = ((float) (getStart() - start)) / span;
+		float high = ((float) (getEnd() - start)) / span;
+		compositeControl.setSelectedProportions(low, high);
+	}
 	
 	private void updateLabels() {
 		String label = NAMED_TICK_SIZES.get(findNamedTickSize());
@@ -402,6 +430,16 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	
 	private double getZoom() {
 		return Math.pow(2, ((double) zoomControl.getValue()) / ((double) SLIDER_MAX) * ZOOM_MAX_POWER);
+	}
+	
+	private void setZoom(double value) {
+		// v = 2 ^ ( (n / M) * P)
+		// log2(v) = (n/M) * P
+		// n = (M*log2(v))/P
+		int n = (int) ( ((double) SLIDER_MAX * (Math.log(value) / Math.log(2.0))) / (double) ZOOM_MAX_POWER);
+
+		// Set value; this will also trigger listeners
+		zoomControl.setValue(n);
 	}
 	
 	// Utility functions to pick out meaningful tick sizes
@@ -658,6 +696,10 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 						timer.stop();
 						timer = null;
 					}
+					if (speed * sign <= getPixelScale()) {
+						timer.stop();
+						timer = null;
+					}
 					stateChanged(new ChangeEvent(e.getSource()));
 				}
 			});
@@ -666,6 +708,65 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 
 		
 
+	}
+	
+	private class CompositePanZoomListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent evt) {
+			float min = compositeControl.getLowProportion();
+			float max = compositeControl.getHighProportion();
+			long span = end - start;
+			long minTime = start + (long) (span * min);
+			long maxTime = start + (long) (span * max);			
+			
+			// Set the zoom; will also fire listeners to update
+			setZoom( (double) span / (double) (maxTime-minTime)  );
+			
+			// Set the center time
+			centerTime = (minTime + maxTime) / 2;
+			stateChanged(new ChangeEvent(evt.getSource()));
+		}
+	}
+	
+	private class CompositeControlConnector extends JComponent {
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			
+			// Set rendering hint for antialiasing, caching old value
+			Graphics2D g2d = null;
+			Object oldHint = null;
+			if (g instanceof Graphics2D) {
+				g2d = (Graphics2D) g;
+				oldHint = g2d.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			}
+			
+			g.setColor(getForeground());
+			
+			// Compute relevant pixel positions/sizes for connecting lines
+			int edge = compositeControl.getEdgeWidth();
+			int w = getWidth() - 1;
+			int h = getHeight() / 4;
+			int w2 = compositeControl.getWidth() - 1 - 2 * edge;
+			int x1 = (int) (compositeControl.getLowProportion() * w2) + edge;
+			int x2 = (int) (compositeControl.getHighProportion() * w2) + edge;
+			
+			// Draw connecting lines
+			g.drawLine(0, 0, 0, h);
+			g.drawLine(0, h, x1, h*3);
+			g.drawLine(x1, h*3, x1, h*4);
+			g.drawLine(w, 0, w, h);
+			g.drawLine(w, h, x2, h*3);
+			g.drawLine(x2, h*3, x2, h*4);
+			
+			// restore old rendering hint
+			if (g2d != null) {
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, oldHint);
+			}
+		}
+		
 	}
 	
 	/**
@@ -693,6 +794,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	public void stateChanged(ChangeEvent e) {
 		// Clamp the center time
 		centerTime = Math.max(Math.min(centerTime, getMaximumCenter()), getMinimumCenter());
+		updateCompositeControl();
 		updateLabels();
 		revalidate();
 		repaint();
