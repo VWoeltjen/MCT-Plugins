@@ -729,6 +729,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	}
 	
 	private class CompositeControlConnector extends JComponent {
+		private static final long serialVersionUID = -2880528139468798708L;
 
 		@Override
 		protected void paintComponent(Graphics g) {
