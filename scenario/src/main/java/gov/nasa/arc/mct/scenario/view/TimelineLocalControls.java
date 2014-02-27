@@ -734,38 +734,24 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		@Override
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
-			
-			// Set rendering hint for antialiasing, caching old value
-			Graphics2D g2d = null;
-			Object oldHint = null;
-			if (g instanceof Graphics2D) {
-				g2d = (Graphics2D) g;
-				oldHint = g2d.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
-				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			}
-			
+
 			g.setColor(getForeground());
 			
 			// Compute relevant pixel positions/sizes for connecting lines
 			int edge = compositeControl.getEdgeWidth();
 			int w = getWidth() - 1;
-			int h = getHeight() / 4;
+			int h = getHeight() / 2;
 			int w2 = compositeControl.getWidth() - 1 - 2 * edge;
 			int x1 = (int) (compositeControl.getLowProportion() * w2) + edge;
 			int x2 = (int) (compositeControl.getHighProportion() * w2) + edge;
 			
 			// Draw connecting lines
 			g.drawLine(0, 0, 0, h);
-			g.drawLine(0, h, x1, h*3);
-			g.drawLine(x1, h*3, x1, h*4);
+			g.drawLine(0, h, x1, h);
+			g.drawLine(x1, h, x1, h*2);
 			g.drawLine(w, 0, w, h);
-			g.drawLine(w, h, x2, h*3);
-			g.drawLine(x2, h*3, x2, h*4);
-			
-			// restore old rendering hint
-			if (g2d != null) {
-				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, oldHint);
-			}
+			g.drawLine(w, h, x2, h);
+			g.drawLine(x2, h, x2, h*2);
 		}
 		
 	}
