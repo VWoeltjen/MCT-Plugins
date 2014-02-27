@@ -129,8 +129,8 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private long centerTime;
 	
 	private static final Color EDGE_COLOR = new Color(228, 240, 255);
-	private static final Color SLIDER_COLOR = new Color(255, 255, 255);	
-	private static final Color TRACK_COLOR = new Color(228, 248, 255);	
+	private static final Color SLIDER_COLOR = EDGE_COLOR.brighter();	
+	private static final Color TRACK_COLOR = EDGE_COLOR.darker();	
 	private static final Color OVERLAY_COLOR = new Color(0,128,255,180);
 	private static final Color OVERLAY_TEXT_COLOR = Color.WHITE;
 	

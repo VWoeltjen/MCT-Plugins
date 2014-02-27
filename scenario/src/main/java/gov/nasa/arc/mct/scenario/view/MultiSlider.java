@@ -23,7 +23,9 @@ package gov.nasa.arc.mct.scenario.view;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -32,6 +34,7 @@ import java.awt.event.MouseMotionListener;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.Box;
 import javax.swing.JPanel;
 
 /**
@@ -44,7 +47,7 @@ public class MultiSlider extends JPanel {
 	private static final long serialVersionUID = 1754007114546411725L;
 	private static final int EDGE_WIDTH = 12;
 	private static final int BUTTON_WIDTH  = 8;
-	private static final int BUTTON_HEIGHT = 12;
+	private static final int BUTTON_HEIGHT = 16;
 	private static final int TRACK_HEIGHT  = 8;
 	private float lowSliderPosition  = 0.0f;
 	private float highSliderPosition = 1.0f;
@@ -57,6 +60,7 @@ public class MultiSlider extends JPanel {
 	 */
 	public MultiSlider() {
 		addMouseListener(new SliderMouseListener());
+		add(Box.createVerticalStrut(BUTTON_HEIGHT));
 	}
 	
 	/**
@@ -138,32 +142,62 @@ public class MultiSlider extends JPanel {
 	}
 	
 	@Override
-	public void paint (Graphics g) {
-		super.paint(g);
+	public void paintComponent (Graphics g) {
+		super.paintComponent(g);
 		
-		drawBordered(g, getTrackBounds(0.0, 1.0), 
-				getBackground().darker().darker(),
-				getBackground().darker(),
-				getBackground().brighter());
-		drawBordered(g, getTrackBounds(lowSliderPosition, highSliderPosition), 
-				getForeground().darker(),
-				getBackground().darker(),
-				getBackground().brighter());
-		drawBordered(g, getButtonBounds(lowSliderPosition, false), 
-				getForeground(),
-				getForeground().brighter(),
-				getForeground().darker());
-		drawBordered(g, getButtonBounds(highSliderPosition, true), 
-				getForeground(),
-				getForeground().brighter(),
-				getForeground().darker());		
+		if (g instanceof Graphics2D) {
+			((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		}
+		
+		int w = getWidth() - getEdgeWidth() * 2;
+		int x1 = (int) ( w * lowSliderPosition ) + getEdgeWidth();
+		int x2 = (int) ( w * highSliderPosition ) + getEdgeWidth();
+		int bh = BUTTON_HEIGHT  - 2; // button height
+		int th = TRACK_HEIGHT;
+		int by = getHeight() / 2 - BUTTON_HEIGHT / 2 + 1;
+		int ty = (getHeight() - th) / 2;
+
+		int[] offset = { -1, 1, 0 };
+		
+		// Draw track
+		Color bg = getBackground();
+		Color fg = getForeground();
+		Color shadow = Color.BLACK;
+		Color highlight = Color.WHITE;
+		Color[] color = { average(bg, shadow), average(bg, highlight), bg };
+		for (int i = 0; i < 3; i++) {
+			g.setColor(color[i]);
+			g.fillRoundRect(getEdgeWidth() + offset[i], ty + offset[i], w, th, th, th);
+		}
+
+		// Fill in active track
+		Color active = average(fg,bg); 
+		color = new Color[]{ average(active, highlight), average(active, shadow), active };
+		for (int i = 0; i < 3; i++) {
+			g.setColor(color[i]);
+			g.fillRect(x1 + i - 1, ty + offset[i], (x2-x1), th);
+		}
+
+		// Draw thumbs
+		color = new Color[]{ average(fg, highlight), average(fg, shadow), fg };
+		for (int i = 0; i < 3; i++) {
+			g.setColor(color[i]);
+			g.fillArc(x1 + offset[i] - BUTTON_WIDTH, by + offset[i], BUTTON_WIDTH*2, bh, 90, 180);
+			g.fillArc(x2 + offset[i] - BUTTON_WIDTH, by + offset[i], BUTTON_WIDTH*2, bh, 270, 180);
+		}		
+	}
+	
+	private Color average(Color a, Color b) {
+		return new Color(
+				(a.getRed() + b.getRed()) / 2, 
+				(a.getGreen() + b.getGreen()) / 2, 
+				(a.getBlue() + b.getBlue()) / 2);
 	}
 	
 	private Rectangle getButtonBounds(double position, boolean high) {
-		Rectangle bounds = this.getVisibleRect();
-		int y = bounds.y + bounds.height / 2;
-		int x = bounds.x + EDGE_WIDTH;
-		int w = bounds.width - EDGE_WIDTH - EDGE_WIDTH;
+		int y = getHeight() / 2;
+		int x = EDGE_WIDTH;
+		int w = getWidth() - EDGE_WIDTH * 2;
 		int x1 = (int) (w * position)  + x;
 		int offset = high ? 0 : BUTTON_WIDTH; 
 		return new Rectangle(x1 - offset, y - BUTTON_HEIGHT/2, BUTTON_WIDTH, BUTTON_HEIGHT);
@@ -171,28 +205,12 @@ public class MultiSlider extends JPanel {
 	
 	
 	private Rectangle getTrackBounds(double low, double high) {
-		Rectangle bounds = getVisibleRect();
-		int y = bounds.y + bounds.height / 2;
-		int x = bounds.x + EDGE_WIDTH;
-		int w = bounds.width - EDGE_WIDTH - EDGE_WIDTH;
+		int y = getHeight() / 2;
+		int x = EDGE_WIDTH;
+		int w = getWidth() - EDGE_WIDTH * 2;
 		int x1 = (int) (w * low)  + x;
 		int x2 = (int) (w * high) + x;
         return new Rectangle(x1, y - TRACK_HEIGHT/2, x2-x1, TRACK_HEIGHT);
-	}
-	
-	private void drawBordered(Graphics g, Rectangle r, 
-			Color fill, Color highlight, Color shadow) {
-		drawBordered(g, r.x, r.y, r.width, r.height, fill, highlight, shadow);
-	}
-	
-	private void drawBordered(Graphics g, int x, int y, int w, int h, 
-			Color fill, Color highlight, Color shadow) {
-		g.setColor(shadow);
-		g.drawRect(x + 1, y + 1, w - 1, h - 1);
-		g.setColor(highlight);
-		g.drawRect(x    , y    , w - 1, h - 1);
-		g.setColor(fill);
-		g.fillRect(x + 1, y + 1, w - 1, h - 1);
 	}
 	
 	private class SliderMouseListener implements MouseListener {
