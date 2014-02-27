@@ -436,7 +436,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		// v = 2 ^ ( (n / M) * P)
 		// log2(v) = (n/M) * P
 		// n = (M*log2(v))/P
-		int n = (int) ( ((double) SLIDER_MAX * (Math.log(value) / Math.log(2.0))) / (double) ZOOM_MAX_POWER);
+		int n = (int) ( ((double) SLIDER_MAX * (Math.log(value) / Math.log(2.0))) / ZOOM_MAX_POWER);
 
 		// Set value; this will also trigger listeners
 		zoomControl.setValue(n);

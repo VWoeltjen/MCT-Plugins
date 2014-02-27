@@ -26,7 +26,6 @@ import gov.nasa.arc.mct.gui.CustomVisualControl;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent.ActivityCustomProperty;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
