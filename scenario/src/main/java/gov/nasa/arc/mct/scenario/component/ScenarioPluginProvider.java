@@ -44,6 +44,7 @@ import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
 import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -116,6 +117,12 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			bundle.getString("description_mission"), 
 			MissionComponent.class,
 			false);
+
+	private static final ComponentTypeInfo taxonomyComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_taxonomy"),  
+			bundle.getString("description_taxonomy"), 
+			ScenarioTaxonomyComponent.class,
+			false);
 	
 	private static final PolicyInfo timelineViewPolicy = new PolicyInfo(
 			PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(), 
@@ -155,6 +162,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				decisionComponentType, 
 				scenarioComponentType,
 				missionComponentType,
+				taxonomyComponentType,
 				activityTypeComponentType,
 				tagComponentType,
 				tagRepoComponentType,
@@ -190,18 +198,70 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				repositoryPolicy
 				);
 	}
-	
-	
 
 	@Override
 	public Collection<AbstractComponent> getBootstrapComponents() {
-		AbstractComponent mission = new MissionComponent();
-		mission.setDisplayName(bundle.getString("bdn_mission"));
-		mission.getCapability(ComponentInitializer.class).setId(bundle.getString("mission_uuid"));
-		mission.getCapability(ComponentInitializer.class).setOwner(bundle.getString("mission_owner"));
-		mission.getCapability(ComponentInitializer.class).setCreator(bundle.getString("mission_owner"));
-		return Collections.singleton(mission);
+		AbstractComponent mission = initialize(
+				new MissionComponent(),
+				bundle.getString("bdn_mission"),
+				bundle.getString("mission_uuid"),
+				bundle.getString("mission_owner"));
 		
+		ComponentRegistry registry = PlatformAccess.getPlatform().getComponentRegistry();
+		
+		String wild = "*";
+		String tagRepoId = bundle.getString("prefix_tagrepo") + wild;
+		String typeRepoId = bundle.getString("prefix_typerepo") + wild;
+		String missionTemplatesId = bundle.getString("missiontemplates_uuid");
+		
+		// Tag and Type repos may already exist
+		AbstractComponent tagRepo = registry.getComponent(tagRepoId);
+		AbstractComponent typeRepo = registry.getComponent(typeRepoId);
+		AbstractComponent missionTemplates = registry.getComponent(missionTemplatesId);
+
+		List<AbstractComponent> toPersist = new ArrayList<AbstractComponent>();
+		
+		if (tagRepo == null) {
+			toPersist.add(tagRepo = initialize(new TagRepositoryComponent(),
+					bundle.getString("bdn_missiontags"),
+					tagRepoId, 
+					wild));					
+		}
+		
+		if (typeRepo == null) {
+			toPersist.add(typeRepo = initialize(new CostRepositoryComponent(),
+					bundle.getString("bdn_missiontypes"),
+					typeRepoId, 
+					wild));					
+		}
+		
+		
+		if (missionTemplates == null) {
+			toPersist.add(missionTemplates = initialize(
+					new ScenarioTaxonomyComponent(),
+					bundle.getString("bdn_missiontemplates"),
+					missionTemplatesId,
+					bundle.getString("mission_owner")));
+		}
+		
+		missionTemplates.addDelegateComponents(Arrays.asList(typeRepo, tagRepo));
+
+		// Workaround lack of support for introducing bootstrap components with children
+		PlatformAccess.getPlatform().getPersistenceProvider().persist(toPersist);
+		
+		mission.addDelegateComponent(missionTemplates);
+		
+		return Collections.singleton(mission);		
+	}
+
+	
+	private AbstractComponent initialize(
+			AbstractComponent ac, String bdn, String id, String owner) {
+		ac.setDisplayName(bdn);
+		ac.getCapability(ComponentInitializer.class).setId(id);		
+		ac.getCapability(ComponentInitializer.class).setOwner(owner);
+		ac.getCapability(ComponentInitializer.class).setCreator(owner);
+		return ac;
 	}
 
 	@Override
