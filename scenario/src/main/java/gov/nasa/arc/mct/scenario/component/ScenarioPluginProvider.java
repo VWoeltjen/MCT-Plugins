@@ -248,43 +248,6 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		
 		return types;
 	}
-	
-	@Override
-	public Collection<AbstractComponent> getBootstrapComponents() {
-		String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
-		String wild = "*";
-		String prefix = bundle.getString("prefix_tagrepo");
-				
-		// Tag repos
-		AbstractComponent userTags = new TagRepositoryComponent();
-		userTags.setDisplayName(bundle.getString("bdn_usertags"));
-		userTags.getCapability(ComponentInitializer.class).setId(prefix + user);
-		userTags.getCapability(ComponentInitializer.class).setCreator(user);
-		userTags.getCapability(ComponentInitializer.class).setOwner(user);
-		
-		AbstractComponent missionTags = new TagRepositoryComponent();
-		missionTags.setDisplayName(bundle.getString("bdn_missiontags"));
-		missionTags.getCapability(ComponentInitializer.class).setId(prefix + wild);
-		missionTags.getCapability(ComponentInitializer.class).setCreator(wild);
-		missionTags.getCapability(ComponentInitializer.class).setOwner(wild);
-		
-		// Activity type repos
-		prefix = bundle.getString("prefix_typerepo");
-		
-		AbstractComponent userTypes = new CostRepositoryComponent();
-		userTypes.setDisplayName(bundle.getString("bdn_usertypes"));
-		userTypes.getCapability(ComponentInitializer.class).setId(prefix + user);
-		userTypes.getCapability(ComponentInitializer.class).setCreator(user);
-		userTypes.getCapability(ComponentInitializer.class).setOwner(user);
-		
-		AbstractComponent missionTypes = new CostRepositoryComponent();
-		missionTypes.setDisplayName(bundle.getString("bdn_missiontypes"));
-		missionTypes.getCapability(ComponentInitializer.class).setId(prefix + wild);
-		missionTypes.getCapability(ComponentInitializer.class).setCreator(wild);
-		missionTypes.getCapability(ComponentInitializer.class).setOwner(wild);		
-
-		return Arrays.asList(missionTags, userTags, missionTypes, userTypes);
-	}
 
 	@Override
 	public Collection<MenuItemInfo> getMenuItemInfos() {
