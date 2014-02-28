@@ -42,12 +42,9 @@ import gov.nasa.arc.mct.services.component.CreateWizardUI;
 import gov.nasa.arc.mct.services.component.TypeInfo;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
-import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +133,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			PolicyInfo.CategoryType.CAN_REMOVE_MANIFESTATION_CATEGORY.getKey(), 
 			RepositoryRemovalPolicy.class);
 	
+	private ScenarioTaxonomy taxonomy = null;
 	
 	private Map<Class<?>, ImageIcon> iconMap = new HashMap<Class<?>, ImageIcon>();
 	
@@ -201,69 +199,13 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 
 	@Override
 	public Collection<AbstractComponent> getBootstrapComponents() {
-		AbstractComponent mission = initialize(
-				new MissionComponent(),
-				bundle.getString("bdn_mission"),
-				bundle.getString("mission_uuid"),
-				bundle.getString("mission_owner"));
-		
-		ComponentRegistry registry = PlatformAccess.getPlatform().getComponentRegistry();
-		
-		String wild = "*";
-		String tagRepoId = bundle.getString("prefix_tagrepo") + wild;
-		String typeRepoId = bundle.getString("prefix_typerepo") + wild;
-		String missionTemplatesId = bundle.getString("missiontemplates_uuid");
-		
-		// Tag and Type repos may already exist
-		AbstractComponent tagRepo = registry.getComponent(tagRepoId);
-		AbstractComponent typeRepo = registry.getComponent(typeRepoId);
-		AbstractComponent missionTemplates = registry.getComponent(missionTemplatesId);
-
-		List<AbstractComponent> toPersist = new ArrayList<AbstractComponent>();
-		
-		if (tagRepo == null) {
-			toPersist.add(tagRepo = initialize(new TagRepositoryComponent(),
-					bundle.getString("bdn_missiontags"),
-					tagRepoId, 
-					wild));					
-		}
-		
-		if (typeRepo == null) {
-			toPersist.add(typeRepo = initialize(new CostRepositoryComponent(),
-					bundle.getString("bdn_missiontypes"),
-					typeRepoId, 
-					wild));					
-		}
-		
-		
-		if (missionTemplates == null) {
-			toPersist.add(missionTemplates = initialize(
-					new ScenarioTaxonomyComponent(),
-					bundle.getString("bdn_missiontemplates"),
-					missionTemplatesId,
-					bundle.getString("mission_owner")));
-		}
-		
-		missionTemplates.addDelegateComponents(Arrays.asList(typeRepo, tagRepo));
-
-		// Workaround lack of support for introducing bootstrap components with children
-		PlatformAccess.getPlatform().getPersistenceProvider().persist(toPersist);
-		
-		mission.addDelegateComponent(missionTemplates);
-		
-		return Collections.singleton(mission);		
+		return getTaxonomy().getBootstrapComponents();
 	}
 
+	private ScenarioTaxonomy getTaxonomy() {
+		return (taxonomy = (taxonomy == null ? new ScenarioTaxonomy() : taxonomy));
+	}
 	
-	private AbstractComponent initialize(
-			AbstractComponent ac, String bdn, String id, String owner) {
-		ac.setDisplayName(bdn);
-		ac.getCapability(ComponentInitializer.class).setId(id);		
-		ac.getCapability(ComponentInitializer.class).setOwner(owner);
-		ac.getCapability(ComponentInitializer.class).setCreator(owner);
-		return ac;
-	}
-
 	@Override
 	public <T> T getAsset(TypeInfo<?> type, Class<T> assetClass) {
 		// Create wizards
