@@ -23,34 +23,6 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 
-import java.util.Collection;
+public class ScenarioTaxonomyComponent extends AbstractComponent {
 
-/**
- * Abstract superclass for components which serve as canonical 
- * repositories for objects of other types. (e.g. User Tags, 
- * Mission Activity Types, et cetera...)
- */
-public abstract class RepositoryComponent extends AbstractComponent implements RepositoryCapability{
-
-	@Override
-	protected void addDelegateComponentsCallback(
-			Collection<AbstractComponent> childComponents) {
-		super.addDelegateComponentsCallback(childComponents);
-		
-		new RepositoryMoveHandler(this, childComponents).handle();
-	}
-
-	@Override
-	public <T> T handleGetCapability(Class<T> capabilityClass) {	
-		return
-			capabilityClass.isAssignableFrom(getClass()) ? 
-					capabilityClass.cast(this) :
-			super.handleGetCapability(capabilityClass);
-	}
-
-	// TODO: Use this to support the Group capability
-	@Override
-	public String getUserScope() {
-		return getCreator(); //model.get().scope;
-	}
 }

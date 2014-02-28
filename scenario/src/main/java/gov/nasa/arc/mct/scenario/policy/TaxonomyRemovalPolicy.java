@@ -19,38 +19,39 @@
  * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
  * information. 
  *******************************************************************************/
-package gov.nasa.arc.mct.scenario.component;
-
-import gov.nasa.arc.mct.components.AbstractComponent;
+package gov.nasa.arc.mct.scenario.policy;
 
 import java.util.Collection;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.policy.ExecutionResult;
+import gov.nasa.arc.mct.policy.Policy;
+import gov.nasa.arc.mct.policy.PolicyContext;
+import gov.nasa.arc.mct.scenario.component.RepositoryCapability;
+import gov.nasa.arc.mct.scenario.component.ScenarioTaxonomyComponent;
+
 /**
- * Abstract superclass for components which serve as canonical 
- * repositories for objects of other types. (e.g. User Tags, 
- * Mission Activity Types, et cetera...)
+ * Policy preventing removal of scenario taxonomy elements.
+ * 
+ * These objects are intended to be static and should not 
+ * be modifiable by user action.
  */
-public abstract class RepositoryComponent extends AbstractComponent implements RepositoryCapability{
+public class TaxonomyRemovalPolicy implements Policy {
 
 	@Override
-	protected void addDelegateComponentsCallback(
-			Collection<AbstractComponent> childComponents) {
-		super.addDelegateComponentsCallback(childComponents);
+	public ExecutionResult execute(PolicyContext context) {
+		@SuppressWarnings("unchecked")
+		Collection<AbstractComponent> childComponents = 
+				context.getProperty(PolicyContext.PropertyName.SOURCE_COMPONENTS.getName(), Collection.class);
 		
-		new RepositoryMoveHandler(this, childComponents).handle();
-	}
-
-	@Override
-	public <T> T handleGetCapability(Class<T> capabilityClass) {	
-		return
-			capabilityClass.isAssignableFrom(getClass()) ? 
-					capabilityClass.cast(this) :
-			super.handleGetCapability(capabilityClass);
-	}
-
-	// TODO: Use this to support the Group capability
-	@Override
-	public String getUserScope() {
-		return getCreator(); //model.get().scope;
+		boolean foundTaxonomy = false;
+		
+		for (AbstractComponent child : childComponents) {
+			foundTaxonomy |= child instanceof ScenarioTaxonomyComponent;
+		}
+		
+		return new ExecutionResult(context, 
+				!foundTaxonomy, 
+				"Cannot remove taxonomy objects");
 	}
 }

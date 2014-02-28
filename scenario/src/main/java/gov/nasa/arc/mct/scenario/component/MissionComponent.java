@@ -22,35 +22,36 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.Bootstrap;
 
-import java.util.Collection;
-
-/**
- * Abstract superclass for components which serve as canonical 
- * repositories for objects of other types. (e.g. User Tags, 
- * Mission Activity Types, et cetera...)
- */
-public abstract class RepositoryComponent extends AbstractComponent implements RepositoryCapability{
+public class MissionComponent extends AbstractComponent implements Bootstrap {
 
 	@Override
-	protected void addDelegateComponentsCallback(
-			Collection<AbstractComponent> childComponents) {
-		super.addDelegateComponentsCallback(childComponents);
-		
-		new RepositoryMoveHandler(this, childComponents).handle();
+	protected <T> T handleGetCapability(Class<T> capability) {
+		if (capability.isAssignableFrom(Bootstrap.class)) {
+			return capability.cast(this);
+		}
+		return super.handleGetCapability(capability);
 	}
 
 	@Override
-	public <T> T handleGetCapability(Class<T> capabilityClass) {	
-		return
-			capabilityClass.isAssignableFrom(getClass()) ? 
-					capabilityClass.cast(this) :
-			super.handleGetCapability(capabilityClass);
+	public boolean isGlobal() {
+		return true;
 	}
 
-	// TODO: Use this to support the Group capability
 	@Override
-	public String getUserScope() {
-		return getCreator(); //model.get().scope;
+	public boolean isSandbox() {
+		return false;
 	}
+
+	@Override
+	public int categoryIndex() {
+		return 0;
+	}
+
+	@Override
+	public int componentIndex() {
+		return 0;
+	}
+
 }

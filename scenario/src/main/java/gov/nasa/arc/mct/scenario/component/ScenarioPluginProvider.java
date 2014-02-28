@@ -31,6 +31,7 @@ import gov.nasa.arc.mct.scenario.actions.ExportCSVAction.ObjectsExportCSVAction;
 import gov.nasa.arc.mct.scenario.actions.ExportCSVAction.ThisExportCSVAction;
 import gov.nasa.arc.mct.scenario.policy.RepositoryRemovalPolicy;
 import gov.nasa.arc.mct.scenario.policy.ScenarioContainmentPolicy;
+import gov.nasa.arc.mct.scenario.policy.TaxonomyRemovalPolicy;
 import gov.nasa.arc.mct.scenario.policy.TimelineFilterViewPolicy;
 import gov.nasa.arc.mct.scenario.view.ScenarioView;
 import gov.nasa.arc.mct.scenario.view.TimelineInspector;
@@ -42,7 +43,6 @@ import gov.nasa.arc.mct.services.component.CreateWizardUI;
 import gov.nasa.arc.mct.services.component.TypeInfo;
 import gov.nasa.arc.mct.services.component.ViewInfo;
 import gov.nasa.arc.mct.services.component.ViewType;
-import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -109,6 +109,18 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			bundle.getString("display_name_activity_type"),  
 			bundle.getString("description_activity_type"), 
 			ActivityTypeComponent.class);
+
+	private static final ComponentTypeInfo missionComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_mission"),  
+			bundle.getString("description_mission"), 
+			MissionComponent.class,
+			false);
+
+	private static final ComponentTypeInfo taxonomyComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_taxonomy"),  
+			bundle.getString("description_taxonomy"), 
+			ScenarioTaxonomyComponent.class,
+			false);
 	
 	private static final PolicyInfo timelineViewPolicy = new PolicyInfo(
 			PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(), 
@@ -121,7 +133,12 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 	private static final PolicyInfo repositoryPolicy = new PolicyInfo(
 			PolicyInfo.CategoryType.CAN_REMOVE_MANIFESTATION_CATEGORY.getKey(), 
 			RepositoryRemovalPolicy.class);
+
+	private static final PolicyInfo taxonomyPolicy = new PolicyInfo(
+			PolicyInfo.CategoryType.CAN_REMOVE_MANIFESTATION_CATEGORY.getKey(), 
+			TaxonomyRemovalPolicy.class);
 	
+	private ScenarioTaxonomy taxonomy = null;
 	
 	private Map<Class<?>, ImageIcon> iconMap = new HashMap<Class<?>, ImageIcon>();
 	
@@ -147,6 +164,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				timelineComponentType, 
 				decisionComponentType, 
 				scenarioComponentType,
+				missionComponentType,
+				taxonomyComponentType,
 				activityTypeComponentType,
 				tagComponentType,
 				tagRepoComponentType,
@@ -179,10 +198,20 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		return Arrays.asList(
 				timelineViewPolicy, 
 				containmentPolicy, 
+				taxonomyPolicy,
 				repositoryPolicy
 				);
 	}
 
+	@Override
+	public Collection<AbstractComponent> getBootstrapComponents() {
+		return getTaxonomy().getBootstrapComponents();
+	}
+
+	private ScenarioTaxonomy getTaxonomy() {
+		return (taxonomy = (taxonomy == null ? new ScenarioTaxonomy() : taxonomy));
+	}
+	
 	@Override
 	public <T> T getAsset(TypeInfo<?> type, Class<T> assetClass) {
 		// Create wizards
@@ -247,43 +276,6 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				));
 		
 		return types;
-	}
-	
-	@Override
-	public Collection<AbstractComponent> getBootstrapComponents() {
-		String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
-		String wild = "*";
-		String prefix = bundle.getString("prefix_tagrepo");
-				
-		// Tag repos
-		AbstractComponent userTags = new TagRepositoryComponent();
-		userTags.setDisplayName(bundle.getString("bdn_usertags"));
-		userTags.getCapability(ComponentInitializer.class).setId(prefix + user);
-		userTags.getCapability(ComponentInitializer.class).setCreator(user);
-		userTags.getCapability(ComponentInitializer.class).setOwner(user);
-		
-		AbstractComponent missionTags = new TagRepositoryComponent();
-		missionTags.setDisplayName(bundle.getString("bdn_missiontags"));
-		missionTags.getCapability(ComponentInitializer.class).setId(prefix + wild);
-		missionTags.getCapability(ComponentInitializer.class).setCreator(wild);
-		missionTags.getCapability(ComponentInitializer.class).setOwner(wild);
-		
-		// Activity type repos
-		prefix = bundle.getString("prefix_typerepo");
-		
-		AbstractComponent userTypes = new CostRepositoryComponent();
-		userTypes.setDisplayName(bundle.getString("bdn_usertypes"));
-		userTypes.getCapability(ComponentInitializer.class).setId(prefix + user);
-		userTypes.getCapability(ComponentInitializer.class).setCreator(user);
-		userTypes.getCapability(ComponentInitializer.class).setOwner(user);
-		
-		AbstractComponent missionTypes = new CostRepositoryComponent();
-		missionTypes.setDisplayName(bundle.getString("bdn_missiontypes"));
-		missionTypes.getCapability(ComponentInitializer.class).setId(prefix + wild);
-		missionTypes.getCapability(ComponentInitializer.class).setCreator(wild);
-		missionTypes.getCapability(ComponentInitializer.class).setOwner(wild);		
-
-		return Arrays.asList(missionTags, userTags, missionTypes, userTypes);
 	}
 
 	@Override

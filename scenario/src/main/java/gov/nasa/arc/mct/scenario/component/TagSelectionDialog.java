@@ -137,8 +137,8 @@ public class TagSelectionDialog extends JDialog {
 			}			
 		});
 		
-		p.add(cancel);
 		p.add(ok);
+		p.add(cancel);
 		p.setBorder(BorderFactory.createEmptyBorder(17, 0, 0, 0));
 		p.setAlignmentX(CENTER_ALIGNMENT);
 		return p;
