@@ -22,7 +22,6 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.components.Bootstrap;
 
 import java.util.Collection;
 
@@ -31,7 +30,7 @@ import java.util.Collection;
  * repositories for objects of other types. (e.g. User Tags, 
  * Mission Activity Types, et cetera...)
  */
-public abstract class RepositoryComponent extends AbstractComponent implements RepositoryCapability, Bootstrap {
+public abstract class RepositoryComponent extends AbstractComponent implements RepositoryCapability{
 
 	@Override
 	protected void addDelegateComponentsCallback(
@@ -53,27 +52,5 @@ public abstract class RepositoryComponent extends AbstractComponent implements R
 	@Override
 	public String getUserScope() {
 		return getCreator(); //model.get().scope;
-	}
-	
-	@Override
-	public boolean isGlobal() {
-		return getCreator().equals("*");
-	}
-
-	@Override
-	public boolean isSandbox() {
-		return false;
-	}
-
-	@Override
-	public int categoryIndex() {
-		// Categorize by package - "somewhere in the middle",
-		// but grouped with other components from the same package.
-		return getClass().getPackage().getName().hashCode() & 0xFFFF;
-	}
-
-	@Override
-	public int componentIndex() {
-		return (getClass().getName().hashCode() << 1) + (isGlobal() ? 0 : 1);
 	}
 }
