@@ -46,6 +46,7 @@ import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +110,12 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			bundle.getString("display_name_activity_type"),  
 			bundle.getString("description_activity_type"), 
 			ActivityTypeComponent.class);
+
+	private static final ComponentTypeInfo missionComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_mission"),  
+			bundle.getString("description_mission"), 
+			MissionComponent.class,
+			false);
 	
 	private static final PolicyInfo timelineViewPolicy = new PolicyInfo(
 			PolicyInfo.CategoryType.FILTER_VIEW_ROLE.getKey(), 
@@ -147,6 +154,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				timelineComponentType, 
 				decisionComponentType, 
 				scenarioComponentType,
+				missionComponentType,
 				activityTypeComponentType,
 				tagComponentType,
 				tagRepoComponentType,
@@ -181,6 +189,19 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				containmentPolicy, 
 				repositoryPolicy
 				);
+	}
+	
+	
+
+	@Override
+	public Collection<AbstractComponent> getBootstrapComponents() {
+		AbstractComponent mission = new MissionComponent();
+		mission.setDisplayName(bundle.getString("bdn_mission"));
+		mission.getCapability(ComponentInitializer.class).setId(bundle.getString("mission_uuid"));
+		mission.getCapability(ComponentInitializer.class).setOwner(bundle.getString("mission_owner"));
+		mission.getCapability(ComponentInitializer.class).setCreator(bundle.getString("mission_owner"));
+		return Collections.singleton(mission);
+		
 	}
 
 	@Override
