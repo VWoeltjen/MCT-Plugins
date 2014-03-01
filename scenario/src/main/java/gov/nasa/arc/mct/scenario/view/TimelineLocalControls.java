@@ -205,6 +205,14 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		}
 		
 		boolean isTopLevelControl = newParent == null && isVisible;
+		
+		// Determine if the component needs to be rebuilt by 
+		// comparing to its current state. To avoid explicit 
+		// state tracking, this is inferred from component 
+		// count. (A top-level display will have three 
+		// children, including top and bottom control areas; 
+		// other displays will only have one, the content
+		// area.)
 		int componentCount = getComponentCount();
 		boolean hasChanged = componentCount == 0 ||
 				componentCount != (isTopLevelControl ? 3 : 1);
