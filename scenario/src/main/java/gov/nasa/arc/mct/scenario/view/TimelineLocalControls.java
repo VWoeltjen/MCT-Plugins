@@ -189,10 +189,13 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		TimelineLocalControls newParent = (TimelineLocalControls) 
 				SwingUtilities.getAncestorOfClass(TimelineLocalControls.class, this);
 		
+		boolean isVisible = isVisible();
+		
 		// Make sure new parent is reachable after the event resolves
 		if (event.getID() == AncestorEvent.ANCESTOR_REMOVED) {
 			Container container = this.getParent();
 			while (container != newParent && container != null) {
+				isVisible &= container.isVisible();
 				if (container == event.getAncestorParent()) {
 					newParent = null;
 					break;
@@ -201,7 +204,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			}
 		}
 		
-		boolean isTopLevelControl = newParent == null;
+		boolean isTopLevelControl = newParent == null && isVisible;
 		int componentCount = getComponentCount();
 		boolean hasChanged = componentCount == 0 ||
 				componentCount != (isTopLevelControl ? 3 : 1);
@@ -227,6 +230,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 				newParent.addChangeListener(this);	
 			}
 			controlParent = newParent;
+			stateChanged(new ChangeEvent(event.getSource()));
 		}
 	}
 	
