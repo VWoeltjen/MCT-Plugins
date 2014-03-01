@@ -119,10 +119,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private static final long serialVersionUID = 5844637696012429283L;
 	
 	//private DurationCapability masterDuration;
-	private JComponent upperPanel;
-	private JComponent middlePanel;
 	private JComponent contentPane = new JPanel(new GridLayout(1,1));
-	private JComponent lowerPanel;
 	private TimelineLocalControls controlParent = null;
 	
 	private TimelineOverlay overlay = new TimelineOverlay();
@@ -135,10 +132,10 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	private static final Color OVERLAY_TEXT_COLOR = Color.WHITE;
 	
 	private JSlider zoomControl;
-	private JLabel durationLabel;
+	private JLabel durationLabel = new JLabel();
 	private MultiSlider compositeControl = new MultiSlider();
 	
-	private JLabel timeLabel;
+	private JLabel timeLabel = new JLabel();
 	
 	private Collection<ChangeListener> changeListeners = new HashSet<ChangeListener>();
 	
@@ -157,9 +154,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		centerTime = (start + end) / 2;
 		
 		setOpaque(false);
-		add(upperPanel = makeUpperPanel(), BorderLayout.NORTH);
-		add(middlePanel = makeMiddlePanel(), BorderLayout.CENTER);
-		add(lowerPanel = makeLowerPanel(), BorderLayout.SOUTH);
+		add(makeMiddlePanel(false), BorderLayout.CENTER);
 		updateLabels();
 		
 		this.addAncestorListener(new AncestorListener() {
@@ -194,10 +189,13 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		TimelineLocalControls newParent = (TimelineLocalControls) 
 				SwingUtilities.getAncestorOfClass(TimelineLocalControls.class, this);
 		
+		boolean isVisible = isVisible();
+		
 		// Make sure new parent is reachable after the event resolves
 		if (event.getID() == AncestorEvent.ANCESTOR_REMOVED) {
 			Container container = this.getParent();
 			while (container != newParent && container != null) {
+				isVisible &= container.isVisible();
 				if (container == event.getAncestorParent()) {
 					newParent = null;
 					break;
@@ -206,21 +204,30 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 			}
 		}
 		
-		boolean isTopLevelControl = newParent == null;
+		boolean isTopLevelControl = newParent == null && isVisible;
 		
-		// Remove scroll pane when added to another timeline container
-		if (!isTopLevelControl && middlePanel instanceof JScrollPane) {
-			Component c = ((JScrollPane)middlePanel).getViewport().getComponent(0);
-			remove(middlePanel);
-			middlePanel = (JComponent) c;
-			add(middlePanel, BorderLayout.CENTER);
+		// Determine if the component needs to be rebuilt by 
+		// comparing to its current state. To avoid explicit 
+		// state tracking, this is inferred from component 
+		// count. (A top-level display will have three 
+		// children, including top and bottom control areas; 
+		// other displays will only have one, the content
+		// area.)
+		int componentCount = getComponentCount();
+		boolean hasChanged = componentCount == 0 ||
+				componentCount != (isTopLevelControl ? 3 : 1);
+		
+		if (hasChanged) {
+			removeAll();		
+			if (isTopLevelControl) {
+				add(makeUpperPanel(), BorderLayout.NORTH);
+				add(makeLowerPanel(), BorderLayout.SOUTH);
+			}
+			
+			add(makeMiddlePanel(isTopLevelControl), BorderLayout.CENTER);
+			overlay.setVisible(false);
+			contentPane.setOpaque(isTopLevelControl);
 		}
-		
-		upperPanel.setVisible(isTopLevelControl);
-		middlePanel.setOpaque(isTopLevelControl);
-		lowerPanel.setVisible(isTopLevelControl);
-		overlay.setVisible(false);
-		contentPane.setOpaque(isTopLevelControl);
 		
 		// Start listening to the new parent, if parent changed
 		if (newParent != controlParent) {
@@ -231,6 +238,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 				newParent.addChangeListener(this);	
 			}
 			controlParent = newParent;
+			stateChanged(new ChangeEvent(event.getSource()));
 		}
 	}
 	
@@ -246,7 +254,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	}
 	
 	
-	private JComponent makeMiddlePanel() {
+	private JComponent makeMiddlePanel(boolean isTopLevel) {
 		JPanel midPanel = new JPanel();// new JPanel(new GridLayout(1,1));//springLayout);
 		midPanel.setLayout(new OverlayLayout(midPanel));
 		midPanel.setBackground(BACKGROUND_COLOR);
@@ -256,9 +264,13 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		
 		overlay.setVisible(false);
 		
-		JComponent pane = new JScrollPane(midPanel);
-		pane.setBorder(BorderFactory.createEmptyBorder());
-		return pane;
+		if (isTopLevel) {
+			JComponent pane = new JScrollPane(midPanel);
+			pane.setBorder(BorderFactory.createEmptyBorder());
+			return pane;
+		} else {
+			return midPanel;
+		}
 	}
 	
 	private JComponent makeUpperPanel() {
@@ -286,7 +298,6 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		SpringLayout springLayout = new SpringLayout();
 		JPanel lowerPanel = new JPanel(springLayout);
 		
-		timeLabel = new JLabel("Hours");
 		JPanel tickPanel = new TickMarkPanel();
 		tickPanel.addMouseListener(overlay);
 		tickPanel.addMouseMotionListener(overlay);
@@ -357,6 +368,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 		if (label == null) {
 			label = "???"; // TODO: Log
 		}
+
 		timeLabel.setText(label);
 		durationLabel.setText("Total Duration: " + DurationFormatter.formatDuration(end - start));
 	}
@@ -429,7 +441,9 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 	}
 	
 	private double getZoom() {
-		return Math.pow(2, ((double) zoomControl.getValue()) / ((double) SLIDER_MAX) * ZOOM_MAX_POWER);
+		return zoomControl != null ? 
+				Math.pow(2, ((double) zoomControl.getValue()) / ((double) SLIDER_MAX) * ZOOM_MAX_POWER) :
+				1.0;
 	}
 	
 	private void setZoom(double value) {
