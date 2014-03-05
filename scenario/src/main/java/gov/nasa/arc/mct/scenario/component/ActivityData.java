@@ -43,6 +43,7 @@ public class ActivityData {
 	private Date startDate;
 	private Date endDate;
 	private String url;
+	private String procedureUrl;
 	
 	public double getPower() {
 		return power;
@@ -109,6 +110,14 @@ public class ActivityData {
 	
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public String getProcedureUrl() {
+		return procedureUrl;
+	}
+
+	public void setProcedureUrl(String procedureUrl) {
+		this.procedureUrl = procedureUrl;
 	}
 	
 }
