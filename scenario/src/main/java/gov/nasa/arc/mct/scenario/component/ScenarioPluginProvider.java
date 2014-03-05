@@ -29,6 +29,7 @@ import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.policy.PolicyInfo;
 import gov.nasa.arc.mct.scenario.actions.ExportCSVAction.ObjectsExportCSVAction;
 import gov.nasa.arc.mct.scenario.actions.ExportCSVAction.ThisExportCSVAction;
+import gov.nasa.arc.mct.scenario.policy.RepositoryLinkPolicy;
 import gov.nasa.arc.mct.scenario.policy.RepositoryRemovalPolicy;
 import gov.nasa.arc.mct.scenario.policy.ScenarioContainmentPolicy;
 import gov.nasa.arc.mct.scenario.policy.TaxonomyRemovalPolicy;
@@ -138,6 +139,10 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			PolicyInfo.CategoryType.CAN_REMOVE_MANIFESTATION_CATEGORY.getKey(), 
 			TaxonomyRemovalPolicy.class);
 	
+	private static final PolicyInfo repositoryLinkPolicy = new PolicyInfo(
+			PolicyInfo.CategoryType.COMPOSITION_POLICY_CATEGORY.getKey(), 
+			RepositoryLinkPolicy.class);
+	
 	private ScenarioTaxonomy taxonomy = null;
 	
 	private Map<Class<?>, ImageIcon> iconMap = new HashMap<Class<?>, ImageIcon>();
@@ -199,6 +204,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				timelineViewPolicy, 
 				containmentPolicy, 
 				taxonomyPolicy,
+				repositoryLinkPolicy,
 				repositoryPolicy
 				);
 	}
