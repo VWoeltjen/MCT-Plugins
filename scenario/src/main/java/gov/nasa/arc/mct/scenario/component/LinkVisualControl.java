@@ -63,8 +63,14 @@ public class LinkVisualControl extends CustomVisualControl {
 	private Color border = UIManager.getColor("border");
 	private boolean mutable = false;
 	
+	public LinkVisualControl(String title) {
+		this();
+		add(new JLabel(title), BorderLayout.WEST);
+	}
+	
 	public LinkVisualControl() {
 		setLayout(new BorderLayout());
+		
 		add(label, BorderLayout.CENTER);
 		
 		button.setIcon(MCTIcons.processIcon(LINK_ICON, label.getForeground(), false));
@@ -81,6 +87,8 @@ public class LinkVisualControl extends CustomVisualControl {
 		field.addActionListener(fieldListener);
 		field.addFocusListener(fieldListener);
 		field.setBorder(BorderFactory.createLineBorder(border != null ? border : Color.GRAY));
+		
+		setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));		
 	}
 	
 	@Override
