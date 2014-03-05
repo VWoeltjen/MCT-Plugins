@@ -27,6 +27,10 @@ import gov.nasa.arc.mct.policy.Policy;
 import gov.nasa.arc.mct.policy.PolicyContext;
 import gov.nasa.arc.mct.scenario.component.RepositoryCapability;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Policy preventing drag-drop linking of objects between 
  * repositories.
@@ -40,11 +44,29 @@ public class RepositoryLinkPolicy implements Policy {
 	public ExecutionResult execute(PolicyContext context) {
 		AbstractComponent parentComponent = context.getProperty(
 				PolicyContext.PropertyName.TARGET_COMPONENT.getName(), AbstractComponent.class);
-
+		Collection<?> childComponents = context.getProperty(
+				PolicyContext.PropertyName.SOURCE_COMPONENTS.getName(), Collection.class);
+		
 		return new ExecutionResult(context, 
 				parentComponent == null || 
 				parentComponent.getCapability(RepositoryCapability.class) == null || 
-				!"Copy Linked".equals(context.getProperty("DRAG_DROP_ACTION_TYPE", String.class)), 
+				!"Copy Linked".equals(context.getProperty("DRAG_DROP_ACTION_TYPE", String.class)) || 
+				alreadyContains(parentComponent, (Collection<?>) childComponents), 
 				"Cannot remove objects from repository (can only delete)");
+	}
+	
+	private boolean alreadyContains(AbstractComponent parentComponent, Collection<?> childComponents) {
+		Set<String> contained = new HashSet<String>();
+		for (AbstractComponent child : parentComponent.getComponents()) {
+			contained.add(child.getComponentId());
+		}
+		for (Object o : childComponents) {
+			if (o instanceof AbstractComponent) {
+				if (!contained.contains(((AbstractComponent) o).getComponentId())) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 }
