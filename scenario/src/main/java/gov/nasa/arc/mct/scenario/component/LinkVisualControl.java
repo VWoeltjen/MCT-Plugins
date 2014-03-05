@@ -87,6 +87,8 @@ public class LinkVisualControl extends CustomVisualControl {
 		field.addActionListener(fieldListener);
 		field.addFocusListener(fieldListener);
 		field.setBorder(BorderFactory.createLineBorder(border != null ? border : Color.GRAY));
+		
+		setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));		
 	}
 	
 	@Override

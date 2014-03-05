@@ -65,8 +65,8 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 		}
 		
 		linkControl = addControl(new CompositeUrlControl(
-									new LinkVisualControl("Activity Description:"),
-									new LinkVisualControl("Procedure")
+									new LinkVisualControl("Activity Description: "),
+									new LinkVisualControl("Procedure: ")
 								), "External Link");
 	}
 	
