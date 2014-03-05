@@ -123,12 +123,8 @@ public class RepositoryMoveHandler {
 					setDefaultCloseOperation(worker.isDone() ? DISPOSE_ON_CLOSE : DO_NOTHING_ON_CLOSE);
 					if (worker.isDone()) {
 						try {
-							Map<String, Collection<String>> result = worker.get();
-							if (result.isEmpty()) {
-								dispose();
-							} else {
-								details.setText(summarize(result));
-							}
+							worker.get();
+							dispose();
 						} catch (InterruptedException e) { // Fall back to default summary
 							details.setText(summarize(null));
 						} catch (ExecutionException e) {   // Fall back to default summary
