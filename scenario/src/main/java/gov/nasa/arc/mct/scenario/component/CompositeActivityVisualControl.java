@@ -26,6 +26,9 @@ import gov.nasa.arc.mct.gui.CustomVisualControl;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent.ActivityCustomProperty;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +64,10 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 			controls.put(capability.getKey(), control);
 		}
 		
-		linkControl = addControl(new LinkVisualControl(), "External Link");
+		linkControl = addControl(new CompositeUrlControl(
+									new LinkVisualControl("Activity Description:"),
+									new LinkVisualControl("Procedure")
+								), "External Link");
 	}
 	
 	private CustomVisualControl addControl(CustomVisualControl control, String title) {
@@ -87,7 +93,7 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 				}
 			}
 			
-			linkControl.setValue(property.getUrl());
+			linkControl.setValue(Arrays.asList(property.getUrl(), property.getProcedureUrl()));
 		}
 	}
 
@@ -100,8 +106,10 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 			value.put(entry.getKey(), 
 					(List<AbstractComponent>) entry.getValue().getValue());
 		}
+		List<?> links = (List<?>) linkControl.getValue();
 		return new ActivityCustomProperty(value, 
-				linkControl.getValue().toString());
+				links.get(0).toString(),
+				links.get(1).toString());
 	}
 
 	@Override
@@ -117,4 +125,47 @@ public class CompositeActivityVisualControl extends CustomVisualControl implemen
 		fireChange();
 	}
 
+	private class CompositeUrlControl extends CustomVisualControl {
+		private static final long serialVersionUID = -5628643314386458704L;
+
+		private List<CustomVisualControl> urlControls = 
+				new ArrayList<CustomVisualControl>();
+		
+		public CompositeUrlControl(CustomVisualControl... urlControls) {
+			Collections.addAll(this.urlControls, urlControls);
+			
+			setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+			for (CustomVisualControl control : urlControls) {
+				add(control);
+				control.addChangeListener(CompositeActivityVisualControl.this);
+			}
+		}
+
+		@Override
+		public void setValue(Object value) {
+			if (value instanceof List) {
+				List<?> list = (List<?>) value;
+				for (int i = 0; i < Math.min(list.size(), urlControls.size()); i++) {
+					urlControls.get(i).setValue(list.get(i));
+				}
+			}
+		}
+
+		@Override
+		public Object getValue() {
+			List<Object> value = new ArrayList<Object>();
+			for (CustomVisualControl control : urlControls) {
+				value.add(control.getValue().toString());
+			}
+			return value;
+		}
+
+		@Override
+		public void setMutable(boolean mutable) {
+			for (CustomVisualControl control : urlControls) {
+				control.setMutable(mutable);
+			}
+		}		
+	}
+	
 }

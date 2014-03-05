@@ -384,7 +384,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		@Override
 		public Object getValue() {
 			return new ActivityCustomProperty(tagPropertyEditor.getValue(), 
-					getModel().getData().getUrl());
+					getModel().getData().getUrl(),
+					getModel().getData().getProcedureUrl());
 		}
 
 		@Override
@@ -393,6 +394,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 				ActivityCustomProperty property = (ActivityCustomProperty) value;
 				tagPropertyEditor.setValue(property.getTagStyleChildren());
 				getModel().getData().setUrl(property.getUrl());
+				getModel().getData().setProcedureUrl(property.getProcedureUrl());
 			} else {
 				throw new IllegalArgumentException(
 						ActivityCustomProperty.class.getName() + 
@@ -411,18 +413,24 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	public static class ActivityCustomProperty {
 		private Map<ComponentTypeInfo, List<AbstractComponent>> tagStyleChildren;
 		private String url;
+		private String procedureUrl;
 		public ActivityCustomProperty(
 				Map<ComponentTypeInfo, List<AbstractComponent>> tagStyleChildren,
-				String url) {
+				String url,
+				String procedureUrl) {
 			super();
 			this.tagStyleChildren = tagStyleChildren;
 			this.url = url;
+			this.procedureUrl = procedureUrl;
 		}
 		public Map<ComponentTypeInfo, List<AbstractComponent>> getTagStyleChildren() {
 			return tagStyleChildren;
 		}
 		public String getUrl() {
 			return url;
+		}
+		public String getProcedureUrl() {
+			return procedureUrl;
 		}
 	}
 }

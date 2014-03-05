@@ -113,7 +113,7 @@ public class ActivityData {
 	}
 
 	public String getProcedureUrl() {
-		return procedureUrl;
+		return procedureUrl != null ? procedureUrl : "";
 	}
 
 	public void setProcedureUrl(String procedureUrl) {

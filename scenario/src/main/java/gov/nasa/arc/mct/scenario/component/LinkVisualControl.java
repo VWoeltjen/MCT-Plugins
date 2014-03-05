@@ -63,8 +63,14 @@ public class LinkVisualControl extends CustomVisualControl {
 	private Color border = UIManager.getColor("border");
 	private boolean mutable = false;
 	
+	public LinkVisualControl(String title) {
+		this();
+		add(new JLabel(title), BorderLayout.WEST);
+	}
+	
 	public LinkVisualControl() {
 		setLayout(new BorderLayout());
+		
 		add(label, BorderLayout.CENTER);
 		
 		button.setIcon(MCTIcons.processIcon(LINK_ICON, label.getForeground(), false));
