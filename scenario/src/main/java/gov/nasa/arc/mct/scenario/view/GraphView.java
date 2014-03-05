@@ -188,8 +188,8 @@ public class GraphView extends AbstractTimelineView {
 			if (changeTimes.size() > 1) {
 				double data[] = new double[changeTimes.size()];
 				long   time[] = new long[changeTimes.size()];
-				double maxData = Double.NEGATIVE_INFINITY;
-				double minData = Double.POSITIVE_INFINITY;
+				double maxData = 0;
+				double minData = 0;
 				int i = 0;
 				for (Long t : changeTimes) {
 					data[i]   = cost.getValue(t);
