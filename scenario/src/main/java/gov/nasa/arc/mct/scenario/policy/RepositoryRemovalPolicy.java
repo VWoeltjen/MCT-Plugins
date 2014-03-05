@@ -40,9 +40,11 @@ public class RepositoryRemovalPolicy implements Policy {
 	public ExecutionResult execute(PolicyContext context) {
 		AbstractComponent parentComponent = context.getProperty(
 				PolicyContext.PropertyName.TARGET_COMPONENT.getName(), AbstractComponent.class);
-		
+
 		return new ExecutionResult(context, 
-				parentComponent == null || parentComponent.getCapability(RepositoryCapability.class) == null, 
+				parentComponent == null || 
+				parentComponent.getCapability(RepositoryCapability.class) == null || 
+				"Move".equals(context.getProperty("DRAG_DROP_ACTION_TYPE", String.class)), 
 				"Cannot remove objects from repository (can only delete)");
 	}
 }
