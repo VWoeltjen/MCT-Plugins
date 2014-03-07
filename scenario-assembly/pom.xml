@@ -5,7 +5,7 @@
   <artifactId>mct-scenario</artifactId>
   <packaging>pom</packaging>
   <name>MCT Packaging for Scenario Evaluation</name>
-  <version>${mct.platform.version}</version>
+  <version>${mct.platform.version}.1</version>
   
   <properties>
     <platform.relativePath>../../mct</platform.relativePath>
