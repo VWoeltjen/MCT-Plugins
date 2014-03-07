@@ -99,7 +99,8 @@ public class ScenarioContainmentPolicy implements Policy {
 			return parent instanceof ActivityComponent;
 		}
 		
-		if (child instanceof TagComponent) {
+		if (child instanceof TagComponent ||
+			child instanceof ActivityTypeComponent) {
 			return parent instanceof ActivityComponent;
 		}
 		
