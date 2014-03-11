@@ -2,7 +2,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>gov.nasa.arc.mct</groupId>
-  <artifactId>mct-scenario</artifactId>
+  <artifactId>mct-demo</artifactId>
   <packaging>pom</packaging>
   <name>MCT Packaging for Scenario Evaluation</name>
   <version>${mct.platform.version}.1</version>
