@@ -16,19 +16,9 @@
    				<include>**/*</include>
    			</includes>        
             <excludes>
-                <exclude>**/mct.properties</exclude>
                 <exclude>**/derby.properties</exclude>
                 <exclude>**/mysql.properties</exclude>
             </excludes>    
-    		<fileMode>0777</fileMode>
-    		<directoryMode>0777</directoryMode>
-    	</fileSet>
-    	<fileSet>
-    		<directory>src/main/resources</directory>
-    		<outputDirectory>resources</outputDirectory>
-   			<includes>
-   				<include>properties/mct.properties</include>   				
-   			</includes>
     		<fileMode>0777</fileMode>
     		<directoryMode>0777</directoryMode>
     	</fileSet>
