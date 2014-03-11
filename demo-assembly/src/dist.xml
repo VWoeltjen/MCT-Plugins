@@ -8,20 +8,6 @@
         <format>zip</format>
     </formats>
     <includeBaseDirectory>true</includeBaseDirectory>
-    <files>
-    	<file>
-    		<source>${project.build.directory}/platform.dir/mct-platform-${mct.platform.version}/resources/properties/mysql.properties</source>
-    		<outputDirectory>resources/properties</outputDirectory>
-    		<destName>persistence.properties</destName>
-    		<fileMode>0777</fileMode>
-    	</file>    	  
-    	<file>
-	      <source>src/main/resources/properties/scenario.properties</source>
-	      <outputDirectory>resources/properties</outputDirectory>
-	      <filtered>true</filtered>
-	      <fileMode>0777</fileMode>
-	    </file>
-    </files>
     <fileSets>
     	<fileSet>
     		<directory>${project.build.directory}/platform.dir/mct-platform-${mct.platform.version}</directory>
@@ -32,7 +18,7 @@
             <excludes>
                 <exclude>**/mct.properties</exclude>
                 <exclude>**/derby.properties</exclude>
-                <exclude>**/persistence.properties</exclude>
+                <exclude>**/mysql.properties</exclude>
             </excludes>    
     		<fileMode>0777</fileMode>
     		<directoryMode>0777</directoryMode>
