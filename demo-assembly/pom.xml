@@ -89,6 +89,8 @@
   
   <modules>
     <module>../scenario</module>
+    <module>../earthView</module>
+    <module>../satelliteTracker</module>
   </modules>
   
   <dependencies>
@@ -105,5 +107,16 @@
   		<artifactId>scenario</artifactId>
   		<version>${mct.platform.version}</version>
   	</dependency>
+	<dependency>
+		<groupId>gov.nasa.arc.mct</groupId>
+		<artifactId>earthView</artifactId>
+		<version>${mct.platform.version}</version>
+	</dependency>
+        <dependency>
+                <groupId>gov.nasa.arc.mct</groupId>
+                <artifactId>satelliteTracker</artifactId>
+                <version>${mct.platform.version}</version>
+        </dependency>
+
   </dependencies>
 </project>
