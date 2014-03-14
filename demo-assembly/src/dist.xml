@@ -1,0 +1,39 @@
+<assembly
+    xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+    
+    <id>dist</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <fileSets>
+    	<fileSet>
+    		<directory>${project.build.directory}/platform.dir/mct-platform-${mct.platform.version}</directory>
+    		<outputDirectory></outputDirectory>
+   			<includes>
+   				<include>**/*</include>
+   			</includes>        
+            <excludes>
+                <exclude>**/derby.properties</exclude>
+                <exclude>**/mysql.properties</exclude>
+            </excludes>    
+    		<fileMode>0777</fileMode>
+    		<directoryMode>0777</directoryMode>
+    	</fileSet>
+	</fileSets>
+    <dependencySets>
+        <dependencySet>
+    		<outputDirectory>resources/plugins</outputDirectory>
+    		<useProjectArtifact>false</useProjectArtifact>
+    		<includes>
+    			<include>gov.nasa.arc.mct:scenario</include>
+    			<include>gov.nasa.arc.mct:earthView</include>
+    			<include>gov.nasa.arc.mct:satelliteTracker</include>
+    		</includes>
+    		<useTransitiveDependencies>false</useTransitiveDependencies>
+    		<fileMode>0777</fileMode>
+    	</dependencySet>
+    </dependencySets>
+</assembly>
