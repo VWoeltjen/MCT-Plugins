@@ -39,9 +39,6 @@ import java.text.ParseException;
  * 
  * "DAYS HOURS:MINUTES:SECONDS"
  * 
- * Where days or seconds may be omitted (and will be omitted during String 
- * conversion if they are 0.)
- * 
  * @author vwoeltje
  *
  */
@@ -91,18 +88,14 @@ public class DurationFormatter {
 	 * Convert a duration to a String representation. Format is 
 	 * "DAYS HOURS:MINUTES:SECONDS"
 	 * 
-	 * Note that either DAYS and/or SECONDS will be omitted if 
-	 * they are 0. 
-	 * 
 	 * @param duration
 	 * @return
 	 */
 	public static String formatDuration(long duration) {
 		StringBuilder builder = new StringBuilder();
-		if (duration >= MS_IN_DAY) { // Don't show days if duration is less than a day
-			builder.append(duration / MS_IN_DAY); // Integer divide to get days
-			builder.append(' ');
-		}
+
+		appendTwoDigits(builder, duration / MS_IN_DAY);
+		builder.append(' ');
 		
 		duration %= MS_IN_DAY; // Modulo out days, leaving H:M:S
 		appendTwoDigits(builder, duration / MS_IN_HOUR); // Integer divide to get hours
@@ -110,13 +103,10 @@ public class DurationFormatter {
 		
 		duration %= MS_IN_HOUR; // Modulo out hours, leaving M:S
 		appendTwoDigits(builder, duration / MS_IN_MIN); // Integer divide to get minutes
-		
+		builder.append(':');
 		
 		duration %= MS_IN_MIN; // Modulo out minutes, leaving seconds
-		if (duration > 0) { // Don't show seconds if there are none
-			builder.append(':');
-			appendTwoDigits(builder, duration / MS_IN_SEC); // Integer divide to get seconds
-		}
+		appendTwoDigits(builder, duration / MS_IN_SEC); // Integer divide to get seconds		
 		
 		return builder.toString();
 	}
