@@ -135,7 +135,7 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 
 		@Override
 		public String getUnits() {
-			return isComm ? "KB/s" : "Watts";
+			return isComm ? "Kbps" : "Watts";
 		}
 
 		@Override
