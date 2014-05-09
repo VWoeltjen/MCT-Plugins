@@ -22,7 +22,58 @@
 package gov.nasa.arc.mct.generator;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
+import gov.nasa.arc.mct.components.ModelStatePersistence;
+import gov.nasa.arc.mct.components.PropertyDescriptor;
+import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GeneratorComponent extends AbstractComponent {
+	private AtomicReference<GeneratorModel> model = new AtomicReference<GeneratorModel>(new GeneratorModel());
+	
+	@Override
+	public <T> T handleGetCapability(Class<T> capability) {
+		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
+			JAXBModelStatePersistence<GeneratorModel> persistence = 
+					new JAXBModelStatePersistence<GeneratorModel>() {
+				@Override
+				protected GeneratorModel getStateToPersist() {
+					return model.get();
+				}
 
+				@Override
+				protected void setPersistentState(GeneratorModel modelState) {
+					model.set(modelState);
+				}
+
+				@Override
+				protected Class<GeneratorModel> getJAXBClass() {
+					return GeneratorModel.class;
+				}
+			};
+
+			return capability.cast(persistence);
+		}
+		return null;
+	}
+	
+	@Override
+	public boolean isLeaf() {
+		return true;
+	}
+
+	@Override
+	public List<PropertyDescriptor> getFieldDescriptors() {
+		PropertyDescriptor formulaDescriptor = new PropertyDescriptor(
+				"Formula", 
+				new GeneratorPropertyEditor(model.get()), 
+				VisualControlDescriptor.TextField);
+		formulaDescriptor.setFieldMutable(true);
+		return Arrays.asList(formulaDescriptor);
+	}
+	
+	
 }
