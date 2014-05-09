@@ -27,13 +27,17 @@ import gov.nasa.arc.mct.components.FeedProvider;
 import gov.nasa.arc.mct.components.FeedProvider.RenderingInfo;
 import gov.nasa.arc.mct.event.services.EventProvider;
 import gov.nasa.arc.mct.generator.util.ExpressionEvaluator;
+import gov.nasa.arc.mct.services.activity.TimeService;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -41,34 +45,66 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class GeneratorEventProvider implements EventProvider {
 	public static final String GENERATOR_FEED_PREFIX = "generator:";
+	private static final String COMPLETE_PREFIX = EventProvider.TELEMETRY_TOPIC_PREFIX + GENERATOR_FEED_PREFIX;
 	
 	private AtomicReference<FeedDataArchive> archive = new AtomicReference<FeedDataArchive>();
-
+	private Timer timer;
+	
+	private final EvaluatorTask task = new EvaluatorTask();
+	private static long latestTimestamp;
+	
+	
 	@Override
 	public Collection<String> subscribeTopics(String... topic) {
-		// TODO Auto-generated method stub
-		return null;
+		Collection<String> accepted = filter(topic);		
+		task.add(accepted);		
+		return accepted;
 	}
 
 	@Override
 	public void unsubscribeTopics(String... topic) {
-		// TODO Auto-generated method stub
-		
+		task.remove(filter(topic));
 	}
 
 	@Override
 	public void refresh() {
-		// TODO Auto-generated method stub
 		
 	}
 	
 	public void bind(FeedDataArchive archive) {
 		this.archive.set(archive);
+		timer = new Timer("Data generator");
+		timer.scheduleAtFixedRate(task, 1000, 1000);
 	}
 	
 	public void unbind(FeedDataArchive archive) {
 		this.archive.set(null);
+		clearTimer();
 	}
+	
+	private void clearTimer() {
+		if (timer != null) {
+			timer.cancel();
+			timer = null;
+		} 
+	}
+	
+	private Collection<String> filter(String[] subscriptions) {
+		List<String> filtered = new ArrayList<String>();
+		for (String subscription : subscriptions) {
+			if (subscription.startsWith(COMPLETE_PREFIX)) {
+				filtered.add(subscription);
+			}
+		}
+		return filtered;
+	}
+	
+	public static final TimeService TIME_SERVICE = new TimeService() {
+		@Override
+		public long getCurrentTime() {
+			return latestTimestamp;
+		}		
+	};
 
 	private class EvaluatorTask extends TimerTask {
 		private Queue<String> toAdd = new ConcurrentLinkedQueue<String>();
@@ -87,18 +123,30 @@ public class GeneratorEventProvider implements EventProvider {
 				performRemove(toRemove.poll());
 			}
 			
+			// Stop working if there are no more subscribed feeds
+			if (evaluators.isEmpty()) {
+				return;
+			}
+			
 			// Generate data points
 			FeedDataArchive archive = GeneratorEventProvider.this.archive.get();
-			long timestamp = System.currentTimeMillis();
-			for (Entry<String, ExpressionEvaluator> entry : evaluators.entrySet()) {
-				double value = entry.getValue().evaluate();
-				if (!Double.isNaN(value)) {
-					try {
-						archive.putData(entry.getKey(), TimeUnit.MILLISECONDS, timestamp, makeDatum(timestamp, value));
-					} catch (BufferFullException e) {
-						// TODO Log?
+			if (archive != null) {
+				long timestamp = System.currentTimeMillis();
+				for (Entry<String, ExpressionEvaluator> entry : evaluators.entrySet()) {
+					double value = entry.getValue().evaluate();
+					if (!Double.isNaN(value)) {
+						try {
+							archive.putData(entry.getKey().substring(
+									EventProvider.TELEMETRY_TOPIC_PREFIX.length()), 
+									TimeUnit.MILLISECONDS, 
+									timestamp, 
+									makeDatum(timestamp, value));
+						} catch (BufferFullException e) {
+							// TODO Log?
+						}
 					}
 				}
+				latestTimestamp = timestamp;
 			}
 		}
 		
@@ -119,8 +167,8 @@ public class GeneratorEventProvider implements EventProvider {
 		}
 		
 		private void performAdd(String feedId) {
-			if (feedId.startsWith(GENERATOR_FEED_PREFIX)) {
-				String expr = feedId.substring(GENERATOR_FEED_PREFIX.length());
+			if (feedId.startsWith(COMPLETE_PREFIX)) {
+				String expr = feedId.substring(COMPLETE_PREFIX.length());
 				try {
 					evaluators.put(feedId, new ExpressionEvaluator(expr));	
 				} catch (IllegalArgumentException iae) {

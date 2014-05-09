@@ -22,6 +22,7 @@
 package gov.nasa.arc.mct.generator;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.FeedProvider;
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
@@ -54,9 +55,22 @@ public class GeneratorComponent extends AbstractComponent {
 					return GeneratorModel.class;
 				}
 			};
-
 			return capability.cast(persistence);
 		}
+		
+		if (capability.isAssignableFrom(FeedProvider.class)) {
+			try {
+				String expression = model.get().getFormula();
+				if (expression != null) {
+					FeedProvider fp = new GeneratorFeedProvider(expression);
+					return capability.cast(fp);
+				}	
+			} catch (IllegalArgumentException iae) {
+				// Don't provide feeds if data is bad...
+				return null;
+			}				
+		}	
+		
 		return null;
 	}
 	
