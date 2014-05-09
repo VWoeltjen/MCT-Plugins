@@ -21,25 +21,8 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.generator;
 
-import java.util.Collection;
-import java.util.Collections;
+import gov.nasa.arc.mct.components.AbstractComponent;
 
-import gov.nasa.arc.mct.services.component.AbstractComponentProvider;
-import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
+public class GeneratorComponent extends AbstractComponent {
 
-public class GeneratorComponentProvider extends AbstractComponentProvider {
-	private final ComponentTypeInfo generatorTypeInfo = new ComponentTypeInfo(
-			"Generator",
-			"Generates data",
-			GeneratorComponent.class,
-			true
-			);
-
-	@Override
-	public Collection<ComponentTypeInfo> getComponentTypes() {
-		return Collections.singleton(generatorTypeInfo);
-	}
-	
-	
-	
 }
