@@ -5,6 +5,7 @@ Bundle-SymbolicName: generator
 Bundle-Version: 0.0.1
 Import-Package: gov.nasa.arc.mct.api.feed;version="1.0.0",
  gov.nasa.arc.mct.components,
+ gov.nasa.arc.mct.event.services;version="1.1.0",
  gov.nasa.arc.mct.gui,
  gov.nasa.arc.mct.platform.spi,
  gov.nasa.arc.mct.policy,
@@ -15,4 +16,5 @@ Import-Package: gov.nasa.arc.mct.api.feed;version="1.0.0",
  gov.nasa.arc.mct.util,
  org.osgi.framework;version="1.4.0"
 Export-Package: gov.nasa.arc.mct.generator
+Service-Component: OSGI-INF/services.xml
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="GeneratorComponentProvider">
+    <implementation class="gov.nasa.arc.mct.generator.GeneratorComponentProvider"/>
+    <service>
+        <provide interface="gov.nasa.arc.mct.services.component.ComponentProvider"/>
+    </service>
+</component>
+<component name="GeneratorEventProvider">
+    <implementation class="gov.nasa.arc.mct.generator.GeneratorComponentProvider"/>
+    <service>
+        <provide interface="gov.nasa.arc.mct.event.services.EventProvider"/>
+    </service>
+	<reference name="dataArchive" interface="gov.nasa.arc.mct.api.feed.FeedDataArchive"
+		cardinality="1..1" policy="static" bind="bind" unbind="unbind" />
+</component>
+

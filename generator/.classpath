@@ -10,5 +10,6 @@
 	<classpathentry kind="src" path="/platform"/>
 	<classpathentry kind="var" path="M2_REPO/org/testng/testng/5.8/testng-5.8-jdk15.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/util"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/subscriptionManager"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
