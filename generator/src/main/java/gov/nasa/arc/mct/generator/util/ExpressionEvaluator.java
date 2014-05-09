@@ -31,7 +31,7 @@ public class ExpressionEvaluator {
 	private final String expression;
 	
 	public ExpressionEvaluator(String expression) {
-		this.expression = expression;
+		this.expression = expression.replaceAll("\\bt\\b", "#{t}");
 		
 		evaluator.setVariableResolver(TIME_RESOLVER);
 		
@@ -42,7 +42,7 @@ public class ExpressionEvaluator {
 		}			
 	}
 	
-	public double evaluate(String variable, double value) {
+	public double evaluate() {
 		try {
 			return evaluator.getNumberResult(expression);
 		} catch (EvaluationException e) {
