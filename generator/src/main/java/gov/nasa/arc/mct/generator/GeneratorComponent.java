@@ -68,7 +68,7 @@ public class GeneratorComponent extends AbstractComponent {
 	@Override
 	public List<PropertyDescriptor> getFieldDescriptors() {
 		PropertyDescriptor formulaDescriptor = new PropertyDescriptor(
-				"Formula", 
+				"Formula f(t)", 
 				new GeneratorPropertyEditor(model.get()), 
 				VisualControlDescriptor.TextField);
 		formulaDescriptor.setFieldMutable(true);
