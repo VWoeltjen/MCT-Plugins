@@ -32,6 +32,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Creatable user object which generates data based on some user-defined function.
+ *   
+ * 
+ * 
+ * @author vwoeltje
+ *
+ */
 public class GeneratorComponent extends AbstractComponent {
 	private AtomicReference<GeneratorModel> model = new AtomicReference<GeneratorModel>(new GeneratorModel());
 	

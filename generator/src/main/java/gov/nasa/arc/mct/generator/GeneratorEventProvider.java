@@ -159,7 +159,7 @@ public class GeneratorEventProvider implements EventProvider {
 			ri.setPlottable(true);
 			datum.put(FeedProvider.NORMALIZED_RENDERING_INFO, ri.toString());
 			
-			datum.put(FeedProvider.NORMALIZED_TIME_KEY, Long.toString((long) time));
+			datum.put(FeedProvider.NORMALIZED_TIME_KEY, Long.toString(time));
 			datum.put(FeedProvider.NORMALIZED_VALUE_KEY, Double.toString(value));
 			datum.put(FeedProvider.NORMALIZED_TELEMETRY_STATUS_CLASS_KEY, "1");
 
