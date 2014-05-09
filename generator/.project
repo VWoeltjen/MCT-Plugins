@@ -25,4 +25,11 @@
 		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>JEVAL-0.9.4</name>
+			<type>2</type>
+			<locationURI>M2_REPO/net/sourceforge/jeval/jeval/0.9.4</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

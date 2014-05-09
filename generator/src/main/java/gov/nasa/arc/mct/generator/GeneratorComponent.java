@@ -72,6 +72,9 @@ public class GeneratorComponent extends AbstractComponent {
 				new GeneratorPropertyEditor(model.get()), 
 				VisualControlDescriptor.TextField);
 		formulaDescriptor.setFieldMutable(true);
+
+		
+		
 		return Arrays.asList(formulaDescriptor);
 	}
 	

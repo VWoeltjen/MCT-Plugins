@@ -23,6 +23,28 @@
   				</archive>
   			</configuration>
   		</plugin>
+  		<plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>copy-embedded-dependencies</id>
+                    <phase>compile</phase>
+                    <goals>
+                        <goal>copy</goal>
+                    </goals>
+                    <configuration>
+                        <artifactItems>
+                            <artifactItem>
+                                <groupId>net.sourceforge.jeval</groupId>
+                                <artifactId>jeval</artifactId>
+                            </artifactItem>
+                        </artifactItems>
+                        <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
   	</plugins>
   </build>
   <dependencies>
@@ -32,12 +54,23 @@
   		<version>${mct.platform.version}</version>
   		<scope>provided</scope>
   	</dependency>
+    <dependency>
+        <groupId>gov.nasa.arc.mct</groupId>
+        <artifactId>subscriptionManager</artifactId>
+        <version>${mct.platform.version}</version>
+        <scope>provided</scope>
+    </dependency>  	
   	<dependency>
     	<groupId>org.easytesting</groupId>
     	<artifactId>fest-swing</artifactId>
     	<version>1.2.1</version>
     	<scope>test</scope>
 	</dependency>
+    <dependency>
+      <groupId>net.sourceforge.jeval</groupId>
+      <artifactId>jeval</artifactId>
+      <version>0.9.4</version>
+    </dependency>	
   </dependencies>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

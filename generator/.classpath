@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/test/java"/>
-	<classpathentry excluding="src/main/java/|src/main/resources/|src/test/java/" including="META-INF/" kind="src" path=""/>
+	<classpathentry including="*.jar" kind="src" path="JEVAL-0.9.4"/>
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
@@ -11,5 +11,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/testng/testng/5.8/testng-5.8-jdk15.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/util"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/subscriptionManager"/>
+	<classpathentry kind="var" path="M2_REPO/net/sourceforge/jeval/jeval/0.9.4/jeval-0.9.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

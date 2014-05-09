@@ -18,3 +18,5 @@ Import-Package: gov.nasa.arc.mct.api.feed;version="1.0.0",
 Export-Package: gov.nasa.arc.mct.generator
 Service-Component: OSGI-INF/services.xml
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ClassPath: ., jeval-0.9.4.jar
+
