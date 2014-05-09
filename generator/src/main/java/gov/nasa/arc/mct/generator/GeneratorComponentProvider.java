@@ -27,7 +27,23 @@ import java.util.Collections;
 import gov.nasa.arc.mct.services.component.AbstractComponentProvider;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
+/**
+ * Exposes Generator components to MCT. Provides an implementation of 
+ * ComponentProvider, which will be recognized by the platform by way 
+ * of OSGi's Declarative Services. 
+ * 
+ * See OSGI-INF/services.xml for related declarations.
+ * 
+ * @author vwoeltje
+ *
+ */
 public class GeneratorComponentProvider extends AbstractComponentProvider {
+	
+	/**
+	 * Provides a description of the Generator object type; used by 
+	 * the platform to instantiate new instances of this type, to populate 
+	 * the Create menu, etc.
+	 */
 	private final ComponentTypeInfo generatorTypeInfo = new ComponentTypeInfo(
 			"Generator",
 			"Generates data",
@@ -37,9 +53,8 @@ public class GeneratorComponentProvider extends AbstractComponentProvider {
 
 	@Override
 	public Collection<ComponentTypeInfo> getComponentTypes() {
+		// Expose the Generator component to the platform 
 		return Collections.singleton(generatorTypeInfo);
 	}
-	
-	
 	
 }

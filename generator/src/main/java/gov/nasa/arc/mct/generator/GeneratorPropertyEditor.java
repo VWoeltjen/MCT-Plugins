@@ -25,26 +25,45 @@ import java.util.List;
 
 import gov.nasa.arc.mct.components.PropertyEditor;
 
+/**
+ * Property editor for changing the mathematical expression 
+ * used to generate data for a Generator component. This is 
+ * used to mediate interactions between the Info View and 
+ * the underlying model for the Generator.
+ * 
+ * @author vwoeltje
+ *
+ */
 public class GeneratorPropertyEditor implements PropertyEditor<String> {
 	private final GeneratorModel model;
 	
+	/**
+	 * Create a property editor for a Generator's data model.
+	 * @param model the data model to be edited
+	 */
 	public GeneratorPropertyEditor(GeneratorModel model) {
 		this.model = model;
 	}
 
 	@Override
 	public String getAsText() {
+		// Show the formula, as text
 		return model.getFormula();
 	}
 
 	@Override
 	public void setAsText(String text) throws IllegalArgumentException {
+		// Store the edited formula to the model
 		model.setFormula(text);
+		
+		// TODO: We could generate an IllegalArgumentException on 
+		//       invalid formulas to prevent the user from making 
+		//       bad changes.
 	}
 
 	@Override
 	public Object getValue() {
-		return model.getFormula();
+		return getAsText();
 	}
 
 	@Override
@@ -54,6 +73,7 @@ public class GeneratorPropertyEditor implements PropertyEditor<String> {
 
 	@Override
 	public List<String> getTags() {
+		// Not used.
 		return null;
 	}
 

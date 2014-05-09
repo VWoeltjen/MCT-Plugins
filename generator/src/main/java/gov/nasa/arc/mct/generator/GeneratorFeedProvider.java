@@ -26,9 +26,26 @@ import java.util.Map;
 import gov.nasa.arc.mct.components.FeedProvider;
 import gov.nasa.arc.mct.services.activity.TimeService;
 
+/**
+ * Describes the data feed associated with a given Generator 
+ * user object. This is exposed as a capability of 
+ * GeneratorComponent.
+ * 
+ * @author vwoeltje
+ */
 public class GeneratorFeedProvider implements FeedProvider {
+	/**
+	 * The mathematical expression used to generate data; the 
+	 * variable "t" in this expression indicates the current 
+	 * time, in seconds since the UNIX epoch. 
+	 */
 	private String expression;
 	
+	/**
+	 * Describe a data feed corresponding with the provided 
+	 * expression.
+	 * @param expression the expression used to generate data for this feed
+	 */
 	public GeneratorFeedProvider(String expression) {
 		super();
 		this.expression = expression;
@@ -36,26 +53,34 @@ public class GeneratorFeedProvider implements FeedProvider {
 
 	@Override
 	public String getSubscriptionId() {
+		// Used to identify data associated with this feed
+		// in data structures passed around by MCT.
 		return GeneratorEventProvider.GENERATOR_FEED_PREFIX + expression;
 	}
 
 	@Override
 	public TimeService getTimeService() {
+		// Use the TimeService exposed by GeneratorEventProvider,
+		// which reports the latest time stamp for which generated 
+		// data is available.
 		return GeneratorEventProvider.TIME_SERVICE;
 	}
 
 	@Override
 	public String getLegendText() {
+		// To be shown on plot legends.
 		return expression;
 	}
 
 	@Override
 	public int getMaximumSampleRate() {
+		// Generator generates data once per second.
 		return 1;
 	}
 
 	@Override
 	public FeedType getFeedType() {
+		// Data values are expressed as doubles.
 		return FeedType.FLOATING_POINT;
 	}
 
@@ -76,11 +101,15 @@ public class GeneratorFeedProvider implements FeedProvider {
 
 	@Override
 	public boolean isPrediction() {
+		// Not predictive: In principle data values could be computed
+		// for future times, but we do not do this.
 		return false;
 	}
 
 	@Override
 	public boolean isNonCODDataBuffer() {
+		// We are not change-only data; new data points 
+		// are generated even if data value is unchanged.
 		return true;
 	}
 

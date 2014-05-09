@@ -25,16 +25,37 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Data model for Generator user objects. Contains the expression 
+ * used to generate data values. Annotated to support 
+ * conversion to/from XML using JAXB, in order to persist 
+ * this data to the database. 
+ *  
+ * @author vwoeltje
+ *
+ */
 @XmlRootElement()
 @XmlAccessorType(XmlAccessType.FIELD)
 public class GeneratorModel {
 	private String formula = "";
 
+	/**
+	 * Get the mathematical expression used to generate data points  
+	 * for this object.
+	 * @return the expression used to generate data
+	 */
 	public String getFormula() {
+		// Never return null
 		return formula != null ? formula : "";
 	}
 
+	/**
+	 * Set the mathematical expression used to generate data points  
+	 * for this object.
+	 * @param formula the expression used to generate data
+	 */
 	public void setFormula(String formula) {
+		// Never set to null
 		this.formula = formula != null ? formula : "";
 	}
 }

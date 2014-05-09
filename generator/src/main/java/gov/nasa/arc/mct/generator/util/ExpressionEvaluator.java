@@ -26,15 +26,43 @@ import net.sourceforge.jeval.Evaluator;
 import net.sourceforge.jeval.VariableResolver;
 import net.sourceforge.jeval.function.FunctionException;
 
+/**
+ * Utility class for evaluating user-provided mathematical 
+ * expressions.
+ * 
+ * Defers most functionality to the JEval library. 
+ * http://jeval.sourceforge.net/
+ * 
+ * @author vwoeltje
+ */
 public class ExpressionEvaluator {
-	private Evaluator evaluator = new Evaluator(); 
+	/**
+	 * The JEval evaluator which will be used to evaluate this expression.
+	 */
+	private Evaluator evaluator = new Evaluator();
+	
+	/**
+	 * The expression to be evaluated. 
+	 */
 	private final String expression;
 	
+	/**
+	 * Create a new evaluator for the given expression. The variable 
+	 * t in the expression shall have its value assigned to be the 
+	 * current system time, in seconds since the UNIX epoch, at the 
+	 * time subsequent evaluation is performed.
+	 * 
+	 * @param expression the expression to be evaluted
+	 */
 	public ExpressionEvaluator(String expression) {
+		// Express the variable "t" as JEval expects it
 		this.expression = expression.replaceAll("\\bt\\b", "#{t}");
 		
+		// Resolve variable t to the current system time
 		evaluator.setVariableResolver(TIME_RESOLVER);
 		
+		// Throw an exception if the expression cannot be parsed.
+		// This avoids trying to generate data for bad expressions.
 		try {
 			evaluator.parse(expression);
 		} catch (EvaluationException e) {
@@ -42,14 +70,26 @@ public class ExpressionEvaluator {
 		}			
 	}
 	
+	/**
+	 * Evaluate the expression provided during instantiation, 
+	 * at the current time.
+	 * @return the value of the expression, at the current time
+	 */
 	public double evaluate() {
 		try {
+			// Defer to JEval
 			return evaluator.getNumberResult(expression);
 		} catch (EvaluationException e) {
+			// Not expected, as expression parsed successfully 
+			// during the constructor call.
 			return Double.NaN;
 		}
 	}
 	
+	/**
+	 * Provides current system time for variable "t", expressed 
+	 * as seconds since the UNIX epoch.
+	 */
 	private static final VariableResolver TIME_RESOLVER = new VariableResolver() {
 		@Override
 		public String resolveVariable(String a) throws FunctionException {

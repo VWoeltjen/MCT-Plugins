@@ -35,16 +35,27 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Creatable user object which generates data based on some user-defined function.
  *   
- * 
+ * The expression used to generate data may be defined in the object's Info View
+ * as a function of t (time, in seconds, since UNIX epoch.)
  * 
  * @author vwoeltje
  *
  */
 public class GeneratorComponent extends AbstractComponent {
-	private AtomicReference<GeneratorModel> model = new AtomicReference<GeneratorModel>(new GeneratorModel());
+	/**
+	 * Data model for this component. Stored in an atomic reference, 
+	 * as threads which use the object may be separate from threads 
+	 * which load the object's data.
+	 */
+	private AtomicReference<GeneratorModel> model = 
+			new AtomicReference<GeneratorModel>(new GeneratorModel());
 	
 	@Override
 	public <T> T handleGetCapability(Class<T> capability) {
+		// Support persistence (so that changes made to data model 
+		// can be saved to database.)
+		// JAXB is used to convert this data model to and from a 
+		// string; GeneratorModel has been annotated for this purpose.
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
 			JAXBModelStatePersistence<GeneratorModel> persistence = 
 					new JAXBModelStatePersistence<GeneratorModel>() {
@@ -66,8 +77,13 @@ public class GeneratorComponent extends AbstractComponent {
 			return capability.cast(persistence);
 		}
 		
+		// Support reading data feeds associated with this object. 
+		// This capability is used by feed-driven views such as 
+		// plots and tables to identify which data feed should be 
+		// used, and how it should be displayed.
 		if (capability.isAssignableFrom(FeedProvider.class)) {
 			try {
+				// Only provide a feed if a valid expression is defined
 				String expression = model.get().getFormula();
 				if (expression != null) {
 					FeedProvider fp = new GeneratorFeedProvider(expression);
@@ -84,18 +100,19 @@ public class GeneratorComponent extends AbstractComponent {
 	
 	@Override
 	public boolean isLeaf() {
+		// Don't allow this object to be used as a container for other objects.
 		return true;
 	}
 
 	@Override
 	public List<PropertyDescriptor> getFieldDescriptors() {
+		// Expose an editable field for the expression which drives data generation.
+		// This will be used to populate the UI in the Info view.
 		PropertyDescriptor formulaDescriptor = new PropertyDescriptor(
 				"Formula f(t)", 
 				new GeneratorPropertyEditor(model.get()), 
 				VisualControlDescriptor.TextField);
 		formulaDescriptor.setFieldMutable(true);
-
-		
 		
 		return Arrays.asList(formulaDescriptor);
 	}
