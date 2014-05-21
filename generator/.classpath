@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry excluding="JEVAL-0.9.4/|src/main/java/|src/main/resources/|src/test/java/" including="META-INF/" kind="src" path=""/>
 	<classpathentry including="*.jar" kind="src" path="JEVAL-0.9.4"/>
 	<classpathentry kind="src" path="src/main/resources"/>
