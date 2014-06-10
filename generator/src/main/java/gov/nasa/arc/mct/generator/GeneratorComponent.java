@@ -22,6 +22,7 @@
 package gov.nasa.arc.mct.generator;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.FeedFilterProvider;
 import gov.nasa.arc.mct.components.FeedProvider;
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
@@ -94,6 +95,11 @@ public class GeneratorComponent extends AbstractComponent {
 				return null;
 			}				
 		}	
+		
+		// Support custom data filtering in plot.
+		if (capability.isAssignableFrom(FeedFilterProvider.class)) {
+			return capability.cast(GeneratorFeedFilterProvider.getInstance());
+		}
 		
 		return null;
 	}
