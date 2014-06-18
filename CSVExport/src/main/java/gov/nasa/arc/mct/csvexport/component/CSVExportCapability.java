@@ -35,9 +35,9 @@ public interface CSVExportCapability {
 	
 	/**
 	 * get the value of the content for CSVExport.
-	 * CSV exports the content associated with all selected components.
-	 * The return value is a two dimensional array. Each row represent 
-	 * data associated with a component.
+	 * CSV exports the content of the component.
+	 * @return data associated with current selected component, not including
+	 *         its children
 	 *
 	 */
 	public String[] getValues();
