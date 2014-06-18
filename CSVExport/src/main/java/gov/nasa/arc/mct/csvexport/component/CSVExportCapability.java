@@ -23,8 +23,8 @@ package gov.nasa.arc.mct.csvexport.component;
 
 
 /**
- * Represents some csvexport associated with a component. Components with 
- * csvexport have certain columns.
+ * Represents csvexport associated with a component. Components with 
+ * csvexport capability have varied CSV export formats. 
  * 
  * This should be exposed via the getCapability method of a component.
  * 
@@ -34,13 +34,15 @@ package gov.nasa.arc.mct.csvexport.component;
 public interface CSVExportCapability {
 	
 	/**
-	 * get the value of the content for CSVExport .
+	 * get the value of the content for CSVExport.
 	 * CSV exports the content associated with all selected components.
 	 * The return value is a two dimensional array. Each row represent 
 	 * data associated with a component.
 	 *
 	 */
-	public String[][] getValues();
+	public String[] getValues();
+	
+	public String[] getHeaders();
 	
 	public int getNumberOfColumns();	
 }

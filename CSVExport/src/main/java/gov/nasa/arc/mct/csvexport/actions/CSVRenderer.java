@@ -35,7 +35,7 @@ import java.util.Map;
 /**
  * Responsible for rendering MCT objects to CSV format.
  *  
- * Included in the CSV text are:
+ * The default CSV text are:
  * - Base display name, type, MCT ID.
  * - Any object-specific fields (as seen in Info View).
  * - Any Tags (as strings).
@@ -194,54 +194,71 @@ public class CSVRenderer {
 	
 	private void add(AbstractComponent ac) {
 		String id = ac.getComponentId();
-		
-		CSVExportCapability capablility = ac.getCapability(CSVExportCapability.class);
-		if (capablility != null) {
-			// ??
-		} else {		
-			if (!components.contains(id)) {
-				// Create new map for this component's values, 
-				// add entries to related data structures.
-				Map<String, String> map = new HashMap<String, String>();
-				components.add(id);
-				values.put(id, map);
-				
-				// Add core common properties
-				addProperty(id, "Base Displayed Name", ac.getDisplayName());
-				addProperty(id, "Component Type", ac.getComponentTypeID());
-				addProperty(id, "MCT Id", ac.getComponentId());
-				
-				// Add values from property descriptors
-				List<PropertyDescriptor> descriptors = 
-						ac.getFieldDescriptors();
-				if (descriptors != null) {
-					for (PropertyDescriptor pd : descriptors) {
-						addPropertyDescriptor(id, pd);
-					}
+		if (!components.contains(id)) {
+			// Create new map for this component's values,
+			// add entries to related data structures.
+			Map<String, String> map = new HashMap<String, String>();
+			components.add(id);
+			values.put(id, map);
+			
+			CSVExportCapability capability = ac.getCapability(CSVExportCapability.class);
+			if (capability != null) {			
+				String[] values = capability.getValues();
+				String[] headers = capability.getHeaders();				
+				for (int i = 0; i < capability.getNumberOfColumns(); i++) {
+					addProperty(id, headers[i], values[i]);
 				}
+				renderChild(ac, map);
+			} else {
+				renderDefaultProperty(ac, id, map);
 				
 				// not include TagCapability temporarily
-				/** Look up tags explicitly
-				Collection<TagCapability> tags = 
-						ac.getCapabilities(TagCapability.class);
-				if (tags != null) {
-					int t = 0;
-					for (TagCapability tag : tags) {
-						map.put(tagPrefix(t++), tag.getTag());
-						maxTags = Math.max(maxTags, t);
-					}
-				} */
+				//renderTag();
 				
-				// Store references to children
-				// Headers are not added until later, to ensure these
-				// come at the end.
-				int i = 0;
-				for (AbstractComponent child : ac.getComponents()) {
-					map.put(childPrefix(i++), child.getComponentId());
-					maxChildren = Math.max(maxChildren, i);
-					add(child);
-				}
+				renderChild(ac, map);
 			}
+		}
+	}
+	
+	private void renderDefaultProperty(AbstractComponent ac, String id, Map<String, String> map) {		
+		// Add core common properties
+		addProperty(id, "Base Displayed Name", ac.getDisplayName());
+		addProperty(id, "Component Type", ac.getComponentTypeID());
+		addProperty(id, "MCT Id", ac.getComponentId());
+		
+		// Add values from property descriptors
+		List<PropertyDescriptor> descriptors = 
+				ac.getFieldDescriptors();
+		if (descriptors != null) {
+			for (PropertyDescriptor pd : descriptors) {
+				addPropertyDescriptor(id, pd);
+			}
+		}		
+	}
+	
+	/** 
+	private void renderTag() {		
+		// Look up tags explicitly
+		Collection<TagCapability> tags = 
+				ac.getCapabilities(TagCapability.class);
+		if (tags != null) {
+			int t = 0;
+			for (TagCapability tag : tags) {
+				map.put(tagPrefix(t++), tag.getTag());
+				maxTags = Math.max(maxTags, t);
+			}
+		} 
+	} */
+	
+	private void renderChild(AbstractComponent ac, Map<String, String> map) {
+		// Store references to children
+		// Headers are not added until later, to ensure these
+		// come at the end.
+		int i = 0;
+		for (AbstractComponent child : ac.getComponents()) {
+			map.put(childPrefix(i++), child.getComponentId());
+			maxChildren = Math.max(maxChildren, i);
+			add(child);
 		}
 	}
 	
