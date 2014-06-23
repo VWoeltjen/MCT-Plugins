@@ -23,10 +23,8 @@ package gov.nasa.arc.mct.csvexport.component;
 
 
 /**
- * Represents csvexport associated with a component. Components with 
- * csvexport capability have varied CSV export formats. 
- * 
- * This should be exposed via the getCapability method of a component.
+ * Represents csvExport format and content associated with components.  
+ * This can be exposed via the getCapability method of a component.
  * 
  * @author jdong
  *
@@ -34,15 +32,19 @@ package gov.nasa.arc.mct.csvexport.component;
 public interface CSVExportCapability {
 	
 	/**
-	 * get the value of the content for CSVExport.
-	 * CSV exports the content of the component.
-	 * @return data associated with current selected component, not including
-	 *         its children
-	 *
+	 * get the value of the specified row
 	 */
-	public String[] getValues();
+	public String[] getValue(int row);
 	
 	public String[] getHeaders();
 	
-	public int getNumberOfColumns();	
+	public int getColumnCount();
+	
+	/**
+	 * Get the number of rows in the resulting CSV text. This does not 
+	 * include the row which contains column headers.
+	 * 
+	 * @return the number of non-header rows in the rendered CSV 
+	 */
+	public int getRowCount();
 }

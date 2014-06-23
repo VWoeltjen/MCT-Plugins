@@ -22,69 +22,57 @@
 package gov.nasa.arc.mct.csvexport.actions;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.csvexport.component.CSVExportCapability;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Responsible for rendering MCT objects to CSV format.
- *  
- * The default CSV text are:
- * - Base display name, type, MCT ID.
- * - Any object-specific fields (as seen in Info View).
- * - Any Tags (as strings).
- * - Component IDs of referenced child components.
+ * The format is defined either in component's CSVExportCapability,
+ * or in DefaultCSVExportCapability.
  * 
- * @author vwoeltje
+ * @author jdong
  */
 public class CSVRenderer {
-	private static final String CHILD_PREFIX = 
-			BundleAccess.BUNDLE.getString("csv_child_prefix");
-	// private static final String TAG_PREFIX = BundleAccess.BUNDLE.getString("csv_tag_prefix");
-	
-	private Collection<String> headers = new ArrayList<String>();
-	private List<String> components = new ArrayList<String>();
-	private Map<String, Map<String, String>> values = 
-			new HashMap<String, Map<String, String>>();
-	private int maxChildren = 0;
-	// private int maxTags = 0;
+
+	private CSVExportCapability capability;
 
 	/**
 	 * Create a renderer which will express the specified
-	 * group of components in CSV format. This includes all of 
-	 * their children.
+	 * group of components in CSV format. This includes 
+	 * all of their children.
 	 * 
-	 * Data about components used to support CSV rendering 
-	 * will be assembled at the time of the constructor call, 
-	 * including visitation of all children. As such, this 
-	 * should not be called from a user interface thread. 
+	 * If only export one component in CSV format and the component
+	 * has CSVExportCapability, export it as the format specified in
+	 * its CSVExportCapability. Or else, use the default CSV format
+	 * as specified in DefaultCSVExportCapability.
+	 * If multiple components are being exported in CSV format, use 
+	 * the format defined in DefaultCSVExportCapability.
 	 * 
 	 * @param components the components to render
 	 */
 	public CSVRenderer(Collection<AbstractComponent> components) {
-		for (AbstractComponent ac : components) {
-			add(ac);
+		if ( components.size() == 1 ) {
+			AbstractComponent ac = components.iterator().next();
+			capability = ac.getCapability(CSVExportCapability.class);
 		}
-		// currently not using tag
-		// addTagHeaders();
-		addChildHeaders();
+		if ( capability == null ) {
+			capability = new DefaultCSVExportCapability(components);
+		}
 	}
-	
+
 	/**
 	 * Create a renderer which will express the specified 
 	 * component in CSV format. This includes all of 
 	 * its children.
 	 * 
-	 * Data about components used to support CSV rendering 
-	 * will be assembled at the time of the constructor call, 
-	 * including visitation of all children. As such, this 
-	 * should not be called from a user interface thread. 
+	 * If only export one component in CSV format and the component
+	 * has CSVExportCapability, export it as the format specified in
+	 * its CSVExportCapability. Or else, use the default CSV format
+	 * as specified in DefaultCSVExportCapability.
+	 * If multiple components are being exported in CSV format, use 
+	 * the format defined in DefaultCSVExportCapability.
 	 * 
 	 * @param ac the component to render
 	 */
@@ -108,12 +96,11 @@ public class CSVRenderer {
 	 */
 	public String render() {
 		StringBuilder builder = new StringBuilder("");
-		String[] row = new String[headers.size()];
 
-		renderRow(builder, headers.toArray(row));
+		renderRow(builder, capability.getHeaders());
 		
-		for (String id : components) {
-			renderRow(builder, id, row);
+		for (int i = 0; i < capability.getRowCount(); i++) {
+			renderRow(builder, capability.getValue(i));
 		}
 		
 		return builder.toString();
@@ -126,7 +113,7 @@ public class CSVRenderer {
 	 * @return the number of non-header rows in the rendered CSV 
 	 */
 	public int getRowCount() {
-		return components.size();
+		return capability.getRowCount();
 	}
 	
 	/**
@@ -136,7 +123,7 @@ public class CSVRenderer {
 	 */
 	public String renderHeaders() {
 		StringBuilder b = new StringBuilder();		
-		renderRow(b, headers.toArray(new String[headers.size()]));		
+		renderRow(b, capability.getHeaders());		
 		return b.toString();	
 	}
 	
@@ -151,22 +138,13 @@ public class CSVRenderer {
 	 * @return CSV text for the specified row
 	 */
 	public String renderRow(int index) {
-		if (index < 0 || index >= getRowCount()) {
+		if (index < 0 || index >= capability.getRowCount()) {
 			throw new IllegalArgumentException();
 		}
 		
 		StringBuilder b = new StringBuilder();		
-		renderRow(b, components.get(index), new String[headers.size()]);		
+		renderRow(b, capability.getValue(index));		
 		return b.toString();
-	}
-	
-	private void renderRow(StringBuilder b, String id, String[] row) {
-		Map<String, String> map = values.get(id);
-		int i = 0;
-		for (String description : headers) {
-			row[i++] = map.get(description);
-		}
-		renderRow(b, row);		
 	}
 	
 	private void renderRow(StringBuilder builder, String[] row) {
@@ -180,7 +158,7 @@ public class CSVRenderer {
 			String value = row[i];
 			if (value == null) {
 				// Do nothing - leave empty
-			} else if (value.contains(",") || values.containsKey("\n")) {
+			} else if (value.contains(",")) {
 				builder.append('"');
 				builder.append(value);
 				builder.append('"');
@@ -190,122 +168,5 @@ public class CSVRenderer {
 		}
 		
 		builder.append('\n');
-	}
-	
-	private void add(AbstractComponent ac) {
-		String id = ac.getComponentId();
-		if (!components.contains(id)) {
-			// Create new map for this component's values,
-			// add entries to related data structures.
-			Map<String, String> map = new HashMap<String, String>();
-			components.add(id);
-			values.put(id, map);
-			
-			CSVExportCapability capability = ac.getCapability(CSVExportCapability.class);
-			if (capability != null) {			
-				String[] values = capability.getValues();
-				String[] headers = capability.getHeaders();				
-				for (int i = 0; i < capability.getNumberOfColumns(); i++) {
-					addProperty(id, headers[i], values[i]);
-				}
-				renderChild(ac, map);
-			} else {
-				renderDefaultProperty(ac, id, map);
-				
-				// not include TagCapability temporarily
-				//renderTag();
-				
-				renderChild(ac, map);
-			}
-		}
-	}
-	
-	private void renderDefaultProperty(AbstractComponent ac, String id, Map<String, String> map) {		
-		// Add core common properties
-		addProperty(id, "Base Displayed Name", ac.getDisplayName());
-		addProperty(id, "Component Type", ac.getComponentTypeID());
-		addProperty(id, "MCT Id", ac.getComponentId());
-		
-		// Add values from property descriptors
-		List<PropertyDescriptor> descriptors = 
-				ac.getFieldDescriptors();
-		if (descriptors != null) {
-			for (PropertyDescriptor pd : descriptors) {
-				addPropertyDescriptor(id, pd);
-			}
-		}		
-	}
-	
-	/** 
-	private void renderTag() {		
-		// Look up tags explicitly
-		Collection<TagCapability> tags = 
-				ac.getCapabilities(TagCapability.class);
-		if (tags != null) {
-			int t = 0;
-			for (TagCapability tag : tags) {
-				map.put(tagPrefix(t++), tag.getTag());
-				maxTags = Math.max(maxTags, t);
-			}
-		} 
-	} */
-	
-	private void renderChild(AbstractComponent ac, Map<String, String> map) {
-		// Store references to children
-		// Headers are not added until later, to ensure these
-		// come at the end.
-		int i = 0;
-		for (AbstractComponent child : ac.getComponents()) {
-			map.put(childPrefix(i++), child.getComponentId());
-			maxChildren = Math.max(maxChildren, i);
-			add(child);
-		}
-	}
-	
-	private void addProperty(String id, String description, String value) {
-		if (description != null && value != null) {
-			if (!headers.contains(description)) {
-				headers.add(description);
-			}
-			values.get(id).put(description, value);			
-		}
-	}
-
-	private void addPropertyDescriptor(String id, PropertyDescriptor pd) {
-		String description = null;
-		String value = null;
-		
-		try {
-			description = pd.getShortDescription();
-			value = pd.getPropertyEditor().getAsText();
-		} catch (IllegalArgumentException iae) {
-			// If getAsText is unsupported for a property, skip it
-		}
-		
-		addProperty(id, description, value);		
-	}
-
-	// Tags and children are handled specially, to ensure they 
-	// appear grouped and in order.
-	// These should be consolidated if more such properties emerge...
-	
-	/** private String tagPrefix(int index) {
-		return TAG_PREFIX + (index + 1);
-	}
-	
-	private void addTagHeaders() {
-		for (int i = 0; i < maxTags; i++) {
-			headers.add(tagPrefix(i));
-		}
-	} */
-	
-	private String childPrefix(int index) {
-		return CHILD_PREFIX + (index + 1);
-	}
-	
-	private void addChildHeaders() {
-		for (int i = 0; i < maxChildren; i++) {
-			headers.add(childPrefix(i));
-		}
 	}
 }
