@@ -47,6 +47,8 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 			return capability.cast(this);
 		} else if (capability.isAssignableFrom(objectManager.getClass())) {
 			return capability.cast(objectManager);
+		} else if (capability.isAssignableFrom(ScenarioCSVExportCapability.class)) {
+			return capability.cast(new ScenarioCSVExportCapability(this));
 		}
 		return super.handleGetCapability(capability);
 	}

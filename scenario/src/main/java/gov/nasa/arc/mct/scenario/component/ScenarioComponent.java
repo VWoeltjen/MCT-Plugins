@@ -48,6 +48,9 @@ public class ScenarioComponent extends CostFunctionComponent implements Duration
 		if (capability.isAssignableFrom(ObjectManager.class)) {
 			return capability.cast(objectManager);
 		}
+		if (capability.isAssignableFrom(ScenarioCSVExportCapability.class)) {
+			return capability.cast(new ScenarioCSVExportCapability(this));
+		}
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
 		    JAXBModelStatePersistence<ActivityModelRole> persistence = new JAXBModelStatePersistence<ActivityModelRole>() {
 

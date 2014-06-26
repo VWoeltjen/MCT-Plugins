@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Scenario
 Bundle-SymbolicName: gov.nasa.arc.mct.scenario
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.1
 Import-Package: gov.nasa.arc.mct.components,
  gov.nasa.arc.mct.gui,
  gov.nasa.arc.mct.platform.spi,
@@ -12,7 +12,8 @@ Import-Package: gov.nasa.arc.mct.components,
  gov.nasa.arc.mct.util,
  org.osgi.framework;version="1.4.0",
  org.osgi.service.component,
- org.slf4j;version="1.5.0"
+ org.slf4j;version="1.5.0",
+ gov.nasa.arc.mct.csvexport.component
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Service-Component: OSGI-INF/services.xml
 Export-Package: gov.nasa.arc.mct.scenario.api,
