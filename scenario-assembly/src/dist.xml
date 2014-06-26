@@ -53,6 +53,7 @@
     		<useProjectArtifact>false</useProjectArtifact>
     		<includes>
     			<include>gov.nasa.arc.mct:scenario</include>
+    			<include>gov.nasa.arc.mct:csvExport</include>
     		</includes>
     		<useTransitiveDependencies>false</useTransitiveDependencies>
     		<fileMode>0777</fileMode>

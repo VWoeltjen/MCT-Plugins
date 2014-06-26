@@ -9,6 +9,11 @@
   
   <properties>
     <platform.relativePath>../../mct</platform.relativePath>
+    <mct.db.host>localhost</mct.db.host>
+    <mct.db.port>3306</mct.db.port>
+    <mct.db.name>mct</mct.db.name>
+    <mct.db.user>mct</mct.db.user>
+    <mct.db.password>mct</mct.db.password>
   </properties>
   
   <parent>
@@ -124,6 +129,7 @@
   
   <modules>
     <module>../scenario</module>
+    <module>../CSVExport</module>
   </modules>
   
   <dependencies>
@@ -140,5 +146,11 @@
   		<artifactId>scenario</artifactId>
   		<version>${mct.platform.version}</version>
   	</dependency>
+  	
+  	<dependency>
+        <groupId>gov.nasa.arc.mct</groupId>
+        <artifactId>csvExport</artifactId>
+        <version>${mct.platform.version}</version>
+    </dependency>
   </dependencies>
 </project>

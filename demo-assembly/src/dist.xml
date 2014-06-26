@@ -28,6 +28,7 @@
     		<outputDirectory>resources/plugins</outputDirectory>
     		<useProjectArtifact>false</useProjectArtifact>
     		<includes>
+    		    <include>gov.nasa.arc.mct:csvExport</include>
     			<include>gov.nasa.arc.mct:scenario</include>
     			<include>gov.nasa.arc.mct:earthView</include>
     			<include>gov.nasa.arc.mct:satelliteTracker</include>
