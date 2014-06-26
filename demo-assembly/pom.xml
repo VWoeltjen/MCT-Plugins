@@ -5,7 +5,7 @@
   <artifactId>mct-demo</artifactId>
   <packaging>pom</packaging>
   <name>MCT Packaging for Scenario Evaluation</name>
-  <version>${mct.platform.version}.1</version>
+  <version>${mct.platform.version}.2</version>
   
   <properties>
     <platform.relativePath>../../mct</platform.relativePath>
@@ -88,6 +88,7 @@
   </build>
   
   <modules>
+    <module>../CSVExport</module>
     <module>../scenario</module>
     <module>../earthView</module>
     <module>../satelliteTracker</module>
@@ -101,7 +102,12 @@
         <classifier>dist</classifier>
         <type>tar.gz</type>
   	</dependency>    
-    
+
+    <dependency>
+        <groupId>gov.nasa.arc.mct</groupId>
+        <artifactId>csvExport</artifactId>
+        <version>${mct.platform.version}</version>
+    </dependency>    
     <dependency>
   		<groupId>gov.nasa.arc.mct</groupId>
   		<artifactId>scenario</artifactId>
