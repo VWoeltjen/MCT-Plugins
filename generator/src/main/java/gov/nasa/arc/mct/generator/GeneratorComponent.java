@@ -23,6 +23,7 @@ package gov.nasa.arc.mct.generator;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.FeedFilterProvider;
+import gov.nasa.arc.mct.components.FeedInfoProvider;
 import gov.nasa.arc.mct.components.FeedProvider;
 import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
 import gov.nasa.arc.mct.components.ModelStatePersistence;
@@ -101,9 +102,42 @@ public class GeneratorComponent extends AbstractComponent {
 			return capability.cast(GeneratorFeedFilterProvider.getInstance());
 		}
 		
+		// Support switching between different feeds
+		if (capability.isAssignableFrom(FeedInfoProvider.class)) {
+			// Only provide a feed if a valid expression is defined
+			String expression = model.get().getFormula();
+			if (expression != null) {
+				return capability.cast(new GeneratorFeedInfoProvider(expression));
+			}	
+		}
+		
 		return null;
 	}
 	
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	protected <T> List<T> handleGetCapabilities(Class<T> capability) {
+		if (capability.isAssignableFrom(FeedProvider.class)) {
+			try {
+				// Only provide a feed if a valid expression is defined
+				String expression = model.get().getFormula();
+				if (expression != null) {
+					FeedProvider fpA = new GeneratorFeedProvider(expression);
+					FeedProvider fpB = new GeneratorFeedProvider("-(" + expression + ")");
+					return Arrays.asList(capability.cast(fpA), capability.cast(fpB));
+				}	
+			} catch (IllegalArgumentException iae) {
+				// Don't provide feeds if data is bad...
+			}				
+		}
+		 
+		return super.handleGetCapabilities(capability);
+	}
+
+
+
 	@Override
 	public boolean isLeaf() {
 		// Don't allow this object to be used as a container for other objects.
