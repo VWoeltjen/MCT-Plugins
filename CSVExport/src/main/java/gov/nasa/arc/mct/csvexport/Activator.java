@@ -19,15 +19,27 @@
  * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
  * information. 
  *******************************************************************************/
-package gov.nasa.arc.mct.scenario.actions;
+package gov.nasa.arc.mct.csvexport;
 
-import java.util.ResourceBundle;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
-/**
- * Convenience class to declare which bundle is used for 
- * CSV GUI elements once, instead of repeatedly.
- */
-public class BundleAccess {
-	/* package-private */
-	static ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle"); 
+public class Activator implements BundleActivator {
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
+	 */
+	@Override
+	public void start(BundleContext context) throws Exception {
+	}
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
+	 */
+	@Override
+	public void stop(BundleContext context) throws Exception {
+	}
 }

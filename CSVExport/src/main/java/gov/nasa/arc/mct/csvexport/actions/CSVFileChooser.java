@@ -19,7 +19,7 @@
  * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
  * information. 
  *******************************************************************************/
-package gov.nasa.arc.mct.scenario.actions;
+package gov.nasa.arc.mct.csvexport.actions;
 
 import gov.nasa.arc.mct.gui.FileChooser;
 

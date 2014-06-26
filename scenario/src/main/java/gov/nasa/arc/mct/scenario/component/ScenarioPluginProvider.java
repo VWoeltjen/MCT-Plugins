@@ -23,12 +23,8 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.CustomVisualControl;
-import gov.nasa.arc.mct.gui.MenuItemInfo;
-import gov.nasa.arc.mct.gui.MenuItemInfo.MenuItemType;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.policy.PolicyInfo;
-import gov.nasa.arc.mct.scenario.actions.ExportCSVAction.ObjectsExportCSVAction;
-import gov.nasa.arc.mct.scenario.actions.ExportCSVAction.ThisExportCSVAction;
 import gov.nasa.arc.mct.scenario.policy.RepositoryLinkPolicy;
 import gov.nasa.arc.mct.scenario.policy.RepositoryRemovalPolicy;
 import gov.nasa.arc.mct.scenario.policy.ScenarioContainmentPolicy;
@@ -284,14 +280,4 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		return types;
 	}
 
-	@Override
-	public Collection<MenuItemInfo> getMenuItemInfos() {
-		return Arrays.asList(
-				new MenuItemInfo("/objects/export.ext",
-						"EXPORT_OBJECTS_CSV_ACTION", 
-						MenuItemType.NORMAL, ObjectsExportCSVAction.class),
-				new MenuItemInfo("/this/export.ext",
-						"EXPORT_THIS_CSV_ACTION", 
-						MenuItemType.NORMAL, ThisExportCSVAction.class));
-	}
 }
