@@ -21,7 +21,6 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.data.action;
 
-import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.gui.ActionContext;
 import gov.nasa.arc.mct.gui.ContextAwareAction;
 import gov.nasa.arc.mct.gui.FileChooser;
@@ -30,28 +29,21 @@ import gov.nasa.arc.mct.gui.View;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import javax.swing.JFileChooser;
 
+
 /**
- * Represents the "Data > Import" action, used to import 
+ * Represents the "Import > Data" action, used to import 
  * CSV (comma-separated value) format files into MCT. 
- * 
- * As the implementation for this action varies depending 
- * on whether it is accessed via the This menu or the 
- * Objects menu, this is simply an abstract superclass; 
- * implementations for those menus are provided as static 
- * inner classes.
  * 
  * @author jdong
  *
  */
 public class DataImportAction extends ContextAwareAction {
-	private static final long serialVersionUID = 1364579701311592635L;
+
+	private static final long serialVersionUID = 7714664337177992302L;
+	private ActionContext currentContext;
 
 	public DataImportAction() {
 		super(BundleAccess.BUNDLE.getString("data_import_action"));
@@ -59,77 +51,46 @@ public class DataImportAction extends ContextAwareAction {
 	
 	@Override
 	public boolean canHandle(ActionContext context) {
+		currentContext = context;
 		return true;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		// return targets != null && !targets.isEmpty();
 		return true;
 	}
 
+	/**
+     * Presents a FileChooser to user, then imports the data into MCT. 
+     * 
+     * @param e the {@link ActionEvent}
+     */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		/** if (targets != null) {
-			Object src = e.getSource();
-			Component c = (src instanceof Component) ? (Component) src : null;
-			File file = selectFile(c);
-			if (file != null) {
-				new CSVExporter(c, targets, file).export();
-			}
-		} */
+		View window = currentContext.getWindowManifestation();
+		File file = selectFile(window);
+		if (file != null) {
+			new DataImporter(window, file).importData();
+		}
 	}
 	
-	/** private File selectFile(Component source) {
-		// create a save as dialog
-		JFileChooser fileChooser = new CSVFileChooser();
-		return fileChooser.showSaveDialog(source) == FileChooser.APPROVE_OPTION ?
-				fileChooser.getSelectedFile() : null;
-	} */
-
 	/**
-	 * Import from the This menu.
+	 * if enable select multiple files or directory, refer to ImportAction.selectFile()
+	 * 
+	 * Opens FileChooser with the passed in component as the parent and returns the selected
+	 * File specified by the user through the FileChooser.
+     * 
+	 * @param parent the current window which the FileChooser belongs to
+	 * @return a File object returned by the FileChooser, or null if user canceled out of the FileChooser
 	 */
-	/** public static class ThisExportCSVAction extends DataImportAction {
-		private static final long serialVersionUID = -4715218932910019818L;
-
-		@Override
-		protected Collection<AbstractComponent> 
-				getTargets(ActionContext context) {
-			
-			if (context.getWindowManifestation() != null) {
-				return Collections.singleton(
-						context.getWindowManifestation()
-						       .getManifestedComponent());
-			}
-			return null;
-			
-		}
+	private File selectFile(Component parent) {
+		if (parent == null) return null;
 		
+		JFileChooser dataFileChooser = new ImportFileChooser();
+		dataFileChooser.setDialogTitle(BundleAccess.BUNDLE.getString("data_import_chooser_title"));
+		dataFileChooser.setApproveButtonText(BundleAccess.BUNDLE.getString("data_import_button"));
+		return dataFileChooser.showSaveDialog(parent) == FileChooser.APPROVE_OPTION ?
+				dataFileChooser.getSelectedFile() : null;
 	}
-
-	/**
-	 * Export as CSV, from the Objects menu.
-	 */
-	/** public static class ObjectsExportCSVAction extends DataImportAction {
-		private static final long serialVersionUID = -4715218932910019818L;
-
-		@Override
-		protected Collection<AbstractComponent> 
-				getTargets(ActionContext context) {
-			
-			if (context.getSelectedManifestations() != null) {
-				List<AbstractComponent> selected = 
-						new ArrayList<AbstractComponent>();
-				for (View v : context.getSelectedManifestations()) {
-					selected.add(v.getManifestedComponent());
-				}
-				return selected;
-			}
-			return null;
-			
-		}
-		
-	}*/
 
 }

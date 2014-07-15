@@ -19,27 +19,45 @@
  * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
  * information. 
  *******************************************************************************/
-package gov.nasa.arc.mct.data;
+package gov.nasa.arc.mct.data.component;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.Bootstrap;
 
-public class Activator implements BundleActivator {
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
-	 */
+/**
+ * Represent the top level User Component (BootStrap Component) which acts as parent 
+ * for other DataComponents in a tree structure
+ * @author jdong2
+ *
+ */
+public class DataTaxonomyComponent extends AbstractComponent implements Bootstrap {
+
 	@Override
-	public void start(BundleContext context) throws Exception {
+	protected <T> T handleGetCapability(Class<T> capability) {
+		if (capability.isAssignableFrom(Bootstrap.class)) {
+			return capability.cast(this);
+		} 
+		return super.handleGetCapability(capability);
 	}
 	
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
-	 */
+
 	@Override
-	public void stop(BundleContext context) throws Exception {
+	public boolean isGlobal() {
+		return true;
+	}
+
+	@Override
+	public boolean isSandbox() {
+		return false;
+	}
+
+	@Override
+	public int categoryIndex() {
+		return 0;
+	}
+
+	@Override
+	public int componentIndex() {
+		return 0;
 	}
 }

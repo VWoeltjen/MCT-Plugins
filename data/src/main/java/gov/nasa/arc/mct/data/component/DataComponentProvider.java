@@ -23,6 +23,7 @@ package gov.nasa.arc.mct.data.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.data.action.DataImportAction;
+import gov.nasa.arc.mct.data.action.DictionaryImportAction;
 import gov.nasa.arc.mct.gui.MenuItemInfo;
 import gov.nasa.arc.mct.gui.MenuItemInfo.MenuItemType;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
@@ -45,6 +46,12 @@ public class DataComponentProvider extends AbstractComponentProvider {
     
 	private List<AbstractComponent> bootstraps = new ArrayList<AbstractComponent>();
 	
+	private static final ComponentTypeInfo dataTaxonomyComponentType = new ComponentTypeInfo(
+			bundle.getString("data_taxonomy_component_display_name"),  
+			bundle.getString("data_taxonomy_component_description"), 
+			DataTaxonomyComponent.class,
+			false);
+	
 	private static final ComponentTypeInfo dataComponentType = new ComponentTypeInfo(
 			bundle.getString("data_component_display_name"),  
 			bundle.getString("data_component_description"), 
@@ -61,10 +68,10 @@ public class DataComponentProvider extends AbstractComponentProvider {
 	
 	private AbstractComponent initializeDataTaxonomy(List<AbstractComponent> toPersist) {
 		AbstractComponent dataComponent = initialize(
-				new DataComponent(),
-				bundle.getString("data_base_display_name"),
-				bundle.getString("data_uuid"),
-				bundle.getString("data_owner"));
+				new DataTaxonomyComponent(),
+				bundle.getString("data_taxonomy_base_display_name"),
+				bundle.getString("data_taxonomy_uuid"),
+				bundle.getString("data_taxonomy_owner"));
 		
 		return dataComponent;
 	}
@@ -76,7 +83,7 @@ public class DataComponentProvider extends AbstractComponentProvider {
 		ComponentInitializer dataComponentCapability = ac.getCapability(ComponentInitializer.class);
         dataComponentCapability.setId(id);
         dataComponentCapability.setOwner(owner);
-        dataComponentCapability.setCreator(owner);
+        dataComponentCapability.setCreator(owner); 
         
 		return ac;
 	}
@@ -88,18 +95,23 @@ public class DataComponentProvider extends AbstractComponentProvider {
 	
 	@Override
 	public Collection<ComponentTypeInfo> getComponentTypes() {
-
-		return Arrays.asList(dataComponentType);
+		return Arrays.asList(dataTaxonomyComponentType, dataComponentType);
 	}
 
 	@Override
 	public Collection<MenuItemInfo> getMenuItemInfos() {
 		return Arrays.asList(
 				new MenuItemInfo("/objects/import.ext",
-						"IMPORT_OBJECTS_CSV_ACTION", 
+						"IMPORT_DICTIONARY_ACTION", 
+						MenuItemType.NORMAL, DictionaryImportAction.class),
+				new MenuItemInfo("/this/import.ext",
+						"IMPORT_DICTIONARY_ACTION", 
+						MenuItemType.NORMAL, DictionaryImportAction.class),
+				new MenuItemInfo("/objects/import.ext",
+						"IMPORT_DATA_ACTION", 
 						MenuItemType.NORMAL, DataImportAction.class),
 				new MenuItemInfo("/this/import.ext",
-						"IMPORT_THIS_CSV_ACTION", 
+						"IMPORT_DATA_ACTION", 
 						MenuItemType.NORMAL, DataImportAction.class));
 	}
 	

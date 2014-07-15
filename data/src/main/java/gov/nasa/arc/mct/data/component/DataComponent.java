@@ -21,37 +21,95 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.data.component;
 
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.Bootstrap;
+import gov.nasa.arc.mct.components.FeedProvider;
+import gov.nasa.arc.mct.components.FeedProvider.FeedType;
+import gov.nasa.arc.mct.components.FeedProvider.RenderingInfo;
+import gov.nasa.arc.mct.data.action.BundleAccess;
+import gov.nasa.arc.mct.services.activity.TimeService;
 
-public class DataComponent extends AbstractComponent implements Bootstrap {
+/**
+ * 
+ * @author jdong2
+ *
+ */
+public class DataComponent extends AbstractComponent implements FeedProvider {
+
+	public static final String PREFIX = BundleAccess.BUNDLE.getString("data_component_prefix") + ":";
+	public static final String SEPARATOR = ":";
 
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
-		if (capability.isAssignableFrom(Bootstrap.class)) {
+		if (capability.isAssignableFrom(FeedProvider.class)) {
 			return capability.cast(this);
-		} 
+		}
 		return super.handleGetCapability(capability);
+	}
+		
+	@Override
+	public String getSubscriptionId() {
+		return PREFIX + getExternalKey();
 	}
 
 	@Override
-	public boolean isGlobal() {
+	public TimeService getTimeService() {
+		return new TimeService() {
+			@Override
+			public long getCurrentTime() {
+				return System.currentTimeMillis();
+			}				
+		};
+	}
+
+	@Override
+	public String getLegendText() {			
+		return getDisplayName();
+	}
+
+	@Override
+	public int getMaximumSampleRate() {
+		return 1;
+	}
+
+	@Override
+	public FeedType getFeedType() {
+		return FeedType.FLOATING_POINT;
+	}
+
+	@Override
+	public String getCanonicalName() {
+		return getDisplayName();
+	}
+
+	@Override
+	public RenderingInfo getRenderingInfo(Map<String, String> data) {
+		String riAsString = data.get(FeedProvider.NORMALIZED_RENDERING_INFO);
+		RenderingInfo ri = null;  
+		ri = FeedProvider.RenderingInfo.valueOf(riAsString);   
+		return ri;
+	}
+
+	@Override
+	public long getValidDataExtent() {
+		return System.currentTimeMillis();
+	}
+
+	@Override
+	public boolean isPrediction() {
+		return false;
+	}
+	
+	@Override
+	public boolean isLeaf() {
 		return true;
 	}
 
 	@Override
-	public boolean isSandbox() {
+	public boolean isNonCODDataBuffer() {
 		return false;
 	}
-
-	@Override
-	public int categoryIndex() {
-		return 0;
-	}
-
-	@Override
-	public int componentIndex() {
-		return 0;
-	}
-
 }

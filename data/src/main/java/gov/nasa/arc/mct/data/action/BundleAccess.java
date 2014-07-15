@@ -29,5 +29,5 @@ import java.util.ResourceBundle;
  */
 public class BundleAccess {
 	/* package-private */
-	static ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle"); 
+	public static ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle"); 
 }
