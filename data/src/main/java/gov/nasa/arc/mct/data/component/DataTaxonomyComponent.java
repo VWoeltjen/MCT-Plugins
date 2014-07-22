@@ -21,22 +21,67 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.data.component;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.Bootstrap;
+import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
+import gov.nasa.arc.mct.components.ModelStatePersistence;
 
 /**
  * Represent the top level User Component (BootStrap Component) which acts as parent 
- * for other DataComponents in a tree structure
+ * of DataComponents to form a tree structure
  * @author jdong2
  *
  */
 public class DataTaxonomyComponent extends AbstractComponent implements Bootstrap {
+	
+	private final AtomicReference<DataTaxonomyModel> model = new AtomicReference<DataTaxonomyModel> (new DataTaxonomyModel());
+	
+	public DataTaxonomyModel getModel() {
+		return model.get();
+	}
+
+	public void setTimeStamp(String id, String endTime) {		
+		model.set(getModel().setTime(id, endTime));		
+	}
+	
+	public Boolean hasTimeStamp(String id) {	
+		return getModel().contains(id);
+	}
+	
+	public long getTimeStamp(String id) {
+		return getModel().getEndTime(id);
+	}
+
 
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
 		if (capability.isAssignableFrom(Bootstrap.class)) {
 			return capability.cast(this);
-		} 
+		} else if (ModelStatePersistence.class.isAssignableFrom(capability)) { 
+			// save additional attributes to database, refers to MCT wiki for details
+			JAXBModelStatePersistence<DataTaxonomyModel> persistence = new JAXBModelStatePersistence<DataTaxonomyModel> () {
+
+				@Override
+				protected DataTaxonomyModel getStateToPersist() {
+					return model.get();
+				}
+
+				@Override
+				protected void setPersistentState(DataTaxonomyModel modelState) {
+					model.set(modelState);
+				}
+
+				@Override
+				protected Class<DataTaxonomyModel> getJAXBClass() {
+					return DataTaxonomyModel.class;
+				}
+				
+			};
+			
+			return capability.cast(persistence);
+		}
 		return super.handleGetCapability(capability);
 	}
 	

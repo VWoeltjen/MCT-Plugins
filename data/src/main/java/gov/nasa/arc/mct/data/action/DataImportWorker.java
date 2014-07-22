@@ -23,13 +23,16 @@ package gov.nasa.arc.mct.data.action;
 
 import gov.nasa.arc.mct.api.feed.BufferFullException;
 import gov.nasa.arc.mct.api.feed.FeedDataArchive;
-import gov.nasa.arc.mct.data.access.DataArchiveAccess;
+import gov.nasa.arc.mct.data.access.FeedDataArchiveAccess;
 import gov.nasa.arc.mct.data.component.DataComponent;
+import gov.nasa.arc.mct.data.component.DataTaxonomyComponent;
+import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 
 import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,45 +41,58 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingWorker;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.FeedProvider;
 import gov.nasa.arc.mct.components.FeedProvider.RenderingInfo;
 
 /**
  * A SwingWorker responsible for managing the background 
  * activities of Data import. These include parsing data,
- * and saving to MCT.  
+ * registering endTime in DataTaxonomyComponent (parent) 
+ * and saving data to database.  
  * 
  * @author jdong
  *
  */
 public class DataImportWorker extends SwingWorker<Boolean, Void> {
 	private File file;
+	private AbstractComponent parent;
 	private FileNotFoundException fnfException;
 	private BufferFullException bfException;
+	private FeedDataArchive dataArchive = FeedDataArchiveAccess.getDataArchive();
 	
-	public DataImportWorker(File file) {
+	/**
+	 * used to check whether lines of data belong to the same component,
+	 * essentially used to find last time stamp.
+	 */
+	private String previousID, previousTime;
+	
+	/**
+	 * monitor the process of reading data from file and writing to disk
+	 */
+	private Boolean success = true;
+	
+	public DataImportWorker(File file, AbstractComponent parent) {
 		super();
-		this.file = file;		
-		if (file == null) {
+		this.file = file;	
+		this.parent = parent;
+		if ((parent == null) && (file == null)) {
 			throw new IllegalArgumentException();
 		}
 	}
 
 	@Override
 	protected Boolean doInBackground() throws Exception {
-		setProgress(0);
-		
-		System.out.println("start reading data.");
+		setProgress(0);		
 		Boolean success = readFile(file);
-		System.out.println("finish reading data.");
 		setProgress(100);
 		
 		return success & !isCancelled();
 	}
 	
 	private Boolean readFile(File file) {
-		boolean success = true;
 		Scanner fileScanner = null;
+		
 		try {
 			fileScanner = new Scanner(file);
 		} catch (FileNotFoundException e) {
@@ -87,25 +103,44 @@ public class DataImportWorker extends SwingWorker<Boolean, Void> {
 			success = (fileScanner != null);
 		}
 		
-		String line = null;
-		while (success && fileScanner.hasNextLine()) {
-			line = fileScanner.nextLine();
-			System.out.println(line);
-			saveData(line);						
-		}	
-		fileScanner.close();
+		if (success) {
+			String line = fileScanner.nextLine();		
+			readFirstLine(line);
+			
+			while (success && fileScanner.hasNextLine()) {
+				line = fileScanner.nextLine();
+				saveData(line);						
+			}	
+			
+			// process the last line of file
+			setEndTime(previousID, previousTime);
+			fileScanner.close();
+		}		
 		
 		return success;
 	}
+	
+	/**
+	 * read first line to initialize previoudID and previousTime,
+	 * and save the data.
+	 * @param firstLine
+	 */
+	private void readFirstLine(String firstLine) {
+		Scanner lineScanner = new Scanner(firstLine);
+		lineScanner.useDelimiter(",");
+		previousID = DataComponent.PREFIX + lineScanner.next();
+		previousTime   = lineScanner.next();
+		lineScanner.close();
 
-    private void saveData(String line) {
-    	FeedDataArchive dataArchive = DataArchiveAccess.getDataArchive();
+		saveData(firstLine);
+	}
+	
+    private void saveData(String line) {    	
     	Scanner lineScanner = new Scanner(line);
 		lineScanner.useDelimiter(",");
 		String feedID = DataComponent.PREFIX + lineScanner.next();
 		String time   = lineScanner.next();
 		String value  = lineScanner.next();
-		System.out.println(feedID + "/" + time + "/" + value);
 		lineScanner.close();
 		
     	Map<String, String> datum = new HashMap<String, String>();
@@ -118,19 +153,34 @@ public class DataImportWorker extends SwingWorker<Boolean, Void> {
 	    datum.put(FeedProvider.NORMALIZED_TIME_KEY, String.valueOf(time));
 	    datum.put(FeedProvider.NORMALIZED_VALUE_KEY, value);
 	   
-	    // System.out.println("Before put data.");
 	    if (dataArchive != null) {
-	    	// System.out.println("DataArchive is bound.");
 	    	try {
 				dataArchive.putData(feedID, TimeUnit.MILLISECONDS, Long.parseLong(time), datum);
 			} catch (BufferFullException e) {
+				success = false;
 				bfException = e;
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-	    	// System.out.println("After put data.");
-	    }				
+	    }	
+		
+	    // check whether reading data for a new component
+	    if (isEndTime(feedID)) setEndTime(feedID, time);
+	    
+	    previousID = feedID;
+	    previousTime = time;
+    }
+    
+    private Boolean isEndTime(String feedID) {
+    	return !feedID.equals(previousID);
+    }
+
+    private void setEndTime(String id, String time) { 	
+    	assert parent instanceof DataTaxonomyComponent;
+    	((DataTaxonomyComponent)parent).setTimeStamp(id, time);
+    	// since model is changed, needs to save into database
+    	PlatformAccess.getPlatform().getPersistenceProvider().persist(Collections.singleton(parent));
     }
 
 	public List<Exception> getException() {

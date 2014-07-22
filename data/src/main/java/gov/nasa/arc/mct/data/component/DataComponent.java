@@ -21,6 +21,8 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.data.component;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,10 +32,11 @@ import gov.nasa.arc.mct.components.FeedProvider;
 import gov.nasa.arc.mct.components.FeedProvider.FeedType;
 import gov.nasa.arc.mct.components.FeedProvider.RenderingInfo;
 import gov.nasa.arc.mct.data.action.BundleAccess;
+import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.services.activity.TimeService;
 
 /**
- * 
+ * Represents data corresponding to each dictionary import.
  * @author jdong2
  *
  */
@@ -41,6 +44,12 @@ public class DataComponent extends AbstractComponent implements FeedProvider {
 
 	public static final String PREFIX = BundleAccess.BUNDLE.getString("data_component_prefix") + ":";
 	public static final String SEPARATOR = ":";
+	
+	/**
+	 * the DataTaxonomyComponent which stores the end time stamp 
+	 * for the data feed of current component.
+	 */
+	private DataTaxonomyComponent parent;
 
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
@@ -49,20 +58,68 @@ public class DataComponent extends AbstractComponent implements FeedProvider {
 		}
 		return super.handleGetCapability(capability);
 	}
-		
+	
+	/**
+	 * @returns an unique ID to look up the associated value
+	 * stored in the disk.
+	 */
 	@Override
 	public String getSubscriptionId() {
 		return PREFIX + getExternalKey();
 	}
 
+	/**
+	 * @return the end time stamp for the corresponding feed.
+	 * getTimeService() should return the current time meaningful
+	 * to the data source, so that when rendering, the time range 
+	 * is appropriate to the feed.
+	 */
 	@Override
 	public TimeService getTimeService() {
+		DataTaxonomyComponent parentReference = getParent();
+		String id = getSubscriptionId();
+		
+		// if corresponding data has been saved into database (using
+		// Import > Data), use the saved end time stamp 
+		if (parentReference.hasTimeStamp(id)) {
+			final long endTime = parentReference.getTimeStamp(id);
+			System.out.println("getTimeService() returns from Map: " + endTime);
+			return new TimeService() {
+				public long getCurrentTime() {
+					return endTime;
+				}
+			};		
+		}
+		
+		// else use current time of system
 		return new TimeService() {
 			@Override
 			public long getCurrentTime() {
+				System.out.println("getTimeService() returns current time: " + System.currentTimeMillis());
 				return System.currentTimeMillis();
 			}				
 		};
+	}
+
+	/**
+	 * cannot return parent directly due to the value may be null.
+	 * Instead, use getReferencingComponents() to fetch references from database.
+	 * 
+	 * @return the DataTaxonomyComponent which acts as
+	 *         parent in the tree structure
+	 */
+	public DataTaxonomyComponent getParent() {
+		Collection<AbstractComponent> owners =  this.getReferencingComponents();
+		for (AbstractComponent owner: owners) {
+			if (owner instanceof DataTaxonomyComponent) {
+				parent = (DataTaxonomyComponent)owner;
+			}
+		} 
+		return parent; 		
+	}
+
+	public void setParent(DataTaxonomyComponent parent) {
+		this.parent = parent;
 	}
 
 	@Override
@@ -95,7 +152,7 @@ public class DataComponent extends AbstractComponent implements FeedProvider {
 
 	@Override
 	public long getValidDataExtent() {
-		return System.currentTimeMillis();
+		return getTimeService().getCurrentTime();
 	}
 
 	@Override
@@ -108,8 +165,11 @@ public class DataComponent extends AbstractComponent implements FeedProvider {
 		return true;
 	}
 
+	/**
+	 * Static data reading from database, so it is Non-change-of-data
+	 */
 	@Override
 	public boolean isNonCODDataBuffer() {
-		return false;
+		return true;
 	}
 }

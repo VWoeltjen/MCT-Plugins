@@ -58,8 +58,8 @@ public class DictionaryImporter {
 	/**
 	 * Create a new DictionaryImporter.
 	 * @param manifestation the associated View on which the action is performed
-	 * @param parent the parent of the will be imported components to form the tree structure
-	 * @param files the file to which components should be written
+	 * @param parent the parent to form a tree structure
+	 * @param files the file to read
 	 */
 	public DictionaryImporter(View manifestation, AbstractComponent parent, File file) {
 		super();

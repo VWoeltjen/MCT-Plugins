@@ -22,10 +22,9 @@
 package gov.nasa.arc.mct.data.action;
 
 import gov.nasa.arc.mct.data.action.BundleAccess;
-
 import java.io.File;
-
 import javax.swing.filechooser.FileFilter;
+
 /**
  * A FileFilter that allows only files with the .csv extension.
  */
@@ -34,8 +33,7 @@ public class ImportFileFilter extends FileFilter {
 	/**
 	 * Tests if file ends with .csv, indicating it is a CSV file.
 	 * 
-	 * @param f
-	 *            file to be tested
+	 * @param f file to be tested
 	 * @return boolean if file ends with ".csv"
 	 */
 	public boolean accept(File f) {

@@ -84,6 +84,7 @@ public class DataComponentProvider extends AbstractComponentProvider {
         dataComponentCapability.setId(id);
         dataComponentCapability.setOwner(owner);
         dataComponentCapability.setCreator(owner); 
+        ac.save();
         
 		return ac;
 	}

@@ -22,6 +22,7 @@
 package gov.nasa.arc.mct.data.action;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.data.component.DataTaxonomyComponent;
 import gov.nasa.arc.mct.gui.View;
 
 import java.awt.Component;
@@ -35,7 +36,7 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
 /**
- * Responsible for managing the import of a Dictionary file. 
+ * Responsible for managing the import of a Data file. 
  * Serves as an intermediary between the worker which handles 
  * the background import and the progress monitor which updates 
  * the user.
@@ -48,18 +49,24 @@ public class DataImporter {
 	/** an AWT component (for progress monitor) */
 	private Component component;
 	
-	/** A file containing a list of references to TLE data that will be 
-	 *  to be parsed into imported into MCT components **/
+	private AbstractComponent parent;
+	
+	/** 
+	 * A file containing a list of TLE data (ID, timeStamp and value) 
+	 * that will be saved into database.
+	 */ 
 	private File file;
 	
 	/**
-	 * Create a new DictionaryImporter.
+	 * Create a new DataImporter.
 	 * @param manifestation the associated View on which the action is performed
-	 * @param files the file to which components should be written
+	 * @param parent the parent component which stores endTimeStamp of its children
+	 * @param files the file to read
 	 */
-	public DataImporter(View manifestation, File file) {
+	public DataImporter(View manifestation, AbstractComponent parent, File file) {
 		super();
 		this.component = manifestation;
+		this.parent = parent;
 		this.file = file;
 	}
 	
@@ -70,7 +77,7 @@ public class DataImporter {
 	 * monitor is provided if necessary.
 	 */
 	public void importData() {
-		final DataImportWorker worker = new DataImportWorker(file);
+		final DataImportWorker worker = new DataImportWorker(file, parent);
 		final ProgressMonitor monitor = new ProgressMonitor(component,
 				BundleAccess.BUNDLE.getString("import_progress_message"), 
 				"", 0, 100);

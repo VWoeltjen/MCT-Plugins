@@ -21,6 +21,8 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.data.action;
 
+import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.data.component.DataTaxonomyComponent;
 import gov.nasa.arc.mct.gui.ActionContext;
 import gov.nasa.arc.mct.gui.ContextAwareAction;
 import gov.nasa.arc.mct.gui.FileChooser;
@@ -69,8 +71,14 @@ public class DataImportAction extends ContextAwareAction {
 	public void actionPerformed(ActionEvent e) {
 		View window = currentContext.getWindowManifestation();
 		File file = selectFile(window);
+		
+		View manifestation = currentContext.getSelectedManifestations()
+	             .iterator().next();
+		assert manifestation != null;
+		AbstractComponent selectedComponent = manifestation.getManifestedComponent();
+		
 		if (file != null) {
-			new DataImporter(window, file).importData();
+			new DataImporter(window, selectedComponent, file).importData();
 		}
 	}
 	

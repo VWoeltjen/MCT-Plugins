@@ -7,9 +7,9 @@
 			<provide interface="gov.nasa.arc.mct.services.component.ComponentProvider" />
 		</service>
 	</scr:component>	
-	<scr:component name="gov.nasa.arc.mct.data.access.DataArchiveAccess" immediate="true">
+	<scr:component name="gov.nasa.arc.mct.data.access.FeedDataArchiveAccess" immediate="true">
 	    <implementation
-	    	class="gov.nasa.arc.mct.data.access.DataArchiveAccess" />
+	    	class="gov.nasa.arc.mct.data.access.FeedDataArchiveAccess" />
 	    <reference name="dataArchiveAccess"
 	    	interface="gov.nasa.arc.mct.api.feed.FeedDataArchive"
 	    	bind="setDataArchive"

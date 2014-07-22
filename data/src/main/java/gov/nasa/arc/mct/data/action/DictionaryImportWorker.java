@@ -23,6 +23,7 @@ package gov.nasa.arc.mct.data.action;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.data.component.DataComponent;
+import gov.nasa.arc.mct.data.component.DataTaxonomyComponent;
 import gov.nasa.arc.mct.platform.spi.PlatformAccess;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
 import gov.nasa.arc.mct.services.internal.component.ComponentInitializer;
@@ -57,22 +58,7 @@ public class DictionaryImportWorker extends SwingWorker<Boolean, Void> {
 		super();
 		this.parent = component;
 		this.file = file;
-		
-		/**
-		 * three valid ways to access ComponentRegistry:
-		 * 1. It serves to developer's convenience to not have to worry about the OSGi way 
-		 *    of doing things. The Platform object exposed by PlatformAccess.getPlatform() 
-		 *    has all of the MCT services that are commonly used; it is essentially a facade 
-		 *    over OSGi's service registry.
-		 *    ComponentRegistry registry = PlatformAccess.getPlatform().getComponentRegistry(); 
-		 *    
-		 * 2. ComponentRegistry registry =  ExternalComponentRegistryImpl.getInstance(); 
-		 * 
-		 * 3. introduced in ImportExportProvider plug-in, more of OSGI way in the sense that
-		 *    declare that you need a ComponentRegistry and use it when you get it.
-		 *    ComponentRegistry registry = (new ComponentRegistryAccess()).getComponentRegistry(); 
-		 */
-		registry = PlatformAccess.getPlatform().getComponentRegistry();
+		this.registry = PlatformAccess.getPlatform().getComponentRegistry();
 		
 		if (component == null || file == null) {
 			throw new IllegalArgumentException();
@@ -81,8 +67,7 @@ public class DictionaryImportWorker extends SwingWorker<Boolean, Void> {
 
 	@Override
 	protected Boolean doInBackground() throws Exception {
-		setProgress(0);
-		
+		setProgress(0);		
 		Boolean success = parseDictionary(file);
 		setProgress(100);
 		
@@ -114,13 +99,8 @@ public class DictionaryImportWorker extends SwingWorker<Boolean, Void> {
 			}
 		}
 		components.add(parent);
+		// save to database
 		PlatformAccess.getPlatform().getPersistenceProvider().persist(components);
-		
-		/**
-		 * use these when doing multiple Database transactions:
-		 * PlatformAccess.getPlatform().getPersistenceProvider().startRelatedOperations();
-		 * PlatformAccess.getPlatform().getPersistenceProvider().completeRelatedOperations(true);
-		 */	
 		
 		return success;
 	}
@@ -129,11 +109,14 @@ public class DictionaryImportWorker extends SwingWorker<Boolean, Void> {
 		AbstractComponent dataComponent = registry.newInstance(DataComponent.class, parent);
 		dataComponent.setExternalKey(reference);
 		dataComponent.setDisplayName(reference);
-		
+		if ((dataComponent instanceof DataComponent) && (parent instanceof DataTaxonomyComponent)) {
+			((DataComponent)dataComponent).setParent((DataTaxonomyComponent)parent);
+		}
+				
 		ComponentInitializer dataComponentCapability = dataComponent.getCapability(ComponentInitializer.class);
-        dataComponentCapability.setId(DataComponent.PREFIX + DataComponent.SEPARATOR + dataComponent.getExternalKey());
+        dataComponentCapability.setId(DataComponent.PREFIX + dataComponent.getExternalKey());
         dataComponentCapability.setOwner(BundleAccess.BUNDLE.getString("data_owner"));
-        dataComponentCapability.setCreator(BundleAccess.BUNDLE.getString("data_owner")); 
+        dataComponentCapability.setCreator(BundleAccess.BUNDLE.getString("data_owner"));        
 		return dataComponent;
 	}
 
