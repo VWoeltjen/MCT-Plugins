@@ -83,7 +83,6 @@ public class DataComponent extends AbstractComponent implements FeedProvider {
 		// Import > Data), use the saved end time stamp 
 		if (parentReference.hasTimeStamp(id)) {
 			final long endTime = parentReference.getTimeStamp(id);
-			System.out.println("getTimeService() returns from Map: " + endTime);
 			return new TimeService() {
 				public long getCurrentTime() {
 					return endTime;
@@ -95,7 +94,6 @@ public class DataComponent extends AbstractComponent implements FeedProvider {
 		return new TimeService() {
 			@Override
 			public long getCurrentTime() {
-				System.out.println("getTimeService() returns current time: " + System.currentTimeMillis());
 				return System.currentTimeMillis();
 			}				
 		};
