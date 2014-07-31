@@ -63,10 +63,10 @@ public class GraphView extends AbstractTimelineView {
 	private static final int GRAPH_HEIGHT = 60;
 	private static final int GRAPH_PAD    = 16;
 	private static final NumberFormat FORMAT = new DecimalFormat();
-	
-	
 	private static final Color DEFAULT_FOREGROUND_COLOR = Color.BLACK;
 	
+	private boolean isInstantanious = true;
+	private boolean isAccumulative = false;
 	
 	public GraphView(AbstractComponent ac, ViewInfo vi) {
 		super(ac, vi);
@@ -76,8 +76,9 @@ public class GraphView extends AbstractTimelineView {
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		getContentPane().setOpaque(false);
 		for (CostFunctionCapability cost : ac.getCapabilities(CostFunctionCapability.class)) {
-			getContentPane().add(new CostGraph(cost));
-		}
+			getContentPane().add(new InstantaniousCostGraph(cost));
+			// getContentPane().add(new AccumulativeCostGraph(cost));
+		} 
 	}
 
 	@Override
@@ -86,7 +87,7 @@ public class GraphView extends AbstractTimelineView {
 	}
 
 
-	private class CostGraph extends JPanel implements CostOverlay {
+	private abstract class CostGraph extends JPanel implements CostOverlay {
 		private static final long serialVersionUID = 2939539607481881113L;
 		private CostFunctionCapability cost;
 
@@ -131,15 +132,233 @@ public class GraphView extends AbstractTimelineView {
 				renderHints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 				((Graphics2D) g).setRenderingHints(renderHints);
 			}
+			
+			
 						
 			// Draw the data line. Note that points have been computed in a separate method
 			int charHeight = getFontMetrics(getFont()).getHeight();
+			/** if (x.length > 1 && x.length == y.length) {
+				for (int i = 0; i < x.length - 1; i++) {
+					if (x[i] >= getLeftPadding() && x[i+1] <= rightX) {
+						drawDataLine(g, x[i], y[i], x[i+1], y[i+1]);
+						double maxValue = Math.max(dataPoints[i], dataPoints[i+1]);
+						double minValue = Math.min(dataPoints[i], dataPoints[i+1]);
+						if (maxValue != minValue && x[i+1] > getLeftPadding() && x[i+1] < rightX) {
+							int maxY = Math.min(y[i], y[i+1]);
+							int minY = Math.max(y[i], y[i+1]);
+							String maxValueString = FORMAT.format(maxValue);
+							g.drawString(maxValueString, x[i+1] - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length())/2, maxY - charHeight / 4);
+							String minValueString = FORMAT.format(minValue);
+							g.drawString(minValueString, x[i+1] - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length())/2, minY + charHeight);
+						}
+					}
+				}
+			} */
+			
+			drawDataLine(g, charHeight, rightX);
+			
+			// Draw tick marks
+			g.setColor(getForeground());
+			g.drawLine(getLeftPadding()-1, GRAPH_PAD, getLeftPadding()-1, GRAPH_PAD + GRAPH_HEIGHT - 1);
+			g.drawLine(getLeftPadding()+5, GRAPH_PAD, getLeftPadding()-1, GRAPH_PAD);
+			g.drawLine(getLeftPadding()+5, GRAPH_PAD + GRAPH_HEIGHT - 1, getLeftPadding()-1, GRAPH_PAD+ GRAPH_HEIGHT - 1);
+			String maxValueString = FORMAT.format(maxData);
+			g.drawString(maxValueString, getLeftPadding() - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length()) - 8, GRAPH_PAD + charHeight/2);
+			String minValueString = FORMAT.format(minData);
+			g.drawString(minValueString, getLeftPadding() - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length()) - 8, GRAPH_PAD + GRAPH_HEIGHT + charHeight/2);
+			
+			String name = cost.getName();
+			String units = getUnits(cost);
+			g.setFont(getFont().deriveFont(Font.BOLD));
+			g.drawString(units, getLeftPadding() - getFontMetrics(getFont()).charsWidth(units.toCharArray(), 0, units.length()) - 8, GRAPH_PAD + GRAPH_HEIGHT /2 + charHeight / 2);
+			g.drawString(name, rightX - getFontMetrics(getFont()).charsWidth(name.toCharArray(), 0, name.length()), GRAPH_PAD + GRAPH_HEIGHT - 2);
+		}
+		
+		protected CostFunctionCapability getCost() {
+			return cost;
+		}
+		
+		public int[] getXValue() {
+			return x;
+		}
+
+		public int[] getYValue() {
+			return y;
+		}
+
+		public void setX(int[] x) {
+			this.x = x;
+		}
+
+		public void setY(int[] y) {
+			this.y = y;
+		}
+		
+		public double[] getDataPoints() {
+			return dataPoints;
+		}
+
+		public void setDataPoints(double[] dataPoints) {
+			this.dataPoints = dataPoints;
+		}
+
+		public void setMinData(double minData) {
+			this.minData = minData;
+		}
+
+		public void setMaxData(double maxData) {
+			this.maxData = maxData;
+		}
+
+		public double getMinData() {
+			return minData;
+		}
+
+		public double getMaxData() {
+			return maxData;
+		}
+
+		protected abstract String getUnits(CostFunctionCapability cost);
+		
+		protected abstract void drawDataLine(Graphics g, int charHeight, int rightX);
+
+		protected int toX(long t) {
+			return (int) (getPixelScale() * (double) (t - getTimeOffset())) + getLeftPadding();
+		}
+		
+		protected int toY(double data, double minData, double maxData) {
+			return GRAPH_PAD + GRAPH_HEIGHT - (int) (((data - minData) / (maxData - minData)) * (GRAPH_HEIGHT-1)) - 1;
+		}
+		
+		protected abstract void calculateData(Collection<Long> changeTimes, double data[], long time[]);
+		
+		protected void updateGraph() {
+			// Note: TreeSet is always sorted, meaning subsequent iteration occurs in drawing order
+			Collection<Long> changeTimes = new TreeSet<Long>(); 
+			changeTimes.addAll(getCost().getChangeTimes());
+			changeTimes.add(getStart());
+			changeTimes.add(getEnd());
+			int size = changeTimes.size();
+			if (size > 1) {
+				double data[] = new double[size];
+				long   time[] = new long[size];
+				calculateData(changeTimes, data, time);
+				
+				int[] x = new int[size];
+				int[] y = new int[size];
+				for (int j = 0 ; j < size ; j++) {
+					// Convert to x, y
+					x[j] = toX(time[j]);
+					y[j] = toY(data[j], minData, maxData);
+				}
+				setX(x);
+				setY(y);
+			}
+		}
+		
+		@Override
+		public List<CostFunctionCapability> getCostFunctions() {
+			return Arrays.asList(cost);
+		}
+	}
+	
+	private class AccumulativeCostGraph extends CostGraph {
+		private static final long serialVersionUID = -4610633882459445939L;
+		private boolean isComm = false;
+		
+		public AccumulativeCostGraph(CostFunctionCapability cost) {
+			super(cost);			
+			// if (cost instanceof CostFunctionStub) ((CostFunctionStub)cost).setInstant(false);
+		}
+
+		protected void calculateData(Collection<Long> changeTimes, double data[], long time[]) {
+			if (getCost().getUnits().equals("Kbps")) isComm = true;			
+			final long TIME_SCALE = (isComm ? 1000l : 3600000l); // change for easy reading of results
+			double maxData = 0.0;
+			double minData = 0.0;
+			int i = 0;
+			long previousTime = 0l;
+			for (Long t : changeTimes) {
+				double increase = getCost().getValue(previousTime) * (t - previousTime) / TIME_SCALE;
+				data[i] = (i > 0 ? data[i - 1] + increase : increase);							
+				if (data[i] > maxData) maxData = data[i];
+				if (data[i] < minData) minData = data[i];			
+				time[i++] = t;
+				previousTime = t;
+			}
+			setMinData(minData);
+			setMaxData(maxData);
+			setDataPoints(data);
+		}
+
+		@Override
+		protected void drawDataLine(Graphics g, int charHeight, int rightX) {
+			int x[] = getXValue();
+			int y[] = getYValue();
+		    double dataPoints[] = getDataPoints();
+			if (x.length > 1 && x.length == y.length) {
+				for (int i = 0; i < x.length - 1; i++) {
+					if (x[i] >= getLeftPadding() && x[i+1] <= rightX) {
+						g.drawLine(x[i], y[i], x[i+1], y[i+1]);	
+						double value = dataPoints[i+1];
+						if (x[i+1] > getLeftPadding() && x[i+1] < rightX) {
+							String valueString = FORMAT.format(value);
+							g.drawString(valueString, x[i+1] - getFontMetrics(getFont()).charsWidth(valueString.toCharArray(), 0, valueString.length())/2, y[i+1] - charHeight / 4);
+						}
+					}
+				}
+			}
+		}
+
+		@Override
+		protected String getUnits(CostFunctionCapability cost) {
+			return isComm ? setCommUnits(getMaxData()) : setEnergyUnits(getMaxData());			 
+		}
+		
+		private String setCommUnits(double max) {
+			String unit = "kb";
+			return unit;
+		}
+		
+		private String setEnergyUnits(double max) {
+			String unit = "watt hour"; 	
+			return unit;
+		}
+	}
+	
+	private class InstantaniousCostGraph extends CostGraph {
+		private static final long serialVersionUID = 5950112587635872201L;
+		
+		public InstantaniousCostGraph(CostFunctionCapability cost) {
+			super(cost);
+		}
+
+		protected void calculateData(Collection<Long> changeTimes, double data[], long time[]) {
+			double maxData = 0.0;
+			double minData = 0.0;
+			int i = 0;
+			for (Long t : changeTimes) {
+				data[i]   = getCost().getValue(t);
+				if (data[i] > maxData) maxData = data[i];
+				if (data[i] < minData) minData = data[i];
+				time[i++] = t;
+			}
+			setMinData(minData);
+			setMaxData(maxData);
+			setDataPoints(data);
+		}
+
+		
+		@Override
+		protected void drawDataLine(Graphics g, int charHeight, int rightX) {
+			int x[] = getXValue();
+			int y[] = getYValue();
+		    double dataPoints[] = getDataPoints();
 			if (x.length > 1 && x.length == y.length) {
 				for (int i = 0; i < x.length - 1; i++) {
 					if (x[i] >= getLeftPadding() && x[i+1] <= rightX) {
 						g.drawLine(x[i], y[i], x[i+1], y[i]);
-						g.drawLine(x[i+1], y[i], x[i+1], y[i+1]);
-							
+						g.drawLine(x[i+1], y[i], x[i+1], y[i+1]);	
 						double maxValue = Math.max(dataPoints[i], dataPoints[i+1]);
 						double minValue = Math.min(dataPoints[i], dataPoints[i+1]);
 						if (maxValue != minValue && x[i+1] > getLeftPadding() && x[i+1] < rightX) {
@@ -153,68 +372,11 @@ public class GraphView extends AbstractTimelineView {
 					}
 				}
 			}
-			
-			// Draw tick marks
-			g.setColor(getForeground());
-			g.drawLine(getLeftPadding()-1, GRAPH_PAD, getLeftPadding()-1, GRAPH_PAD + GRAPH_HEIGHT - 1);
-			g.drawLine(getLeftPadding()+5, GRAPH_PAD, getLeftPadding()-1, GRAPH_PAD);
-			g.drawLine(getLeftPadding()+5, GRAPH_PAD + GRAPH_HEIGHT - 1, getLeftPadding()-1, GRAPH_PAD+ GRAPH_HEIGHT - 1);
-			String maxValueString = FORMAT.format(maxData);
-			g.drawString(maxValueString, getLeftPadding() - getFontMetrics(getFont()).charsWidth(maxValueString.toCharArray(), 0, maxValueString.length()) - 8, GRAPH_PAD + charHeight/2);
-			String minValueString = FORMAT.format(minData);
-			g.drawString(minValueString, getLeftPadding() - getFontMetrics(getFont()).charsWidth(minValueString.toCharArray(), 0, minValueString.length()) - 8, GRAPH_PAD + GRAPH_HEIGHT + charHeight/2);
-			
-			String name = cost.getName();
-			String units = cost.getUnits();
-			g.setFont(getFont().deriveFont(Font.BOLD));
-			g.drawString(units, getLeftPadding() - getFontMetrics(getFont()).charsWidth(units.toCharArray(), 0, units.length()) - 8, GRAPH_PAD + GRAPH_HEIGHT /2 + charHeight / 2);
-			g.drawString(name, rightX - getFontMetrics(getFont()).charsWidth(name.toCharArray(), 0, name.length()), GRAPH_PAD + GRAPH_HEIGHT - 2);
 		}
-		
-		private int toX(long t) {
-			return (int) (getPixelScale() * (double) (t - getTimeOffset())) + getLeftPadding();
-		}
-		
-		private int toY(double data, double minData, double maxData) {
-			return GRAPH_PAD + GRAPH_HEIGHT - (int) (((data - minData) / (maxData - minData)) * (GRAPH_HEIGHT-1)) - 1;
-		}
-		
-		private void updateGraph() {
-			// Note: TreeSet is always sorted, meaning subsequent iteration occurs in drawing order
-			Collection<Long> changeTimes = new TreeSet<Long>(); 
-			changeTimes.addAll(cost.getChangeTimes());
-			changeTimes.add(getStart());
-			changeTimes.add(getEnd());
-			if (changeTimes.size() > 1) {
-				double data[] = new double[changeTimes.size()];
-				long   time[] = new long[changeTimes.size()];
-				double maxData = 0;
-				double minData = 0;
-				int i = 0;
-				for (Long t : changeTimes) {
-					data[i]   = cost.getValue(t);
-					if (data[i] > maxData) maxData = data[i];
-					if (data[i] < minData) minData = data[i];
-					time[i++] = t;
-				}
-				
-				this.minData = minData;
-				this.maxData = maxData;
-				x = new int[i];
-				y = new int[i];
-				dataPoints = new double[i];
-				for (int j = 0 ; j < i ; j++) {
-					// Convert to x, y
-					x[j] = toX(time[j]);
-					y[j] = toY(data[j], minData, maxData);
-					dataPoints[j] = data[j];
-				}
-			}
-		}
-		
+
 		@Override
-		public List<CostFunctionCapability> getCostFunctions() {
-			return Arrays.asList(cost);
+		protected String getUnits(CostFunctionCapability cost) {
+			return cost.getUnits();
 		}
 	}
 
@@ -223,12 +385,18 @@ public class GraphView extends AbstractTimelineView {
 	protected void rebuild() {
 		getContentPane().removeAll();		
 		for (CostFunctionCapability cost : getManifestedComponent().getCapabilities(CostFunctionCapability.class)) {
-			getContentPane().add(new CostGraph(cost));
+			if (isInstantanious) getContentPane().add(new InstantaniousCostGraph(cost));			
+			if (isAccumulative)  getContentPane().add(new AccumulativeCostGraph(cost)); 
 		}
+		getContentPane().revalidate();
 	}
 
+	public void setInstantanious(boolean isInstantanious) {
+		this.isInstantanious = isInstantanious;
+	}
 
-
-	
+	public void setAccumulative(boolean isAccumulative) {
+		this.isAccumulative = isAccumulative;
+	}	
 		
 }

@@ -26,15 +26,23 @@ import gov.nasa.arc.mct.gui.View;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * A collapsible Swing container for an MCT view. Includes a little triangle 
@@ -79,17 +87,102 @@ public class CollapsibleContainer extends JPanel {
 		JPanel panel = new JPanel();
 		JLabel twister = new JLabel(new TwistIcon());
 		panel.setOpaque(false);
-		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-		panel.add(Box.createHorizontalStrut(8));
-		panel.add(twister);
-		panel.add(label);
+		panel.setLayout(new BorderLayout());
+		
+		JPanel leftPanel = new JPanel();
+		leftPanel.setOpaque(false);
+		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.X_AXIS));
+		leftPanel.add(Box.createHorizontalStrut(8));
+		leftPanel.add(twister);
+		leftPanel.add(label);
 		twister.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				view.setVisible(!view.isVisible());
 			}			
 		});
+		panel.add(leftPanel, BorderLayout.WEST);
+		
+		JPanel rightPanel = new JPanel();
+		rightPanel.setOpaque(false);
+		if (view instanceof GraphView) addGraphButtons(rightPanel);
+		panel.add(rightPanel, BorderLayout.EAST);
+		
 		return panel;
+	}
+	
+	private void addGraphButtons(JPanel panel) {
+		final GraphView graphView = (GraphView) view;
+		JToggleButton instantButton = new JToggleButton("Instantanious Graph", true);
+		JToggleButton accumulativeButton = new JToggleButton("Accumulative Graph");	
+		/** instantButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				AbstractButton button = (AbstractButton) event.getSource();
+				boolean selected = button.getModel().isSelected();
+				graphView.setInstantanious(selected);
+				graphView.setAccumulative(!selected);
+				if (selected) {
+					graphView.rebuild();
+					System.out.println("press instantanious button");
+				}								
+			}			
+		});
+		accumulativeButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				AbstractButton button = (AbstractButton) event.getSource();
+				boolean selected = button.getModel().isSelected();
+				graphView.setAccumulative(selected);
+				graphView.setInstantanious(!selected);
+				if (selected) {
+					graphView.rebuild();
+					System.out.println("press accumulative button");
+				}								
+			}			
+		}); */
+		
+		instantButton.addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent event) {
+				AbstractButton abstractButton = (AbstractButton) event.getSource();
+			    ButtonModel buttonModel = abstractButton.getModel();
+			    boolean selected = buttonModel.isSelected();
+			    if (selected) {
+			    	graphView.setInstantanious(true);
+			    	graphView.rebuild();
+			    }
+			    else graphView.setInstantanious(false);
+			}
+			
+		});
+		
+		accumulativeButton.addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent event) {
+				AbstractButton abstractButton = (AbstractButton) event.getSource();
+			    ButtonModel buttonModel = abstractButton.getModel();
+			    boolean selected = buttonModel.isSelected();
+			    if (selected) {
+			    	graphView.setAccumulative(true);
+			    	graphView.rebuild();
+			    }
+			    else graphView.setAccumulative(false);
+			}
+			
+		});
+		
+		ButtonGroup group = new ButtonGroup();
+		group.add(instantButton);
+		group.add(accumulativeButton); 
+		
+		panel.add(instantButton);
+		panel.add(accumulativeButton);
+		
 	}
 	
 	private class TwistIcon implements Icon {
