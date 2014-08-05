@@ -40,29 +40,19 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author vwoeltje
  *
  */
-public class ActivityTypeComponent extends CostFunctionComponent {
-	private AtomicReference<ActivityTypeModel> model = 
+public abstract class AbstractActivityTypeComponent extends CostFunctionComponent {
+	protected AtomicReference<ActivityTypeModel> model = 
 			new AtomicReference<ActivityTypeModel>(new ActivityTypeModel());
-	private List<CostCapability> internalCosts = 
-			Arrays.<CostCapability> asList(
-					new ActivityTypeCost(false),
-					new ActivityTypeCost(true)); 
 
 	@Override
-	public List<CostCapability> getInternalCosts() {
-		return internalCosts;
-	}
+	public abstract List<CostCapability> getInternalCosts() ;
 
 	@Override
 	public boolean isLeaf() {
 		return true;
 	}
 	
-	public void setCosts(double power, double comms) {
-		ActivityTypeModel m = model.get();
-		m.setComms(comms);
-		m.setPower(power);
-	}
+	public abstract void setCosts(double power, double comms);
 	
 	@Override
 	public <T> T handleGetCapability(Class<T> capability) {
@@ -94,7 +84,7 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 	protected <T> List<T> handleGetCapabilities(Class<T> capability) {
 		if (capability.isAssignableFrom(CostCapability.class)) {
 			List<T> list = new ArrayList<T>();
-			for (CostCapability cost : internalCosts) {
+			for (CostCapability cost : getInternalCosts()) {
 				list.add(capability.cast(cost));
 			}
 			return list;
@@ -119,33 +109,18 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 		return fields;
 	}
 	
-	private class ActivityTypeCost implements CostCapability {
-		// Short-term approach; this should be changed to permit more variety
-		// (i.e. not just Power/Comms)
-		private boolean isComm;
-
-		public ActivityTypeCost(boolean isComm) {
-			this.isComm = isComm;
-		}
+	protected abstract class PowerActivityTypeCost implements CostCapability {
 
 		@Override
-		public String getName() {
-			return isComm ? "Comms" : "Power";
-		}
+		public abstract String getName();
 
 		@Override
-		public String getUnits() {
-			return isComm ? "Kbps" : "Watts";
-		}
+		public abstract String getUnits() ;
 
 		@Override
 		public void setValue(double value) {
 			ActivityTypeModel m = model.get();
-			if (isComm) {
-				m.setComms(value);
-			} else {
-				m.setPower(value);
-			}
+			m.setPower(value);			
 		}
 
 		@Override
@@ -156,7 +131,35 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 		@Override
 		public double getValue() {
 			ActivityTypeModel m = model.get();
-			return (isComm) ? m.getComms() : m.getPower();
+			return m.getPower();
+		}
+	}
+	
+	protected class CommActivityTypeCost implements CostCapability {
+		public String getName() {
+			return "Comms";
+		}
+
+		@Override
+		public String getUnits() {
+			return "Kbps";
+		}
+
+		@Override
+		public double getValue() {
+			ActivityTypeModel m = model.get();
+			return m.getComms();
+		}
+
+		@Override
+		public void setValue(double value) {
+			ActivityTypeModel m = model.get();
+			m.setComms(value);			
+		}
+
+		@Override
+		public boolean isMutable() {
+			return true;
 		}
 	}
 	

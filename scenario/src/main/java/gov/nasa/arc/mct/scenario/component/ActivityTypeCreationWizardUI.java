@@ -30,6 +30,7 @@ import gov.nasa.arc.mct.services.component.CreateWizardUI;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -47,6 +48,7 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 	private JTextField power = new JTextField(BUNDLE.getString("wizard_activity_type_power_default"));
 	private JTextField comms = new JTextField(BUNDLE.getString("wizard_activity_type_comms_default"));
 	private JButton createButton;
+	private JCheckBox dynamicPower = new JCheckBox("Dynamic Power");
 	
 	public ActivityTypeCreationWizardUI() {
 		comms.getDocument().addDocumentListener(documentListener);
@@ -71,6 +73,7 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 				.addComponent(nameLabel)
 				.addComponent(powerLabel)
 				.addComponent(commsLabel)
+				.addComponent(dynamicPower)
 			).addGroup(groupLayout.createParallelGroup()
 				.addComponent(name)
 				.addComponent(power)
@@ -88,6 +91,8 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 			).addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 				.addComponent(commsLabel)
 				.addComponent(comms)
+			).addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(dynamicPower)
 			)
 		);
 		panel.setLayout(groupLayout);
@@ -97,11 +102,12 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 
 	@Override
 	public AbstractComponent createComp(ComponentRegistry comp,
-			AbstractComponent parentComp) {
-		
-		ActivityTypeComponent activityType = 
-				comp.newInstance(ActivityTypeComponent.class, parentComp);
-		
+			AbstractComponent parentComp) {		
+		AbstractActivityTypeComponent activityType = 
+				comp.newInstance(StaticActivityTypeComponent.class, parentComp);
+		if (dynamicPower.isSelected()) {
+			activityType = comp.newInstance(DynamicActivityTypeComponent.class, parentComp);
+		}		
 		activityType.setDisplayName(name.getText());
 		
 		// Previous validation should ensure that no NFE is thrown

@@ -265,7 +265,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		public String getUnits() {
 			return isComm ? "Kbps" : "Watts";
 		}
-
+		
 		@Override
 		public double getValue() {
 			return isComm ? getData().getComm() : getData().getPower();
@@ -298,7 +298,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		public Collection<Long> getChangeTimes() {
 			return Arrays.asList(getStart(), getEnd());
 		}
-		
+
 	}
 	
 	private class CostWrapper implements CostFunctionCapability, CostCapability {

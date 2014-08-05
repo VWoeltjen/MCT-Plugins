@@ -106,6 +106,21 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			bundle.getString("display_name_activity_type"),  
 			bundle.getString("description_activity_type"), 
 			ActivityTypeComponent.class);
+	
+	public static final ComponentTypeInfo abstractActivityTypeComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_activity_type"),  
+			bundle.getString("description_activity_type"), 
+			AbstractActivityTypeComponent.class);
+	
+	public static final ComponentTypeInfo staticActivityTypeComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_static_activity_type"),  
+			bundle.getString("description_static_activity_type"), 
+			StaticActivityTypeComponent.class);
+	
+	public static final ComponentTypeInfo dynamicActivityTypeComponentType = new ComponentTypeInfo(
+			bundle.getString("display_name_dynamic_activity_type"),  
+			bundle.getString("description_dynamic_activity_type"), 
+			StaticActivityTypeComponent.class);
 
 	private static final ComponentTypeInfo missionComponentType = new ComponentTypeInfo(
 			bundle.getString("display_name_mission"),  
@@ -168,6 +183,9 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				missionComponentType,
 				taxonomyComponentType,
 				activityTypeComponentType,
+				abstractActivityTypeComponentType,
+				staticActivityTypeComponentType,
+				dynamicActivityTypeComponentType,
 				tagComponentType,
 				tagRepoComponentType,
 				costRepoComponentType
@@ -224,7 +242,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			if (DecisionComponent.class.isAssignableFrom(type.getTypeClass())) {
 				return assetClass.cast(new DecisionCreationWizardUI());
 			}
-			if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
+			// if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
+		    if (AbstractActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
 				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
 				return assetClass.cast(new RepositoryWizardDecorator(
 						new ActivityTypeCreationWizardUI(),
@@ -252,7 +271,8 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 		if (assetClass.isAssignableFrom(CustomVisualControl.class)) {
 			if (ActivityComponent.class.isAssignableFrom(type.getTypeClass())) {				
 				return assetClass.cast(new CompositeActivityVisualControl(getRepositoryMap()));
-			} else if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
+			// } else if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
+			} else if (AbstractActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
 				return assetClass.cast(new LinkVisualControl());
 			}
 		}
