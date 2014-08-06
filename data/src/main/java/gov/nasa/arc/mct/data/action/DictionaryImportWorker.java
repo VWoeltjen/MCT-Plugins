@@ -84,8 +84,10 @@ public class DictionaryImportWorker extends SwingWorker<Boolean, Void> {
 		try {
 			r = new BufferedReader(new FileReader(file));
 			String reference = null;
-			while ((reference = r.readLine()) != null) {				
-				components.put(reference, createDataComponent(reference, parent));
+			while ((reference = r.readLine()) != null) {	
+				if (!components.containsKey(reference)) {
+					components.put(reference, createDataComponent(reference, parent));				}
+				
 			}			
 		} catch(IOException ioe) {
 			success = false;
@@ -100,8 +102,6 @@ public class DictionaryImportWorker extends SwingWorker<Boolean, Void> {
 				}
 			}
 		}
-		parent.addDelegateComponents(components.values());
-		parent.save();
 		List<AbstractComponent> toPersist = new ArrayList<AbstractComponent>();
 		toPersist.addAll(components.values());
 		toPersist.add(parent);
