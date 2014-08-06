@@ -92,7 +92,7 @@ public class DictionaryImportAction extends ContextAwareAction {
 		assert manifestation != null;
 		AbstractComponent selectedComponent = 
 			               manifestation.getManifestedComponent();
-		
+		completeWorkUnit();
 		if (file != null) {
 			new DictionaryImporter(window, selectedComponent, file).importDictionaries();
 		}
