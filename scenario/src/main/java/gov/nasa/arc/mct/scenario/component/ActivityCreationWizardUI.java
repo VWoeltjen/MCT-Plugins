@@ -113,21 +113,18 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
         component = comp.newInstance(componentClass, targetComponent);
 		component.setDisplayName(displayName);
 		ActivityComponent activityComponent = (ActivityComponent) component;
-		ActivityData data = activityComponent.getData();
+		ActivityModel data = activityComponent.getData();
 		
-		Date startDate, endDate;
+		long startDate, endDate;
 		try {
-			startDate = new Date(DurationFormatter.parse(startTime.getText()));
-			endDate = new Date(startDate.getTime() + DurationFormatter.parse(duration.getText())); 
+			startDate = DurationFormatter.parse(startTime.getText());
+			endDate = startDate + DurationFormatter.parse(duration.getText()); 
 		} catch (ParseException e) {
-			startDate = new Date(0L);
-			endDate = new Date(30L * 60L * 1000L);
+			startDate = 0L;
+			endDate = 30L * 60L * 1000L;
 		}
-		data.setActivityType(""); // Default to empty type description
-		data.setStartDate(startDate);
-		data.setEndDate(endDate);
-		data.setPower(0);
-		data.setComm(0);
+		data.setValue("startTime", String.valueOf(startDate));
+		data.setValue("endTime", String.valueOf(endDate));
 		
 		for (List<AbstractComponent> comps : children.values()) {
 			component.addDelegateComponents(comps);

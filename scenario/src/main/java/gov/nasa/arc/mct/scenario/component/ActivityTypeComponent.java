@@ -26,9 +26,9 @@ import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 import gov.nasa.arc.mct.components.PropertyEditor;
+import gov.nasa.arc.mct.scenario.util.CostType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -43,13 +43,17 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ActivityTypeComponent extends CostFunctionComponent {
 	private AtomicReference<ActivityTypeModel> model = 
 			new AtomicReference<ActivityTypeModel>(new ActivityTypeModel());
-	private List<CostCapability> internalCosts = 
-			Arrays.<CostCapability> asList(
-					new ActivityTypeCost(false),
-					new ActivityTypeCost(true)); 
 
 	@Override
 	public List<CostCapability> getInternalCosts() {
+		List<CostCapability> internalCosts = new ArrayList<CostCapability> ();
+		ActivityTypeModel m = model.get();
+		for (String typeName: m.getKeys()) {
+			if (m.get(typeName) != 0.0) {
+				CostType type = Enum.valueOf(CostType.class, typeName);
+				internalCosts.add(new ActivityTypeCost(type));
+			}
+		}
 		return internalCosts;
 	}
 
@@ -58,11 +62,10 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 		return true;
 	}
 	
-	public void setCosts(double power, double comms) {
+	public void addCost(CostType type, double value) {
 		ActivityTypeModel m = model.get();
-		m.setComms(comms);
-		m.setPower(power);
-	}
+		m.set(type.getName(), value);
+	}	
 	
 	@Override
 	public <T> T handleGetCapability(Class<T> capability) {
@@ -94,7 +97,7 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 	protected <T> List<T> handleGetCapabilities(Class<T> capability) {
 		if (capability.isAssignableFrom(CostCapability.class)) {
 			List<T> list = new ArrayList<T>();
-			for (CostCapability cost : internalCosts) {
+			for (CostCapability cost : getInternalCosts()) {
 				list.add(capability.cast(cost));
 			}
 			return list;
@@ -120,44 +123,47 @@ public class ActivityTypeComponent extends CostFunctionComponent {
 	}
 	
 	private class ActivityTypeCost implements CostCapability {
-		// Short-term approach; this should be changed to permit more variety
-		// (i.e. not just Power/Comms)
-		private boolean isComm;
-
-		public ActivityTypeCost(boolean isComm) {
-			this.isComm = isComm;
+		private CostType type;
+		
+		private ActivityTypeCost(CostType type) {
+			this.type = type;
 		}
-
-		@Override
-		public String getName() {
-			return isComm ? "Comms" : "Power";
-		}
-
-		@Override
-		public String getUnits() {
-			return isComm ? "Kbps" : "Watts";
-		}
-
-		@Override
-		public void setValue(double value) {
-			ActivityTypeModel m = model.get();
-			if (isComm) {
-				m.setComms(value);
-			} else {
-				m.setPower(value);
-			}
-		}
-
+		
 		@Override
 		public boolean isMutable() {
 			return true;
 		}
 
 		@Override
+		public String getName() {
+			return type.getName();
+		}
+
+		@Override
+		public String getInstantaniousUnits() {
+			return type.getInstantaniousUnits();
+		}
+		
+		@Override
 		public double getValue() {
 			ActivityTypeModel m = model.get();
-			return (isComm) ? m.getComms() : m.getPower();
+			return m.get(type.getName());
 		}
+		
+		public void setValue(double value) {
+			ActivityTypeModel m = model.get();
+			m.set(type.getName(), value);
+		}
+
+		@Override
+		public String getAccumulativeUnits() {
+			return type.getAccumulativeUnits();
+		}
+
+		@Override
+		public CostType getCostType() {
+			return type;
+		}		
 	}
 	
 	private class URLPropertyEditor implements PropertyEditor<String> {

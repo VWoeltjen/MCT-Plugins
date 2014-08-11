@@ -24,6 +24,7 @@ package gov.nasa.arc.mct.scenario.component;
 import java.util.ResourceBundle;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.scenario.util.CostType;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
 import gov.nasa.arc.mct.services.component.CreateWizardUI;
 
@@ -48,7 +49,7 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 	private JTextField power = new JTextField(BUNDLE.getString("wizard_activity_type_power_default"));
 	private JTextField comms = new JTextField(BUNDLE.getString("wizard_activity_type_comms_default"));
 	private JButton createButton;
-	private JCheckBox dynamicPower = new JCheckBox("Dynamic Power");
+	public final static double STANDARD_VOLTAGE = 28.0;
 	
 	public ActivityTypeCreationWizardUI() {
 		comms.getDocument().addDocumentListener(documentListener);
@@ -73,7 +74,6 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 				.addComponent(nameLabel)
 				.addComponent(powerLabel)
 				.addComponent(commsLabel)
-				.addComponent(dynamicPower)
 			).addGroup(groupLayout.createParallelGroup()
 				.addComponent(name)
 				.addComponent(power)
@@ -91,8 +91,6 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 			).addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 				.addComponent(commsLabel)
 				.addComponent(comms)
-			).addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(dynamicPower)
 			)
 		);
 		panel.setLayout(groupLayout);
@@ -102,18 +100,24 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 
 	@Override
 	public AbstractComponent createComp(ComponentRegistry comp,
-			AbstractComponent parentComp) {		
-		AbstractActivityTypeComponent activityType = 
-				comp.newInstance(StaticActivityTypeComponent.class, parentComp);
-		if (dynamicPower.isSelected()) {
-			activityType = comp.newInstance(DynamicActivityTypeComponent.class, parentComp);
-		}		
+			AbstractComponent parentComp) {	
+		double commValue = Double.parseDouble(comms.getText());
+		double powerValue = Double.parseDouble(power.getText());
+		ActivityTypeComponent activityType = 
+				comp.newInstance(ActivityTypeComponent.class, parentComp); 
+		activityType.addCost(CostType.COMM, commValue);
+		activityType.addCost(CostType.POWER, powerValue);
+		
+		/** if need to calculate impedance value
+		double impedanceValue = STANDARD_VOLTAGE * STANDARD_VOLTAGE / powerValue;
+		activityType.addCost(CostType.IMPEDANCE, impedanceValue); */
+					
 		activityType.setDisplayName(name.getText());
 		
 		// Previous validation should ensure that no NFE is thrown
-		activityType.setCosts(
+		/** activityType.setCosts(
 				Double.parseDouble(power.getText()), 
-				Double.parseDouble(comms.getText()));	
+				Double.parseDouble(comms.getText())); */
 		
 		return activityType;
 	}

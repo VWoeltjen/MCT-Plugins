@@ -66,7 +66,7 @@ public class GraphView extends AbstractTimelineView {
 	private static final Color DEFAULT_FOREGROUND_COLOR = Color.BLACK;
 	
 	private boolean isInstantanious = true;
-	private boolean isAccumulative = false;
+	private boolean isAccumulative = true;
 	
 	public GraphView(AbstractComponent ac, ViewInfo vi) {
 		super(ac, vi);
@@ -77,7 +77,7 @@ public class GraphView extends AbstractTimelineView {
 		getContentPane().setOpaque(false);
 		for (CostFunctionCapability cost : ac.getCapabilities(CostFunctionCapability.class)) {
 			getContentPane().add(new InstantaniousCostGraph(cost));
-			// getContentPane().add(new AccumulativeCostGraph(cost));
+			getContentPane().add(new AccumulativeCostGraph(cost));
 		} 
 	}
 
@@ -86,7 +86,21 @@ public class GraphView extends AbstractTimelineView {
 		rebuild();
 	}
 
+	private abstract class Graph extends JPanel implements CostOverlay {
 
+		private static final long serialVersionUID = -366387130221250090L;
+		private List<CostFunctionCapability> costs;
+		
+		private Graph(CostFunctionCapability cost) {
+			super();
+			setOpaque(false);
+			costs.add(cost);
+			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			add(Box.createVerticalStrut(GRAPH_HEIGHT + GRAPH_PAD * 2));
+			// updateGraph();
+		}
+	}
+	
 	private abstract class CostGraph extends JPanel implements CostOverlay {
 		private static final long serialVersionUID = 2939539607481881113L;
 		private CostFunctionCapability cost;
@@ -272,7 +286,7 @@ public class GraphView extends AbstractTimelineView {
 		}
 
 		protected void calculateData(Collection<Long> changeTimes, double data[], long time[]) {
-			if (getCost().getUnits().equals("Kbps")) isComm = true;			
+			if (getCost().getInstantaniousUnits().equals("Kbps")) isComm = true;			
 			final long TIME_SCALE = (isComm ? 1000l : 3600000l); // change for easy reading of results
 			double maxData = 0.0;
 			double minData = 0.0;
@@ -285,6 +299,25 @@ public class GraphView extends AbstractTimelineView {
 				if (data[i] < minData) minData = data[i];			
 				time[i++] = t;
 				previousTime = t;
+			}
+			setMinData(minData);
+			setMaxData(maxData);
+			setDataPoints(data);
+		}
+		
+		private void calculateBatteryCapacity() {
+			
+		}
+		
+		private void calculatePowerData(Collection<Long> changeTimes, double data[], long time[]) {
+			double maxData = 0.0;
+			double minData = 0.0;
+			int i = 0;
+			for (Long t : changeTimes) {
+				data[i]   = getCost().getValue(t);
+				if (data[i] > maxData) maxData = data[i];
+				if (data[i] < minData) minData = data[i];
+				time[i++] = t;
 			}
 			setMinData(minData);
 			setMaxData(maxData);
@@ -376,7 +409,7 @@ public class GraphView extends AbstractTimelineView {
 
 		@Override
 		protected String getUnits(CostFunctionCapability cost) {
-			return cost.getUnits();
+			return cost.getInstantaniousUnits();
 		}
 	}
 

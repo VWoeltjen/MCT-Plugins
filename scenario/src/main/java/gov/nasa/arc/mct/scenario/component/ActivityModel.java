@@ -21,7 +21,8 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -34,18 +35,42 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ActivityData {
+public class ActivityModel {
 
-	private double power;
-	private double comm;
-	private String type;
-	private String notes;
-	private Date startDate;
-	private Date endDate;
-	private String url;
-	private String procedureUrl;
+	private Map<String, String> properties = new HashMap<String, String> ();
 	
-	public double getPower() {
+	public ActivityModel() {
+		init();
+	}
+	
+	private void init() {
+
+		properties.put("COMM", "0.0");
+		properties.put("POWER", "0.0");
+		// properties.put("IMPEDANCE", "0.0");
+		properties.put("type", "");
+		properties.put("notes", "");
+		properties.put("startTime", "");
+		properties.put("endTime", "");
+		properties.put("url", "");
+		properties.put("procedureUrl", "");
+	}
+	
+	public String getValue(String key) {
+		String value = "";
+		if (properties.containsKey(key)) {
+			value = properties.get(key);
+		}
+		return value;
+	}
+	
+	public void setValue(String key, String value) {
+		if (properties.containsKey(key)) {
+			properties.put(key, value);
+		}
+	}
+		
+	/** public double getPower() {
 		return power;
 	}
 
@@ -61,18 +86,31 @@ public class ActivityData {
 		this.comm = comm;
 	}
 	
+	public double getOhm() {
+		return ohm;
+	}
+
+	public void setOhm(double ohm) {
+		this.ohm = ohm;
+	} */
+
 	public long getDurationTime()
 	{
-		return endDate.getTime() - startDate.getTime();
+		long endTime = Long.parseLong(properties.get("endTime"));
+		long startTime = Long.parseLong(properties.get("startTime"));
+		return endTime - startTime;
+		// return endDate.getTime() - startDate.getTime();
 	}
 	
 	public void setDurationTime(long duration)
 	{		
-		Date endDate = new Date(this.startDate.getTime() + duration);
-		this.endDate = endDate;
+		// Date endDate = new Date(this.startDate.getTime() + duration);
+		// this.endDate = endDate;
+		long startTime = Long.parseLong(properties.get("startTime"));
+		properties.put("endTime", String.valueOf(startTime + duration));
 	}
 	
-	public String getActivityType() {
+	/** public String getActivityType() {
 		return type != null ? type : ""; // Never return null
 	}
 	
@@ -118,6 +156,6 @@ public class ActivityData {
 
 	public void setProcedureUrl(String procedureUrl) {
 		this.procedureUrl = procedureUrl;
-	}
+	} */
 	
 }

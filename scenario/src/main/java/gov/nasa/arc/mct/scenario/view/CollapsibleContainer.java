@@ -114,7 +114,7 @@ public class CollapsibleContainer extends JPanel {
 	private void addGraphButtons(JPanel panel) {
 		final GraphView graphView = (GraphView) view;
 		JToggleButton instantButton = new JToggleButton("Instantanious Graph", true);
-		JToggleButton accumulativeButton = new JToggleButton("Accumulative Graph");	
+		JToggleButton accumulativeButton = new JToggleButton("Accumulative Graph", true);	
 		/** instantButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -153,9 +153,10 @@ public class CollapsibleContainer extends JPanel {
 			    boolean selected = buttonModel.isSelected();
 			    if (selected) {
 			    	graphView.setInstantanious(true);
-			    	graphView.rebuild();
+			    	// graphView.rebuild();
 			    }
-			    else graphView.setInstantanious(false);
+			    else { graphView.setInstantanious(false); }
+			    graphView.rebuild();
 			}
 			
 		});
@@ -169,19 +170,20 @@ public class CollapsibleContainer extends JPanel {
 			    boolean selected = buttonModel.isSelected();
 			    if (selected) {
 			    	graphView.setAccumulative(true);
-			    	graphView.rebuild();
+			    	// graphView.rebuild();
 			    }
-			    else graphView.setAccumulative(false);
+			    else { graphView.setAccumulative(false); }
+			    graphView.rebuild();
 			}
 			
 		});
 		
-		ButtonGroup group = new ButtonGroup();
+		/** ButtonGroup group = new ButtonGroup();
 		group.add(instantButton);
-		group.add(accumulativeButton); 
+		group.add(accumulativeButton); */
 		
 		panel.add(instantButton);
-		panel.add(accumulativeButton);
+		panel.add(accumulativeButton); 
 		
 	}
 	

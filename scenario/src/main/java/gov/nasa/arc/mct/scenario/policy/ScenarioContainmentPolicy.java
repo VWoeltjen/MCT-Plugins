@@ -26,7 +26,6 @@ import gov.nasa.arc.mct.components.FeedProvider;
 import gov.nasa.arc.mct.policy.ExecutionResult;
 import gov.nasa.arc.mct.policy.Policy;
 import gov.nasa.arc.mct.policy.PolicyContext;
-import gov.nasa.arc.mct.scenario.component.AbstractActivityTypeComponent;
 import gov.nasa.arc.mct.scenario.component.ActivityComponent;
 import gov.nasa.arc.mct.scenario.component.ActivityTypeComponent;
 import gov.nasa.arc.mct.scenario.component.DecisionComponent;
@@ -93,7 +92,6 @@ public class ScenarioContainmentPolicy implements Policy {
 			return child instanceof ActivityComponent ||
 				   child instanceof DecisionComponent ||
 				   child instanceof ActivityTypeComponent ||
-				   child instanceof AbstractActivityTypeComponent ||
 				   child instanceof TagComponent;
 		}
 		
@@ -102,8 +100,7 @@ public class ScenarioContainmentPolicy implements Policy {
 		}
 		
 		if (child instanceof TagComponent ||
-			child instanceof ActivityTypeComponent ||
-			child instanceof AbstractActivityTypeComponent) {
+			child instanceof ActivityTypeComponent) {
 			return parent instanceof ActivityComponent;
 		}
 		

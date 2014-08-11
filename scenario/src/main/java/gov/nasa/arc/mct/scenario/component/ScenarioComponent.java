@@ -32,7 +32,7 @@ public class ScenarioComponent extends CostFunctionComponent implements Duration
 	private ObjectManager objectManager = new ObjectManager.ExplicitObjectManager();//.DirtyObjectManager(this);
 	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	
-	public ActivityData getData() {
+	public ActivityModel getData() {
 		return getModel().getData();
 	}
 	

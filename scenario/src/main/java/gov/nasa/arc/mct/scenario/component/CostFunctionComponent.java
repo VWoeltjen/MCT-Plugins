@@ -24,6 +24,7 @@ package gov.nasa.arc.mct.scenario.component;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
+import gov.nasa.arc.mct.scenario.util.CostType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -81,7 +82,7 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 		for (CostCapability capability : getInternalCosts()) {
 			PropertyDescriptor cost = new PropertyDescriptor(
 					capability.getName() + 
-					    " (" + capability.getUnits() + ")",
+					    " (" + capability.getInstantaniousUnits() + ")",
 					new CostPropertyEditor(capability),
 					capability.isMutable() ?
 							VisualControlDescriptor.TextField :
@@ -103,7 +104,7 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 			for (CostFunctionCapability costFunction : getInternalCostFunctions()) {
 				if (!costFunctions.containsKey(costFunction.getName())) {
 					costFunctions.put(costFunction.getName(), 
-							new AggregateCostFunction(costFunction.getName(), costFunction.getUnits()));
+							new AggregateCostFunction(costFunction));
 				}
 				costFunctions.get(costFunction.getName()).add(costFunction);
 			}
@@ -112,7 +113,7 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 					for (CostFunctionCapability costFunction : getCostFunctionCapabilities(child)) {
 						if (!costFunctions.containsKey(costFunction.getName())) {
 							costFunctions.put(costFunction.getName(), 
-									new AggregateCostFunction(costFunction.getName(), costFunction.getUnits()));
+									new AggregateCostFunction(costFunction));
 						}
 						costFunctions.get(costFunction.getName()).add(costFunction);
 					}
@@ -158,14 +159,12 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 	 * @author vwoeltje
 	 */
 	private class AggregateCostFunction implements CostFunctionCapability {
-		private String name;
-		private String units;
+		private CostFunctionCapability baseCost;
 		private List<CostFunctionCapability> costs = new ArrayList<CostFunctionCapability>();
 		
-		public AggregateCostFunction(String name, String units) {
+		public AggregateCostFunction(CostFunctionCapability cost) {
 			super();
-			this.name = name;
-			this.units = units;
+			this.baseCost = cost;
 		}
 
 		void add(CostFunctionCapability cost) {
@@ -173,22 +172,39 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 		}
 		
 		@Override
-		public String getName() {
-			return name;
-		}
-
-		@Override
-		public String getUnits() {
-			return units;
-		}
-
-		@Override
 		public double getValue(long time) {
-			double sum = 0;
+			/** double sum = 0;
 			for (CostFunctionCapability c : costs) {
 				sum += c.getValue(time);
 			}
+			return sum; */
+						
+			CostFunctionCapability[] arrayType =  new CostFunctionCapability[] {};
+			CostFunctionCapability[] costArray;
+			costArray = costs.toArray(arrayType);
+		  
+			CostType type = getCostType();
+		    double sum = costArray[0].getValue(time);
+		    double value;
+		    int size = costs.size();
+		    if (size > 1) {
+		    	for (int i = 1; i < size; i++) {
+		    		value = costArray[i].getValue(time);
+		    		if (value != 0.0) sum = type.add(sum, value); 
+			    }
+		    }
+			
+			/** CostType type = getCostType();
+			double offset = baseCost.getValue(time);
+			double sum = offset;
+			if (costs.size() > 1) {
+				for (CostFunctionCapability cost : costs) {
+					sum = type.add(sum, cost.getValue(time));
+				}
+				sum = type.add(sum, offset * -1);
+			}*/			
 			return sum;
+
 		}
 		
 		@Override
@@ -198,6 +214,27 @@ public abstract class CostFunctionComponent extends AbstractComponent {
 				changeTimes.addAll(c.getChangeTimes());
 			}
 			return changeTimes;
+		}
+		
+		@Override
+		public String getName() {
+			return baseCost.getName();
+		}
+
+		@Override
+		public String getInstantaniousUnits() {
+			return baseCost.getInstantaniousUnits();
+		}
+
+		
+		@Override
+		public String getAccumulativeUnits() {
+			return baseCost.getAccumulativeUnits();
+		}
+
+		@Override
+		public CostType getCostType() {
+			return baseCost.getCostType();
 		}		
 	}
 }
