@@ -19,10 +19,10 @@ import java.util.Scanner;
 public class BatteryCapacityTable {
 	private String fileName;
 	// need to change to HashMap, using LinkedHashMap for debugging purposes
-	private Map<Double, Double> capacities = new LinkedHashMap<Double, Double> ();
-	private double fakeCapacity = 0.0;
+	private Map<Double, Double> capacityMap = new LinkedHashMap<Double, Double> ();
+	private double fakeCapacity = 100.0;
 	private boolean success = true;
-	public static final double DISCHARGE_LIMIT = 70.0;
+	public static final double DISCHARGE_LIMIT = 30.0;
 	private static final double INTERVAL = 0.5;
 	
 	public BatteryCapacityTable() {
@@ -32,6 +32,7 @@ public class BatteryCapacityTable {
 	
 	public BatteryCapacityTable(String file) {
 		this.fileName = file;
+		this.parseFile();
 	}
 	
 	public void parseFile() {
@@ -50,43 +51,43 @@ public class BatteryCapacityTable {
 	
 	private void parseLine(String line) {
 		String[] values = line.split("%,");
-		double realCapacity = Double.valueOf(values[0]);
+		double realCapacity = Double.valueOf(values[1]);
 		double voltage = Double.valueOf(values[2]);
-		if (realCapacity <= DISCHARGE_LIMIT) {
+		if (realCapacity >= DISCHARGE_LIMIT) {
 			if (realCapacity != fakeCapacity) {
-				while (fakeCapacity < realCapacity) {
-					fakeCapacity += INTERVAL;
-					capacities.put(fakeCapacity, voltage);					
+				while (fakeCapacity > realCapacity) {
+					fakeCapacity -= INTERVAL;
+					capacityMap.put(fakeCapacity, voltage);					
 				}				
 			} else {
-				capacities.put(fakeCapacity, voltage);
+				capacityMap.put(fakeCapacity, voltage);
 			}			
 		} else {
 			success = false;
 		}				
 	}
 	
-	public Map getCapacity() {
-		return capacities;
+	public Map getCapacityMap() {
+		return capacityMap;
 	}
 	
-	private double getNearestCapacity(double realDischargeCapacity) {
-		double upper = Math.ceil(realDischargeCapacity / INTERVAL) * INTERVAL;
-		double lower = Math.floor(realDischargeCapacity / INTERVAL) * INTERVAL;
-		double capacity = ((upper - realDischargeCapacity) - (realDischargeCapacity - lower) >= 0) ? lower : upper;
+	private double getNearestCapacity(double realCapacity) {
+		double upper = Math.ceil(realCapacity / INTERVAL) * INTERVAL;
+		double lower = Math.floor(realCapacity / INTERVAL) * INTERVAL;
+		double capacity = ((upper - realCapacity) - (realCapacity - lower) >= 0) ? lower : upper;
 		return capacity;
 	}
 	
-	public double getVoltage(double realDischargeCapacity) {
-		return capacities.get(getNearestCapacity(realDischargeCapacity));
+	public double getVoltage(double realCapacity) {
+		return capacityMap.get(getNearestCapacity(realCapacity));
 	}
 
 	public static void main(String[] args) {
 		BatteryCapacityTable table = new BatteryCapacityTable();
 		table.parseFile();
-		for (Object key: table.getCapacity().keySet()) {
-			System.out.println(key + ": " + table.getCapacity().get(key));
+		for (Object key: table.getCapacityMap().keySet()) {
+			System.out.println(key + ": " + table.getCapacityMap().get(key));
 		}
-		System.out.println(table.getVoltage(44.6) + ", " + table.getVoltage(5.36));
+		// System.out.println(table.getVoltage(44.6) + ", " + table.getVoltage(85.36));
 	}
 }

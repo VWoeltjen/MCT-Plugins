@@ -388,7 +388,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public String getAccumulativeUnits() {
-			return baseCost.getInstantaniousUnits();
+			return baseCost.getAccumulativeUnits();
 		}
 
 		@Override

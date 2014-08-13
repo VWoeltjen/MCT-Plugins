@@ -3,17 +3,30 @@ package gov.nasa.arc.mct.scenario.util;
 public class Battery {
 	private BatteryCapacityTable table = new BatteryCapacityTable();
 	private static final int TOTAL_ENERGY = 5250; // total battery energy is 5250 Watt Hours
-	public static final double TIME_RANGE = 5.0 / 60.0; // calculate the battery state at every 5 minutes
-	private double dischargeCapacity = 0.0;
+	public static final int TIME = 5; // calculate the battery state at every 5 minutes
+	public static final int MITUTE_TO_HOUR = 60;
+	public static final double TIME_TO_HOUR = TIME * 1.0 / MITUTE_TO_HOUR; 
+	private double capacity = 100.0; // in percentage
+	private static final int BATTERY_NUMBER = 8;
 	
-	public double setDischargeCapacity(double power) {
+	public double setCapacity(double power, double duration) {
+		if (duration == 0.0) duration = TIME_TO_HOUR;
 		if (power != 0) {
-			dischargeCapacity -= power * TIME_RANGE / TOTAL_ENERGY; 
+			double change = power * duration / TOTAL_ENERGY;
+			capacity -=  change * 100.0; 
 		}
-		return dischargeCapacity;
+		return capacity;
 	}
 	
 	public double getVoltage() {
-		return table.getVoltage(dischargeCapacity);
+		return table.getVoltage(this.capacity) * BATTERY_NUMBER;
+	}
+	
+	public double getVoltage(double capacity) {
+		return table.getVoltage(capacity) * BATTERY_NUMBER;
+	}
+	
+	public double getCapacity() {
+		return capacity;
 	}
 }
