@@ -23,9 +23,17 @@ package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.components.ObjectManager;
+import gov.nasa.arc.mct.scenario.util.Battery;
+import gov.nasa.arc.mct.scenario.util.CostType;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * A Timeline serves as a container for activities. Multiple timelines may be arranged 
@@ -49,6 +57,8 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 			return capability.cast(objectManager);
 		} else if (capability.isAssignableFrom(ScenarioCSVExportCapability.class)) {
 			return capability.cast(new ScenarioCSVExportCapability(this));
+		} else if (capability.isAssignableFrom(GraphViewCapability.class)) {
+			return capability.cast(new TimelineGraphData());
 		}
 		return super.handleGetCapability(capability);
 	}
@@ -91,12 +101,159 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 	
 	@Override
 	public void setStart(long start) {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub		
 	}
 	@Override
 	public void setEnd(long end) {
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub		
+	}
+	
+	private class TimelineGraphData implements GraphViewCapability {
+		String POWER_INSTANTANEOUS_NAME = "Current";
+		String POWER_ACCUMULATIVE_NAME = "Battery Capacity";
+		String POWER_INSANTANEOUS_UNITS = "A";
+		String POWER_ACCUMULATIVE_UNITS = "%";
+		
+		public static final long SECOND_TO_MILLIS = 1000l;
+		public static final long MINUTE_TO_MILLIS = 60000l;
+		public static final long HOUR_TO_MILLIS = 3600000l;
+		private final long TIME_SCALE = Battery.TIME * MINUTE_TO_MILLIS;
+		
+		private List<CostFunctionCapability> costs;
+		
+		// use TreeMap to enable ordering of data
+		private Map<Long, Double> currentMap = new TreeMap<Long, Double> ();
+		private Map<Long, Double> capacityMap = new TreeMap<Long, Double> ();
+		
+		public TimelineGraphData() {
+			costs = getCapabilities(CostFunctionCapability.class);
+		}
+		
+		private CostFunctionCapability getCost(CostType type) {
+			for (CostFunctionCapability cost: costs) {
+				if (cost.getCostType().equals(type)) return cost;
+			}
+			return costs.get(0);
+		}
+
+		private Collection<Long> getChangeTimes(CostType type) {
+			Collection<Long> changeTimes = new TreeSet<Long>(getCost(type).getChangeTimes());
+			if (type.equals(CostType.POWER)) { // decrease time interval according to battery value precision (currently 5 mins)
+				int size = changeTimes.size();
+				long start, end = 0;
+				Long[] timeType = new Long[] {};
+				Long[] timeArray = changeTimes.toArray(timeType);
+				for (int i = 0; i < size - 1; i++ ) {
+					start = timeArray[i];
+					end = timeArray[i + 1];
+					for (int j = 0; j < (end - start) / TIME_SCALE; j++) {
+						changeTimes.add(start + j * TIME_SCALE);
+					}
+				}
+				changeTimes.add(end);
+			}
+			return changeTimes;
+		}
+
+		@Override
+		public Map<Long, Double> getData(CostType type, boolean isInstantaneous) {
+			if (type.equals(CostType.POWER)) return getPowerData(getCost(type), isInstantaneous);
+			else if (type.equals(CostType.COMM)) return getCommData(getCost(type), isInstantaneous);
+			return null;
+		}
+		
+		private void initCurrentAndCapacity(CostFunctionCapability powerCost) {
+			Battery battery = new Battery();
+			double capacity = battery.getCapacity();
+		    double voltage, current, power;
+		    // double previousCapacity = capacity;
+		    // double previousCurrent = current;
+
+		    Collection<Long> changeTimes = getChangeTimes(CostType.POWER);
+				
+			for (Long t: changeTimes) {		
+				capacityMap.put(t, capacity);
+				power = powerCost.getValue(t);
+				if ((battery.getCapacity() < 100.0) || ((battery.getCapacity() == 100.0) && (power > 0.0))) {
+					voltage = battery.getVoltage();	
+					current = power / voltage;
+					capacity = battery.setCapacity(power, 0.0); // use 5 mins as interval
+					// capacity = battery.setCapacity(power, (time[i + 1] - t) / HOUR_TO_MILLIS * 1.0); 	
+				} else {
+					capacity = 100.0;
+					current = 0.0;
+				}				
+				currentMap.put(t, current);
+			}				
+		}
+		
+		private Map<Long, Double> getPowerData(CostFunctionCapability powerCost, boolean isInstantaneous) {
+			if (capacityMap.isEmpty()) initCurrentAndCapacity(powerCost);
+			return isInstantaneous? currentMap : capacityMap;
+		}
+		
+		private Map<Long, Double> getCommData(CostFunctionCapability commCost, boolean isInstantaneous) {
+			Collection<Long> changeTimes = getChangeTimes(CostType.COMM);
+			Map<Long, Double> data = new TreeMap<Long, Double> ();
+			if (isInstantaneous) {
+				for (Long t : changeTimes) {
+					data.put(t, commCost.getValue(t));
+				}
+			} else {
+				Long[] timeType = new Long[] {};
+				Long[] time = changeTimes.toArray(timeType);
+				int size = changeTimes.size();
+				double currentValue = 0;
+				for (int i = 0; i < size; i++) {
+					long t = time[i];
+					data.put(t, currentValue);
+					double commValue = commCost.getValue(t);
+					double increase = ((i < size - 1) ? commValue * (time[i + 1] - t) / SECOND_TO_MILLIS : 0.0);
+					currentValue += increase;	
+				}
+			}
+			return data;
+		}
+
+		@Override
+		public String getUnits(CostType type, boolean isInstantaneous) {
+			if (type.equals(CostType.POWER)) {
+				return isInstantaneous? POWER_INSANTANEOUS_UNITS : POWER_ACCUMULATIVE_UNITS;
+			} else if (type.equals(CostType.COMM)) {
+				return isInstantaneous? type.getInstantaniousUnits() : type.getAccumulativeUnits();
+			}
+			return "";
+		}
+
+		@Override
+		public String getDisplayName(CostType type, boolean isInstantaneous) {
+			if (type.equals(CostType.POWER)) {
+				return isInstantaneous? POWER_INSTANTANEOUS_NAME : POWER_ACCUMULATIVE_NAME;
+			} else if (type.equals(CostType.COMM)) {
+				return isInstantaneous? type.getName() : type.getAccumulativeName();
+			}
+			return "";
+		}
+
+		@Override
+		public boolean hasInstantaneous(CostType type) {
+			return true;
+		}
+
+		@Override
+		public boolean hasAccumulative(CostType type) {
+			return true;
+		}
+
+		@Override
+		public boolean hasInstantaneousGraph() {
+			return true;
+		}
+
+		@Override
+		public boolean hasAccumulativeGraph() {
+			return true;
+		}
 		
 	}
 }

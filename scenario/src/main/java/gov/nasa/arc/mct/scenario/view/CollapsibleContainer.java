@@ -113,8 +113,50 @@ public class CollapsibleContainer extends JPanel {
 	
 	private void addGraphButtons(JPanel panel) {
 		final GraphView graphView = (GraphView) view;
-		JToggleButton instantButton = new JToggleButton("Instantanious Graph", true);
-		JToggleButton accumulativeButton = new JToggleButton("Accumulative Graph", true);	
+		
+		if (graphView.hasInstantaneousGraph()) {
+			JToggleButton instantButton = new JToggleButton("Instantanious Graph", true);
+			instantButton.addChangeListener(new ChangeListener() {
+
+				@Override
+				public void stateChanged(ChangeEvent event) {
+					AbstractButton abstractButton = (AbstractButton) event.getSource();
+				    ButtonModel buttonModel = abstractButton.getModel();
+				    boolean selected = buttonModel.isSelected();
+				    if (selected) {
+				    	graphView.setInstantanious(true);
+				    	// graphView.rebuild();
+				    }
+				    else { graphView.setInstantanious(false); }
+				    graphView.rebuild();
+				}
+				
+			});
+			panel.add(instantButton);
+		}
+		
+		if (graphView.hasAccumulativeGraph()) {
+			JToggleButton accumulativeButton = new JToggleButton("Accumulative Graph", true);	
+			accumulativeButton.addChangeListener(new ChangeListener() {
+
+				@Override
+				public void stateChanged(ChangeEvent event) {
+					AbstractButton abstractButton = (AbstractButton) event.getSource();
+				    ButtonModel buttonModel = abstractButton.getModel();
+				    boolean selected = buttonModel.isSelected();
+				    if (selected) {
+				    	graphView.setAccumulative(true);
+				    	// graphView.rebuild();
+				    }
+				    else { graphView.setAccumulative(false); }
+				    graphView.rebuild();
+				}
+				
+			});
+			panel.add(accumulativeButton); 
+		}
+		
+		
 		/** instantButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -144,46 +186,15 @@ public class CollapsibleContainer extends JPanel {
 			}			
 		}); */
 		
-		instantButton.addChangeListener(new ChangeListener() {
-
-			@Override
-			public void stateChanged(ChangeEvent event) {
-				AbstractButton abstractButton = (AbstractButton) event.getSource();
-			    ButtonModel buttonModel = abstractButton.getModel();
-			    boolean selected = buttonModel.isSelected();
-			    if (selected) {
-			    	graphView.setInstantanious(true);
-			    	// graphView.rebuild();
-			    }
-			    else { graphView.setInstantanious(false); }
-			    graphView.rebuild();
-			}
-			
-		});
 		
-		accumulativeButton.addChangeListener(new ChangeListener() {
-
-			@Override
-			public void stateChanged(ChangeEvent event) {
-				AbstractButton abstractButton = (AbstractButton) event.getSource();
-			    ButtonModel buttonModel = abstractButton.getModel();
-			    boolean selected = buttonModel.isSelected();
-			    if (selected) {
-			    	graphView.setAccumulative(true);
-			    	// graphView.rebuild();
-			    }
-			    else { graphView.setAccumulative(false); }
-			    graphView.rebuild();
-			}
-			
-		});
+		
 		
 		/** ButtonGroup group = new ButtonGroup();
 		group.add(instantButton);
 		group.add(accumulativeButton); */
 		
-		panel.add(instantButton);
-		panel.add(accumulativeButton); 
+		
+		
 		
 	}
 	

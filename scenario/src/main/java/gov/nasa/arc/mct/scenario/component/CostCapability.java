@@ -57,7 +57,5 @@ public interface CostCapability {
 	 */
 	public boolean isMutable();
 	
-	// public double add(CostCapability another);
-	
 	public CostType getCostType();
 }

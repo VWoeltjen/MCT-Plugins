@@ -1,14 +1,17 @@
 package gov.nasa.arc.mct.scenario.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum CostType {
 	
-	COMM("COMM", "Kbps", "kb") {
+	COMM("COMM", "Buffered Data", "Kbps", "kb") {
 		public double add(double myValue, double anotherValue) {
 			return myValue + anotherValue;
 		}
 	},
 	
-	POWER("POWER", "Watts", "Watt Hour") {
+	POWER("POWER", "Energy", "Watts", "Watt Hour") {
 		public double add(double myValue, double anotherValue) {
 			return myValue + anotherValue;
 		}
@@ -20,22 +23,28 @@ public enum CostType {
 		}
 	}*/ ; 
 	
-	private String name;
-	private String instantaniousUnits;
+	private String instantaneousName;
+	private String accumulativeName;
+	private String instantaneousUnits;
 	private String accumulativeUnits;
 	
-	private CostType(String name, String instantaniousUnits, String accumulativeUnits) {
-		this.name = name;
-		this.instantaniousUnits = instantaniousUnits;
+	private CostType(String name, String accumulativeName, String instantaneousUnits, String accumulativeUnits) {
+		this.instantaneousName = name;
+		this.accumulativeName = accumulativeName;
+		this.instantaneousUnits = instantaneousUnits;
 		this.accumulativeUnits = accumulativeUnits;
 	}
 
 	public String getName() {
-		return name;
+		return instantaneousName;
+	}
+	
+	public String getAccumulativeName() {
+		return accumulativeName;
 	}
 	
 	public String getInstantaniousUnits() {
-		return instantaniousUnits;
+		return instantaneousUnits;
 	}
 	
 	public String getAccumulativeUnits() {

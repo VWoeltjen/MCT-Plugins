@@ -35,11 +35,15 @@ import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -51,7 +55,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * time span.
  *
  */
-public class ActivityComponent extends CostFunctionComponent implements DurationCapability {
+public class ActivityComponent extends CostFunctionComponent implements DurationCapability{
 	private ObjectManager objectManager = new ObjectManager.ExplicitObjectManager();
 	private final AtomicReference<ActivityModel> model = new AtomicReference<ActivityModel>(new ActivityModel());
 	
@@ -97,7 +101,10 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		}
 		if (capability.isAssignableFrom(ScenarioCSVExportCapability.class)) {
 			return capability.cast(new ScenarioCSVExportCapability(this));
-		}		
+		}	
+		if (capability.isAssignableFrom(GraphViewCapability.class)) {
+			return capability.cast(new ActivityGraphData());
+		}
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
 		    JAXBModelStatePersistence<ActivityModel> persistence = new JAXBModelStatePersistence<ActivityModel>() {
 
@@ -469,4 +476,76 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			return procedureUrl;
 		}
 	}
+	
+	private class ActivityGraphData implements GraphViewCapability {
+		private List<CostFunctionCapability> costs;
+		
+		public ActivityGraphData() {
+			costs = getCapabilities(CostFunctionCapability.class);
+		}
+		
+		private CostFunctionCapability getCost(CostType type) {
+			for (CostFunctionCapability cost: costs) {
+				if (cost.getCostType().equals(type)) return cost;
+			}
+			return costs.get(0);
+		}
+
+		private Collection<Long> getChangeTimes(CostType type) {		
+			return new TreeSet<Long>(getCost(type).getChangeTimes());
+		}
+
+		private Map<Long, Double> getInstantaneousData(CostType type) {
+			Map<Long, Double> data = new TreeMap<Long, Double> ();
+			for (CostFunctionCapability cost: costs) {
+				if (cost.getCostType().equals(type)) {
+					for (Long t : getChangeTimes(type)) {
+						data.put(t, cost.getValue(t));
+					}
+				}			
+			}		
+			return data;
+		}
+
+		private Map<Long, Double> getAccumulativeData(CostType type) {
+			Map<Long, Double> map = new TreeMap<Long, Double> ();
+			return map;
+		}
+
+		@Override
+		public Map<Long, Double> getData(CostType type, boolean isInstantaneous) {
+			Map<Long, Double> data = (isInstantaneous? getInstantaneousData(type) : getAccumulativeData(type));	
+			return data;
+		}
+
+		@Override
+		public String getUnits(CostType type, boolean isInstantaneous) {
+			return (isInstantaneous)? type.getInstantaniousUnits() : type.getAccumulativeUnits();
+		}
+
+		@Override
+		public String getDisplayName(CostType type, boolean isInstantaneous) {
+			return type.getName();
+		}
+
+		@Override
+		public boolean hasInstantaneous(CostType type) {
+			return true;
+		}
+
+		@Override
+		public boolean hasAccumulative(CostType type) {
+			return false;
+		}
+
+		@Override
+		public boolean hasInstantaneousGraph() {
+			return true;
+		}
+
+		@Override
+		public boolean hasAccumulativeGraph() {
+			return false;
+		}
+	}	
 }
