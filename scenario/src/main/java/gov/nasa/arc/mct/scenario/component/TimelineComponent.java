@@ -115,8 +115,8 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		
 		PropertyDescriptor batteryCapacity = new PropertyDescriptor("Battery Total Capacity", 
 				new BatteryCapacityPropertyEditor(), 
-				VisualControlDescriptor.TextField);
-		batteryCapacity.setFieldMutable(true);
+				VisualControlDescriptor.Label);
+		batteryCapacity.setFieldMutable(false);
 		fields.add(batteryCapacity);
 
 		return fields;

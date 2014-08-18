@@ -16,21 +16,21 @@ import java.util.Scanner;
  * @author jdong2
  *
  */
-public class BatteryCapacityTable {
+public class BatteryVoltageTable {
 	private String fileName;
 	// need to change to HashMap, using LinkedHashMap for debugging purposes
 	private Map<Double, Double> voltageMap = new LinkedHashMap<Double, Double> ();
-	private double modifiedState = 100.0; // modify the state of charge to be in 50th
+	private double modifiedState = 100.0; //the modified state of charge which are in 50th
 	private boolean success = true;
 	public static final double DISCHARGE_LIMIT = 30.0;
-	private static final double INTERVAL = 0.5;
+	private static final double INTERVAL = 0.5; // battery state of charge are in 0.5% precision
 	
-	public BatteryCapacityTable() {
+	public BatteryVoltageTable() {
 		this("/Users/jdong2/Documents/NASA/RP Battery Model"
 				+ "/Boston Power Swing 5300 SoC to Voltage Table.csv");
 	}
 	
-	public BatteryCapacityTable(String file) {
+	public BatteryVoltageTable(String file) {
 		this.fileName = file;
 		this.parseFile();
 	}
@@ -67,27 +67,27 @@ public class BatteryCapacityTable {
 		}				
 	}
 	
-	public Map getCapacityMap() {
+	public Map getVoltageMap() {
 		return voltageMap;
 	}
 	
-	private double getNearestCapacity(double realCapacity) {
-		double upper = Math.ceil(realCapacity / INTERVAL) * INTERVAL;
-		double lower = Math.floor(realCapacity / INTERVAL) * INTERVAL;
-		double capacity = ((upper - realCapacity) - (realCapacity - lower) >= 0) ? lower : upper;
-		return capacity;
+	private double getNearestState(double realState) {
+		double upper = Math.ceil(realState / INTERVAL) * INTERVAL;
+		double lower = Math.floor(realState / INTERVAL) * INTERVAL;
+		double state = ((upper - realState) - (realState - lower) >= 0) ? lower : upper;
+		return state;
 	}
 	
-	public double getVoltage(double realCapacity) {
-		return voltageMap.get(getNearestCapacity(realCapacity));
+	public double getVoltage(double realState) {
+		return voltageMap.get(getNearestState(realState));
 	}
 
 	public static void main(String[] args) {
-		BatteryCapacityTable table = new BatteryCapacityTable();
+		BatteryVoltageTable table = new BatteryVoltageTable();
 		table.parseFile();
-		for (Object key: table.getCapacityMap().keySet()) {
-			System.out.println(key + ": " + table.getCapacityMap().get(key));
+		for (Object key: table.getVoltageMap().keySet()) {
+			System.out.println(key + ": " + table.getVoltageMap().get(key));
 		}
-		// System.out.println(table.getVoltage(44.6) + ", " + table.getVoltage(85.36));
+		System.out.println(table.getVoltage(44.6) + ", " + table.getVoltage(85.36));
 	}
 }

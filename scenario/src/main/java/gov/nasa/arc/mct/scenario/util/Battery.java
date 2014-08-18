@@ -3,7 +3,7 @@ package gov.nasa.arc.mct.scenario.util;
 import gov.nasa.arc.mct.scenario.component.BatteryModel;
 
 public class Battery {
-	private BatteryCapacityTable table = new BatteryCapacityTable();	
+	private BatteryVoltageTable table = new BatteryVoltageTable();	
 	
 	public static final int TIME = 5; // calculate the battery state at every 5 minutes
 	public static final int MITUTE_TO_HOUR = 60;
