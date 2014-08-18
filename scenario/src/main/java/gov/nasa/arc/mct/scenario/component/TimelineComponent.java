@@ -22,18 +22,25 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
+import gov.nasa.arc.mct.components.JAXBModelStatePersistence;
+import gov.nasa.arc.mct.components.ModelStatePersistence;
 import gov.nasa.arc.mct.components.ObjectManager;
+import gov.nasa.arc.mct.components.PropertyDescriptor;
+import gov.nasa.arc.mct.components.PropertyEditor;
+import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 import gov.nasa.arc.mct.scenario.util.Battery;
 import gov.nasa.arc.mct.scenario.util.CostType;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A Timeline serves as a container for activities. Multiple timelines may be arranged 
@@ -43,11 +50,19 @@ import java.util.TreeSet;
  */
 public class TimelineComponent extends CostFunctionComponent implements DurationCapability {
 	private ObjectManager objectManager = new ObjectManager.ExplicitObjectManager();
+    private final AtomicReference<BatteryModel> model = new AtomicReference<BatteryModel>(new BatteryModel());
 	
 	public String getDisplay(){
 		return this.getDisplayName();
 	}
 
+	public BatteryModel getModel() {
+		return model.get();
+	}
+	
+	public void setBatteryModel(double capacity, double stateOfCharge) {
+		model.set(new BatteryModel(capacity, stateOfCharge));
+	}
 	
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
@@ -59,9 +74,53 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 			return capability.cast(new ScenarioCSVExportCapability(this));
 		} else if (capability.isAssignableFrom(GraphViewCapability.class)) {
 			return capability.cast(new TimelineGraphData());
+		} else if (capability.isAssignableFrom(ModelStatePersistence.class)) {
+		    JAXBModelStatePersistence<BatteryModel> persistence = new JAXBModelStatePersistence<BatteryModel>() {
+
+				@Override
+				protected BatteryModel getStateToPersist() {
+					return model.get();
+				}
+
+				@Override
+				protected void setPersistentState(BatteryModel modelState) {
+					model.set(modelState);
+				}
+
+				@Override
+				protected Class<BatteryModel> getJAXBClass() {
+					return BatteryModel.class;
+				}
+		        
+			};
+			
+			return capability.cast(persistence);
 		}
 		return super.handleGetCapability(capability);
 	}
+	
+	@Override
+	public List<PropertyDescriptor> getFieldDescriptors()  {
+
+		// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
+		List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
+
+		// We specify a mutable text field.  The control display's values are maintained in the business model
+		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
+		PropertyDescriptor batteryState = new PropertyDescriptor("Battery State of Charge (%)", 
+				new BatteryStatePropertyEditor(), 
+				VisualControlDescriptor.TextField);
+		batteryState.setFieldMutable(true);
+		fields.add(batteryState);
+		
+		PropertyDescriptor batteryCapacity = new PropertyDescriptor("Battery Total Capacity", 
+				new BatteryCapacityPropertyEditor(), 
+				VisualControlDescriptor.TextField);
+		batteryCapacity.setFieldMutable(true);
+		fields.add(batteryCapacity);
+
+		return fields;
+	} 
 	
 	@Override
 	public long getStart() {		
@@ -107,6 +166,109 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 	public void setEnd(long end) {
 		// TODO Auto-generated method stub		
 	}
+	
+	private class BatteryStatePropertyEditor implements PropertyEditor<Object> {
+
+		@Override
+		public String getAsText() {
+			return String.valueOf(getModel().getInitialStateOfCharge());
+		}
+
+		@Override
+		public void setAsText(String text) throws IllegalArgumentException {
+			String result = verify(text);
+			if (result != null) {
+				throw new IllegalArgumentException(result);
+			}
+			// verify() took care of a possible number format exception
+			double state = Double.parseDouble(text);
+			getModel().setInitialStateOfCharge(state);
+		}
+		
+		private String verify(String s) {
+			String message = null;
+			assert s != null;
+			if (s.isEmpty()) {
+				message =  "Cannot be unspecified";
+			} 
+			try {
+				double state = Double.parseDouble(s);
+				if ((state <= 0.0) || (state > 100.0)) {
+					message = "Must be within 0.0 ~ 100.0";
+				}
+			} catch (NumberFormatException e) {
+				message =  "Must be a numeric";
+			}
+			return message;
+		}
+
+		@Override
+		public Object getValue() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void setValue(Object value) throws IllegalArgumentException {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public List<Object> getTags() {
+			return Collections.emptyList();
+		}
+	}
+	
+	private class BatteryCapacityPropertyEditor implements PropertyEditor<Object> {
+
+		@Override
+		public String getAsText() {
+			return String.valueOf(getModel().getBatteryCapacity());
+		}
+
+		@Override
+		public void setAsText(String text) throws IllegalArgumentException {
+			String result = verify(text);
+			if (result != null) {
+				throw new IllegalArgumentException(result);
+			}
+			// verify() took care of a possible number format exception
+			double capacity = Double.parseDouble(text);
+			getModel().setBatteryCapacity(capacity);
+		}
+		
+		private String verify(String s) {
+			String message = null;
+			assert s != null;
+			if (s.isEmpty()) {
+				message =  "Cannot be unspecified";
+			} 
+			try {
+				double capacity = Double.parseDouble(s);
+				if (capacity <= 0.0) {
+					message = "Cannot be negative";
+				}
+			} catch (NumberFormatException e) {
+				message =  "Must be a numeric";
+			}
+			return message;
+		}
+
+		@Override
+		public Object getValue() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void setValue(Object value) throws IllegalArgumentException {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public List<Object> getTags() {
+			return Collections.emptyList();
+		}
+	}
+	
 	
 	private class TimelineGraphData implements GraphViewCapability {
 		String POWER_INSTANTANEOUS_NAME = "Current";
@@ -163,8 +325,9 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		}
 		
 		private void initCurrentAndCapacity(CostFunctionCapability powerCost) {
-			Battery battery = new Battery();
-			double capacity = battery.getCapacity();
+			Battery battery = new Battery(getModel());
+			double initialStateOfCharge = battery.getInitialStateOfCharge();
+			double stateOfCharge = initialStateOfCharge;
 		    double voltage, current, power;
 		    // double previousCapacity = capacity;
 		    // double previousCurrent = current;
@@ -172,15 +335,15 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		    Collection<Long> changeTimes = getChangeTimes(CostType.POWER);
 				
 			for (Long t: changeTimes) {		
-				capacityMap.put(t, capacity);
+				capacityMap.put(t, stateOfCharge);
 				power = powerCost.getValue(t);
-				if ((battery.getCapacity() < 100.0) || ((battery.getCapacity() == 100.0) && (power > 0.0))) {
+				if ((battery.getStateOfCharge() < 100.0) || ((battery.getStateOfCharge() == initialStateOfCharge) && (power > 0.0))) {
 					voltage = battery.getVoltage();	
 					current = power / voltage;
-					capacity = battery.setCapacity(power, 0.0); // use 5 mins as interval
+					stateOfCharge = battery.setStateOfCharge(power, 0.0); // use 5 mins as interval
 					// capacity = battery.setCapacity(power, (time[i + 1] - t) / HOUR_TO_MILLIS * 1.0); 	
 				} else {
-					capacity = 100.0;
+					stateOfCharge = initialStateOfCharge;
 					current = 0.0;
 				}				
 				currentMap.put(t, current);

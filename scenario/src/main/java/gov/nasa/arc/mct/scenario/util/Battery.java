@@ -1,32 +1,48 @@
 package gov.nasa.arc.mct.scenario.util;
 
+import gov.nasa.arc.mct.scenario.component.BatteryModel;
+
 public class Battery {
-	private BatteryCapacityTable table = new BatteryCapacityTable();
-	private static final int TOTAL_ENERGY = 5250; // total battery energy is 5250 Watt Hours
+	private BatteryCapacityTable table = new BatteryCapacityTable();	
+	
 	public static final int TIME = 5; // calculate the battery state at every 5 minutes
 	public static final int MITUTE_TO_HOUR = 60;
 	public static final double TIME_TO_HOUR = TIME * 1.0 / MITUTE_TO_HOUR; 
-	private double capacity = 100.0; // in percentage
+	
+	private double capacity = 5250.0; // total battery energy is 5250 Watt Hours
+	private double initialStateOfCharge = 100.0;
+	private double stateOfCharge = 100.0; // in percentage
+	
 	private static final int BATTERY_NUMBER = 8;
 	
-	public double setCapacity(double power, double duration) {
+	public Battery(BatteryModel model) {
+		this.capacity = model.getBatteryCapacity();
+		this.initialStateOfCharge = model.getInitialStateOfCharge();
+		this.stateOfCharge = initialStateOfCharge;
+	}
+	
+	public double setStateOfCharge(double power, double duration) {
 		if (duration == 0.0) duration = TIME_TO_HOUR;
 		if (power != 0) {
-			double change = power * duration / TOTAL_ENERGY;
-			capacity -=  change * 100.0; 
+			double change = power * duration / capacity;
+			stateOfCharge -=  change * 100.0; 
 		}
-		return capacity;
+		return stateOfCharge;
 	}
 	
 	public double getVoltage() {
-		return table.getVoltage(this.capacity) * BATTERY_NUMBER;
+		return table.getVoltage(this.stateOfCharge) * BATTERY_NUMBER;
 	}
 	
-	public double getVoltage(double capacity) {
-		return table.getVoltage(capacity) * BATTERY_NUMBER;
+	public double getVoltage(double stateOfCharge) {
+		return table.getVoltage(stateOfCharge) * BATTERY_NUMBER;
 	}
 	
-	public double getCapacity() {
-		return capacity;
+	public double getStateOfCharge() {
+		return stateOfCharge;
+	}
+	
+	public double getInitialStateOfCharge() {
+		return initialStateOfCharge;
 	}
 }

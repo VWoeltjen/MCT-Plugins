@@ -22,6 +22,7 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicReference;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.scenario.util.CostType;
@@ -46,13 +47,13 @@ public class TimelineCreationWizardUI extends CreateWizardUI {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("Bundle");
     	
 	private JTextField name  = new JTextField(BUNDLE.getString("wizard_timeline_name_default"));
-	private JTextField battery = new JTextField(BUNDLE.getString("wizard_timeline_battery_default"));
-	private JTextField capacity = new JTextField(BUNDLE.getString("wizard_timeline_battery_capacity_default"));
+	private JTextField capability = new JTextField(BUNDLE.getString("wizard_timeline_battery_default"));
+	private JTextField state = new JTextField(BUNDLE.getString("wizard_timeline_battery_state_default"));
 	private JButton createButton;
 	
 	public TimelineCreationWizardUI() {
-		capacity.getDocument().addDocumentListener(documentListener);
-		battery.getDocument().addDocumentListener(documentListener);
+		state.getDocument().addDocumentListener(documentListener);
+		capability.getDocument().addDocumentListener(documentListener);
 	}
 	
 	@Override
@@ -61,7 +62,7 @@ public class TimelineCreationWizardUI extends CreateWizardUI {
 		
 		JLabel nameLabel = new JLabel(BUNDLE.getString("wizard_timeline_name_label"));
 		JLabel batteryLabel = new JLabel(BUNDLE.getString("wizard_timeline_battery_label"));
-		JLabel capacityLabel = new JLabel(BUNDLE.getString("wizard_timeline_battery_capacity_label"));
+		JLabel capacityLabel = new JLabel(BUNDLE.getString("wizard_timeline_battery_state_label"));
 		
 		JPanel panel = new JPanel();
 		GroupLayout groupLayout = new GroupLayout(panel);		
@@ -75,8 +76,8 @@ public class TimelineCreationWizardUI extends CreateWizardUI {
 				.addComponent(capacityLabel)
 			).addGroup(groupLayout.createParallelGroup()
 				.addComponent(name)
-				.addComponent(battery)
-				.addComponent(capacity)
+				.addComponent(capability)
+				.addComponent(state)
 			)
 		);
 
@@ -86,10 +87,10 @@ public class TimelineCreationWizardUI extends CreateWizardUI {
 				.addComponent(name)
 			).addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 				.addComponent(batteryLabel)
-				.addComponent(battery)
+				.addComponent(capability)
 			).addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 				.addComponent(capacityLabel)
-				.addComponent(capacity)
+				.addComponent(state)
 			)
 		);
 		panel.setLayout(groupLayout);
@@ -100,32 +101,20 @@ public class TimelineCreationWizardUI extends CreateWizardUI {
 	@Override
 	public AbstractComponent createComp(ComponentRegistry comp,
 			AbstractComponent parentComp) {	
-		double commValue = Double.parseDouble(capacity.getText());
-		double powerValue = Double.parseDouble(battery.getText());
-		ActivityTypeComponent activityType = 
-				comp.newInstance(ActivityTypeComponent.class, parentComp); 
-		activityType.addCost(CostType.COMM, commValue);
-		activityType.addCost(CostType.POWER, powerValue);
+		double stateOfCharge = Double.parseDouble(state.getText());
+		double capacityValue = Double.parseDouble(capability.getText());
+		TimelineComponent timeline = comp.newInstance(TimelineComponent.class, parentComp);
+		timeline.setBatteryModel(capacityValue, stateOfCharge);
+		timeline.setDisplayName(name.getText());
 		
-		/** if need to calculate impedance value
-		double impedanceValue = STANDARD_VOLTAGE * STANDARD_VOLTAGE / powerValue;
-		activityType.addCost(CostType.IMPEDANCE, impedanceValue); */
-					
-		activityType.setDisplayName(name.getText());
-		
-		// Previous validation should ensure that no NFE is thrown
-		/** activityType.setCosts(
-				Double.parseDouble(power.getText()), 
-				Double.parseDouble(comms.getText())); */
-		
-		return activityType;
+		return timeline;
 	}
 	
 	private void updateCreateButton() {
 		if (createButton != null) {
 			try {
-				Double.parseDouble(capacity.getText());
-				Double.parseDouble(battery.getText());
+				Double.parseDouble(state.getText());
+				Double.parseDouble(capability.getText());
 				createButton.setEnabled(true);
 			} catch (NumberFormatException nfe) {
 				createButton.setEnabled(false);

@@ -238,6 +238,13 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 						bundle.getString("prefix_tagrepo") + user
 						));
 			}
+			if (TimelineComponent.class.isAssignableFrom(type.getTypeClass())) {
+				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
+				return assetClass.cast(new RepositoryWizardDecorator(
+						new TimelineCreationWizardUI(),
+						bundle.getString("prefix_tagrepo") + user
+						));
+			}
 		}
 		
 		// Icons
