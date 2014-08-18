@@ -47,7 +47,6 @@ public class ActivityModel {
 
 		properties.put("COMM", "0.0");
 		properties.put("POWER", "0.0");
-		// properties.put("IMPEDANCE", "0.0");
 		properties.put("type", "");
 		properties.put("notes", "");
 		properties.put("startTime", "");
@@ -69,93 +68,18 @@ public class ActivityModel {
 			properties.put(key, value);
 		}
 	}
-		
-	/** public double getPower() {
-		return power;
-	}
-
-	public void setPower(double power) {
-		this.power = power;
-	}
-
-	public double getComm() {
-		return comm;
-	}
-
-	public void setComm(double comm) {
-		this.comm = comm;
-	}
-	
-	public double getOhm() {
-		return ohm;
-	}
-
-	public void setOhm(double ohm) {
-		this.ohm = ohm;
-	} */
 
 	public long getDurationTime()
 	{
 		long endTime = Long.parseLong(properties.get("endTime"));
 		long startTime = Long.parseLong(properties.get("startTime"));
 		return endTime - startTime;
-		// return endDate.getTime() - startDate.getTime();
 	}
 	
 	public void setDurationTime(long duration)
 	{		
-		// Date endDate = new Date(this.startDate.getTime() + duration);
-		// this.endDate = endDate;
 		long startTime = Long.parseLong(properties.get("startTime"));
 		properties.put("endTime", String.valueOf(startTime + duration));
 	}
-	
-	/** public String getActivityType() {
-		return type != null ? type : ""; // Never return null
-	}
-	
-	public void setActivityType(String type) {
-		this.type = type;
-	}
-	
-	public String getNotes() {
-		return notes != null ? notes : ""; // Never return null
-	}
-	
-	public void setNotes(String notes) {
-		this.notes = notes;
-	}
-
-	public Date getStartTime() {
-		return startDate;
-	}
-
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
-	}
-
-	public Date getEndTime() {
-		return endDate;
-	}
-
-	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
-	}
-	
-	public String getUrl() {
-		return url != null ? url : "";
-	}
-	
-	public void setUrl(String url) {
-		this.url = url;
-	}
-
-	public String getProcedureUrl() {
-		return procedureUrl != null ? procedureUrl : "";
-	}
-
-	public void setProcedureUrl(String procedureUrl) {
-		this.procedureUrl = procedureUrl;
-	} */
 	
 }

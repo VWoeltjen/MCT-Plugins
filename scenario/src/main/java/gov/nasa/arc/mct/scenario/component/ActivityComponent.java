@@ -229,6 +229,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 	@Override
 	public long getEnd() {
+		// Date date = new Date(getData().getValue("endTime"));
 		return Long.valueOf(getData().getValue("endTime"));
 	}	
 	
@@ -244,7 +245,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 	@Override
 	public void setEnd(long end) {
-		String endTime = String.valueOf(new Date(end > getStart() ? end : getStart()));
+		String endTime = String.valueOf(new Date(end > getStart() ? end : getStart()).getTime());
 		getData().setValue("endTime", endTime);
 	}
 
