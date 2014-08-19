@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Scanner;
 
 /**
- * parse the battery discharge table, and create new table with standard interval 
- * between different battery discharge states.
+ * parse the battery discharge table (in CSV format), and create new table 
+ * with standard interval between different battery discharge states.
  * e.g. 77.5%, 78.0% V.S. 76.29%. 77.69%
  * read in the battery discharge capacity value, adjust the value to its nearest 50th
  * and look up the table for voltage value.

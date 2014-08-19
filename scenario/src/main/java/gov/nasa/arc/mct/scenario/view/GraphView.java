@@ -190,10 +190,6 @@ public class GraphView extends AbstractTimelineView {
 		}
 		
 		protected void updateGraph() {			
-			// Collection<Long> changeTimes = new TreeSet<Long>(); 
-			// changeTimes.addAll(getCost().getChangeTimes());
-			// changeTimes.addAll(Arrays.asList(time)); // add the time from AbstractComponent
-			
 			// Note: TreeSet is always sorted, meaning subsequent iteration occurs in drawing order
 			Collection<Long> timeCollection = new TreeSet<Long>();
 			Collection<Double> dataCollection = new ArrayList<Double>();
@@ -208,11 +204,6 @@ public class GraphView extends AbstractTimelineView {
 			
 			int size = timeCollection.size();						
 			if (size > 1) {
-				// double data[] = new double[size];
-				// long   time[] = new long[size];
-				// calculateData(changeTimes, data, time);
-				
-				
 				Double[] dataType = new Double[] {};
 			    dataPoints = dataCollection.toArray(dataType);
 			    Long[] timeType = new Long[] {};
@@ -241,47 +232,6 @@ public class GraphView extends AbstractTimelineView {
 			this.minData = minData;
 			this.maxData= maxData;
 		}
-		
-		/** protected void calculateData(Collection<Long> changeTimes, Double data[], long time[]) {
-			if (this.isInstantaneous) calculateInstantaniousData(changeTimes, data, time);
-			else { calculateAccumulativeData(changeTimes, data, time); }
-		}
-		
-		protected void calculateInstantaniousData(Collection<Long> changeTimes, Double data[], long time[]) {
-			double maxData = 0.0;
-			double minData = 0.0;
-			int i = 0;
-			for (Long t : changeTimes) {
-				data[i]   = getCost().getValue(t);
-				if (data[i] > maxData) maxData = data[i];
-				if (data[i] < minData) minData = data[i];
-				time[i++] = t;
-			}
-			this.minData = minData;
-			this.maxData= maxData;
-			setDataPoints(data);
-		}
-		
-		protected void calculateAccumulativeData(Collection<Long> changeTimes, Double data[], long time[]) {
-			boolean isComm = false;
-			if (type.equals(CostType.COMM)) isComm = true;			
-			final long TIME_SCALE = (isComm ? SECOND_TO_MILLIS : HOUR_TO_MILLIS); // change for easy reading of results
-			double maxData = 0.0;
-			double minData = 0.0;
-			int i = 0;
-			long previousTime = 0l;
-			for (Long t : changeTimes) {
-				double increase = getCost().getValue(previousTime) * (t - previousTime) / TIME_SCALE;
-				data[i] = (i > 0 ? data[i - 1] + increase : increase);							
-				if (data[i] > maxData) maxData = data[i];
-				if (data[i] < minData) minData = data[i];			
-				time[i++] = t;
-				previousTime = t;
-			}
-			this.minData = minData;
-			this.maxData= maxData;
-			setDataPoints(data);
-		} */
 		
 		protected void drawDataLine(Graphics g, int charHeight, int rightX) {
 			if (this.isInstantaneous) drawInstantaniousDataLine(g, charHeight, rightX);
@@ -324,59 +274,6 @@ public class GraphView extends AbstractTimelineView {
 				}
 			}
 		}
-		
-		/** protected CostFunctionCapability getCost() {
-			return type;
-		}
-		
-		public int[] getXValue() {
-			return x;
-		}
-
-		public int[] getYValue() {
-			return y;
-		}
-
-		public void setX(int[] x) {
-			this.x = x;
-		}
-
-		public void setY(int[] y) {
-			this.y = y;
-		}
-		
-		public Double[] getDataPoints() {
-			return dataPoints;
-		}
-
-		public void setDataPoints(Double[] dataPoints) {
-			this.dataPoints = dataPoints;
-		}
-
-		public void setMinData(double minData) {
-			this.minData = minData;
-		}
-
-		public void setMaxData(double maxData) {
-			this.maxData = maxData;
-		}
-
-		public double getMinData() {
-			return minData;
-		}
-
-		public double getMaxData() {
-			return maxData;
-		}
-		
-		protected boolean getIsInstantanious() {
-			return isInstantaneous;
-		}
-
-		protected String getUnits(CostFunctionCapability cost) {
-			if (isInstantaneous) return cost.getInstantaniousUnits();
-			else return cost.getAccumulativeUnits();
-		} */
 
 		protected int toX(long t) {
 			return (int) (getPixelScale() * (double) (t - getTimeOffset())) + getLeftPadding();
@@ -391,120 +288,6 @@ public class GraphView extends AbstractTimelineView {
 			return Arrays.asList(cost);
 		} 
 	}
-	
-	/** class PowerCostGraph extends CostGraph {
-		private static final long serialVersionUID = 299626758166333334L;
-		private Double[] currentData = {}; 
-		private Double[] capacityData = {};
-		private Long[] time = new Long[] {};
-		private final long TIME_SCALE = Battery.TIME * MINUTE_TO_MILLIS;
-		private static final String INSTANTANIOUS_UNITS = "A";
-		private static final String ACCUMULATIVE_UNITS = "Battery %";
-		
-		public PowerCostGraph(CostFunctionCapability cost,
-				boolean isInstantanious) {
-			super(cost, isInstantanious);
-		}
-
-		@Override
-		protected void updateGraph() {
-			// Note: TreeSet is always sorted, meaning subsequent iteration occurs in drawing order
-			Collection<Long> changeTimes = new TreeSet<Long>(); 
-			changeTimes.addAll(getCost().getChangeTimes());
-			changeTimes.add(getStart());
-			changeTimes.add(getEnd());
-			
-			if (changeTimes.size() > 1) {
-				updateTime(changeTimes);
-				calculate(time);							
-				calculateData();
-				Double data[] = getDataPoints();
-				
-				int size = time.length;	
-				int[] x = new int[size];
-				int[] y = new int[size];
-				for (int j = 0 ; j < size ; j++) {
-					// Convert to x, y
-					x[j] = toX(time[j]);
-					y[j] = toY(data[j], getMinData(), getMaxData());
-				}
-				setX(x);
-				setY(y);
-			}			
-		}
-		
-		private void updateTime(Collection<Long> changeTimes) {
-			int size = changeTimes.size();
-			long start, end = 0;
-			Long[] type = new Long[] {};
-			Long[] timeArray = changeTimes.toArray(type);
-			List<Long> timeList = new ArrayList<Long> ();
-			for (int i = 0; i < size - 1; i++ ) {
-				start = timeArray[i];
-				end = timeArray[i + 1];
-				for (int j = 0; j < (end - start) / TIME_SCALE; j++) {
-					timeList.add(start + j * TIME_SCALE);
-				}
-				// timeList.add(start);
-			}
-			timeList.add(end);
-			time = timeList.toArray(type);
-		}
-		
-		private void calculate(Long[] time) {			
-			Battery battery = new Battery();
-			double capacity = battery.getCapacity();
-		    double voltage, current, power;
-		    
-			int size = time.length;
-			currentData = new Double[size];
-			capacityData = new Double[size];			
-			capacityData[0] = capacity;
-			
-			for (int i = 0; i < time.length - 1; i++) {		
-				long t = time[i];
-				power = getCost().getValue(t);
-				if ((battery.getCapacity() < 100.0) || ((battery.getCapacity() == 100.0) && (power > 0.0))) {
-					voltage = battery.getVoltage();	
-					current = power / voltage;
-					capacity = battery.setCapacity(power, 0.0); // use 5 mins as interval
-					// capacity = battery.setCapacity(power, (time[i + 1] - t) / HOUR_TO_MILLIS * 1.0); 	
-				} else {
-					capacity = 100.0;
-					current = 0.0;
-				}
-				currentData[i] = current;
-				capacityData[i + 1] = capacity;				
-			}
-		}
-		
-		protected void calculateData() {
-			Double[] data =  (getIsInstantanious() ? currentData : capacityData);
-			double maxData = data[0];
-			double minData = data[0];
-			for (double value : data) {
-				if (value > maxData) maxData = value;
-				if (value < minData) minData = value;
-			}
-			setMinData(minData);
-			setMaxData(maxData);
-			setDataPoints(data);
-		}
-
-		
-		
-		
-		protected void drawDataLine(Graphics g, int charHeight, int rightX) {
-			drawInstantaniousDataLine(g, charHeight, rightX);
-		} 
-		
-		protected String getUnits(CostFunctionCapability cost) {
-			if (getIsInstantanious()) return INSTANTANIOUS_UNITS;
-			else return ACCUMULATIVE_UNITS;
-		}
-	}*/
-	
-	
 
 	@Override
 	protected void rebuild() {

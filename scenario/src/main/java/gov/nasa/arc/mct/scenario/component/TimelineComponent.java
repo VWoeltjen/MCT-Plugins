@@ -279,7 +279,8 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		public static final long SECOND_TO_MILLIS = 1000l;
 		public static final long MINUTE_TO_MILLIS = 60000l;
 		public static final long HOUR_TO_MILLIS = 3600000l;
-		private final long TIME_SCALE = Battery.TIME * MINUTE_TO_MILLIS;
+		private static final int TIME_INTERVAL = 5; // update battery state in every 5 minutes
+		private final long TIME_SCALE = TIME_INTERVAL * MINUTE_TO_MILLIS;
 		
 		private List<CostFunctionCapability> costs;
 		
@@ -329,8 +330,6 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 			double initialStateOfCharge = battery.getInitialStateOfCharge();
 			double stateOfCharge = initialStateOfCharge;
 		    double voltage, current, power;
-		    // double previousCapacity = capacity;
-		    // double previousCurrent = current;
 
 		    Collection<Long> changeTimes = getChangeTimes(CostType.POWER);
 				
@@ -340,8 +339,7 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 				if ((battery.getStateOfCharge() < 100.0) || ((battery.getStateOfCharge() == initialStateOfCharge) && (power > 0.0))) {
 					voltage = battery.getVoltage();	
 					current = power / voltage;
-					stateOfCharge = battery.setStateOfCharge(power, 0.0); // use 5 mins as interval
-					// capacity = battery.setCapacity(power, (time[i + 1] - t) / HOUR_TO_MILLIS * 1.0); 	
+					stateOfCharge = battery.setStateOfCharge(power, (double)TIME_INTERVAL); // use 5 mins as interval	
 				} else {
 					stateOfCharge = initialStateOfCharge;
 					current = 0.0;
@@ -351,7 +349,15 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		}
 		
 		private Map<Long, Double> getPowerData(CostFunctionCapability powerCost, boolean isInstantaneous) {
-			if (capacityMap.isEmpty()) initCurrentAndCapacity(powerCost);
+			currentMap.clear();
+			capacityMap.clear();
+			initCurrentAndCapacity(powerCost);
+			if (isInstantaneous) {
+				for (Long t: currentMap.keySet()) {
+					System.out.println(t + ": " + currentMap.get(t));
+				}
+				System.out.println();
+			}
 			return isInstantaneous? currentMap : capacityMap;
 		}
 		

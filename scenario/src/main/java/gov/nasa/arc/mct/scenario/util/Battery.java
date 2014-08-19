@@ -2,12 +2,17 @@ package gov.nasa.arc.mct.scenario.util;
 
 import gov.nasa.arc.mct.scenario.component.BatteryModel;
 
+/**
+ * 
+ * @author jdong2
+ *
+ */
 public class Battery {
 	private BatteryVoltageTable table = new BatteryVoltageTable();	
 	
-	public static final int TIME = 5; // calculate the battery state at every 5 minutes
+	public static final int TIME_INTERVAL = 5; // calculate the battery state at every 5 minutes
 	public static final int MITUTE_TO_HOUR = 60;
-	public static final double TIME_TO_HOUR = TIME * 1.0 / MITUTE_TO_HOUR; 
+	public static final double TIME_TO_HOUR = TIME_INTERVAL * 1.0 / MITUTE_TO_HOUR; 
 	
 	private double capacity = 5250.0; // total battery energy is 5250 Watt Hours
 	private double initialStateOfCharge = 100.0;
@@ -22,12 +27,16 @@ public class Battery {
 	}
 	
 	public double setStateOfCharge(double power, double duration) {
-		if (duration == 0.0) duration = TIME_TO_HOUR;
+		duration = getMinuteToHour(duration);
 		if (power != 0) {
 			double change = power * duration / capacity;
 			stateOfCharge -=  change * 100.0; 
 		}
 		return stateOfCharge;
+	}
+	
+	private double getMinuteToHour(double duration) {
+		return duration / MITUTE_TO_HOUR;
 	}
 	
 	public double getVoltage() {
