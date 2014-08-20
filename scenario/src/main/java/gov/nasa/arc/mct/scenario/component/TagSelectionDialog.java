@@ -44,6 +44,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 /**
  * Check box dialog for specifying which tags (or activity types) 
@@ -176,7 +177,11 @@ public class TagSelectionDialog extends JDialog {
 		rigid.add(Box.createRigidArea(new Dimension(240,1)));		
 		
 		p.setAlignmentX(CENTER_ALIGNMENT);
-		return p;
+		
+		JScrollPane pane = new JScrollPane();
+		pane.getViewport().add(p);
+		
+		return pane;
 	}
 
 	private class Selector implements ActionListener {
