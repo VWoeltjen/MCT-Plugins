@@ -59,7 +59,7 @@ public class ActivityTypeModel {
 		if (costs.get(typeName) == null) {
 			return 0.0;
 		} else {
-			return (Double)costs.get(typeName);
+			return costs.get(typeName);
 		}
 	}
 	
