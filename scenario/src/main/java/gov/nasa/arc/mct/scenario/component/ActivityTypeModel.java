@@ -40,7 +40,6 @@ public class ActivityTypeModel {
 	public ActivityTypeModel() {
 		costs.put("COMM", 0.0);
 		costs.put("POWER", 0.0);
-		// costs.put("IMPEDANCE", 0.0);
 	}
 	
 	private String url = "";

@@ -112,13 +112,7 @@ public class ActivityTypeCreationWizardUI extends CreateWizardUI {
 		double impedanceValue = STANDARD_VOLTAGE * STANDARD_VOLTAGE / powerValue;
 		activityType.addCost(CostType.IMPEDANCE, impedanceValue); */
 					
-		activityType.setDisplayName(name.getText());
-		
-		// Previous validation should ensure that no NFE is thrown
-		/** activityType.setCosts(
-				Double.parseDouble(power.getText()), 
-				Double.parseDouble(comms.getText())); */
-		
+		activityType.setDisplayName(name.getText());		
 		return activityType;
 	}
 	

@@ -229,7 +229,6 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 	@Override
 	public long getEnd() {
-		// Date date = new Date(getData().getValue("endTime"));
 		return Long.valueOf(getData().getValue("endTime"));
 	}	
 	
@@ -478,6 +477,11 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		}
 	}
 	
+	/**
+	 * graph data associated with ActivityComponent
+	 * @author jdong2
+	 *
+	 */
 	private class ActivityGraphData implements GraphViewCapability {
 		private List<CostFunctionCapability> costs;
 		

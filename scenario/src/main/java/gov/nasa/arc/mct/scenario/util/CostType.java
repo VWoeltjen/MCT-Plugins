@@ -1,8 +1,11 @@
 package gov.nasa.arc.mct.scenario.util;
 
-import java.util.HashMap;
-import java.util.Map;
-
+/**
+ * Aggregate naming differences of cost types.
+ * The naming is mostly used in drawing cost graph.
+ * @author jdong2
+ *
+ */
 public enum CostType {
 	
 	COMM("COMM", "Buffered Data", "Kbps", "kb") {
@@ -17,7 +20,9 @@ public enum CostType {
 		}
 	}, 
 	
-	/** IMPEDANCE("IMPEDANCE", "Ohm", "Ohm") {
+	/** 
+	 * can be used if having constant impedance
+	 * IMPEDANCE("IMPEDANCE", "Ohm", "Ohm") {
 		public double add(double myValue, double anotherValue) {
 			return myValue * anotherValue / (myValue + anotherValue);
 		}

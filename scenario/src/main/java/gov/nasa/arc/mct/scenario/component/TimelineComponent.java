@@ -29,6 +29,7 @@ import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyEditor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 import gov.nasa.arc.mct.scenario.util.Battery;
+import gov.nasa.arc.mct.scenario.util.BatteryVoltageTable;
 import gov.nasa.arc.mct.scenario.util.CostType;
 
 import java.util.ArrayList;
@@ -269,7 +270,12 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		}
 	}
 	
-	
+	/**
+	 * graph data associated with TimelineComponent
+	 * 
+	 * @author jdong2
+	 *
+	 */
 	private class TimelineGraphData implements GraphViewCapability {
 		String POWER_INSTANTANEOUS_NAME = "Current";
 		String POWER_ACCUMULATIVE_NAME = "Battery Capacity";
@@ -278,7 +284,6 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		
 		public static final long SECOND_TO_MILLIS = 1000l;
 		public static final long MINUTE_TO_MILLIS = 60000l;
-		public static final long HOUR_TO_MILLIS = 3600000l;
 		private static final int TIME_INTERVAL = 5; // update battery state in every 5 minutes
 		private final long TIME_SCALE = TIME_INTERVAL * MINUTE_TO_MILLIS;
 		
@@ -299,6 +304,7 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 			return costs.get(0);
 		}
 
+		// break up the change times to every 5 minutes
 		private Collection<Long> getChangeTimes(CostType type) {
 			Collection<Long> changeTimes = new TreeSet<Long>(getCost(type).getChangeTimes());
 			if (type.equals(CostType.POWER)) { // decrease time interval according to battery value precision (currently 5 mins)
@@ -329,35 +335,55 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 			Battery battery = new Battery(getModel());
 			double initialStateOfCharge = battery.getInitialStateOfCharge();
 			double stateOfCharge = initialStateOfCharge;
-		    double voltage, current, power;
-
+		    double voltage, current = 0.0, power;		    
+		    
 		    Collection<Long> changeTimes = getChangeTimes(CostType.POWER);
+		    Long previousTime = -1l;
 				
-			for (Long t: changeTimes) {		
-				capacityMap.put(t, stateOfCharge);
+		    // init the starting point of graph		    
+	    	capacityMap.put(getStart(), initialStateOfCharge);
+		    currentMap.put(getStart(), 0.0);
+		    
+		    
+			for (Long t: changeTimes) {						
 				power = powerCost.getValue(t);
-				if ((battery.getStateOfCharge() < 100.0) || ((battery.getStateOfCharge() == initialStateOfCharge) && (power > 0.0))) {
+				
+				// battery stateOfCharge changes when the battery is not full, or when the battery is full and there is consumption
+				if ((battery.getStateOfCharge() < 100.0) || ((battery.getStateOfCharge() >= 100.0) && (power > 0.0))) {
+					if (!capacityMap.containsKey(previousTime)) { // for the first timeStamp
+						capacityMap.put(t, stateOfCharge);
+					} else {
+						if (stateOfCharge != capacityMap.get(previousTime)) { // avoid saving when capacity is the same
+							capacityMap.put(t, stateOfCharge);
+						}
+					}	
+					
 					voltage = battery.getVoltage();	
-					current = power / voltage;
-					stateOfCharge = battery.setStateOfCharge(power, (double)TIME_INTERVAL); // use 5 mins as interval	
+					current = BatteryVoltageTable.getNearestState(power / voltage); // use formula A = P / V, in 0.5 precision
+					
+					if (!currentMap.containsKey(previousTime)) { // for the first timestamp
+						currentMap.put(t, current);
+					} else {
+						if (current != currentMap.get(previousTime)) { // avoid saving when current is the same
+							currentMap.put(t, current);
+						}
+					}					
+					stateOfCharge = battery.setStateOfCharge(power, (double)TIME_INTERVAL); // use 5 mins as interval to update battery stateOfCharge	
 				} else {
-					stateOfCharge = initialStateOfCharge;
-					current = 0.0;
-				}				
-				currentMap.put(t, current);
-			}				
+					currentMap.put(t, 0.0);
+				}	
+				previousTime = t;
+			}	
+			
+			// init the end point of graph
+			capacityMap.put(getEnd(), stateOfCharge);			
+			currentMap.put(getEnd(), 0.0);		
 		}
 		
 		private Map<Long, Double> getPowerData(CostFunctionCapability powerCost, boolean isInstantaneous) {
 			currentMap.clear();
 			capacityMap.clear();
 			initCurrentAndCapacity(powerCost);
-			if (isInstantaneous) {
-				for (Long t: currentMap.keySet()) {
-					System.out.println(t + ": " + currentMap.get(t));
-				}
-				System.out.println();
-			}
 			return isInstantaneous? currentMap : capacityMap;
 		}
 		
@@ -380,6 +406,10 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 					double increase = ((i < size - 1) ? commValue * (time[i + 1] - t) / SECOND_TO_MILLIS : 0.0);
 					currentValue += increase;	
 				}
+				
+				// init starting and ending point
+				if (getStart() != time[0]) data.put(getStart(), 0.0);
+				if (getEnd() != time[changeTimes.size() - 1]) data.put(getEnd(), currentValue);
 			}
 			return data;
 		}

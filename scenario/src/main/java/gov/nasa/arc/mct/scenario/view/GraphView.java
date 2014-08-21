@@ -103,6 +103,7 @@ public class GraphView extends AbstractTimelineView {
 		rebuild();
 	}
 	
+	// check whether draw instantaneous and accumulative graphs
 	private void setHasGraph() {
 		hasInstantaneous = graphData.hasInstantaneousGraph();
 		hasAccumulative = graphData.hasAccumulativeGraph();
@@ -196,8 +197,6 @@ public class GraphView extends AbstractTimelineView {
 			
 			Map<Long, Double> values = graphData.getData(type, isInstantaneous);
 			if (values != null) {
-				if (!values.containsKey(getStart())) values.put(getStart(), 0.0);
-				if (!values.containsKey(getEnd())) values.put(getEnd(), 0.0);
 				dataCollection = values.values();
 				timeCollection = values.keySet();
 			}

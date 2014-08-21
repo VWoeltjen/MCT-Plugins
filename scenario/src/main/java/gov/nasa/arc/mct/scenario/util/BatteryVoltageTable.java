@@ -71,7 +71,7 @@ public class BatteryVoltageTable {
 		return voltageMap;
 	}
 	
-	private double getNearestState(double realState) {
+	public static double getNearestState(double realState) {
 		double upper = Math.ceil(realState / INTERVAL) * INTERVAL;
 		double lower = Math.floor(realState / INTERVAL) * INTERVAL;
 		double state = ((upper - realState) - (realState - lower) >= 0) ? lower : upper;
