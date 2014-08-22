@@ -40,7 +40,7 @@ public final class TypePropertyEditor implements PropertyEditor<Object> {
 
 	@Override
 	public String getAsText() {
-		String typeData = activityComponent.getModel().getValue("type");
+		String typeData = activityComponent.getData().getValue("type");
 		return typeData;
 	}
 
@@ -57,7 +57,7 @@ public final class TypePropertyEditor implements PropertyEditor<Object> {
 		if (verify(newValue) != null) {
 			throw new IllegalArgumentException(result);
 		}
-			ActivityData businessModel = activityComponent.getModel();
+			ActivityData businessModel = activityComponent.getData();
 			businessModel.setValue("type", newValue);
 			
 	}

@@ -51,6 +51,19 @@ public class ActivityTypeModel {
 		this.url = url;
 	}
 	
+	public double getPower() {
+		return get("POWER");
+	}
+	public void setPower(double power) {
+		set("POWER", power);
+	}
+	public double getComms() {
+		return get("COMM");
+	}
+	public void setComms(double comms) {
+		set("COMM", comms);
+	}
+	
 	public void set(String typeName, double value) {
 		costs.put(typeName, value);
 	}

@@ -57,14 +57,14 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class ActivityComponent extends CostFunctionComponent implements DurationCapability{
 	private ObjectManager objectManager = new ObjectManager.ExplicitObjectManager();
-	private final AtomicReference<ActivityData> model = new AtomicReference<ActivityData>(new ActivityData());
+	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	
 	/**
 	 * Get the underlying data about this Activity (start time, end time, costs, type...)
 	 * @return underlying activity data
 	 */
 	public ActivityData getData() {
-		return model.get();
+		return getModel().getData();
 	}
 
 	@Override
@@ -106,21 +106,21 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			return capability.cast(new ActivityGraphData());
 		}
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
-		    JAXBModelStatePersistence<ActivityData> persistence = new JAXBModelStatePersistence<ActivityData>() {
+		    JAXBModelStatePersistence<ActivityModelRole> persistence = new JAXBModelStatePersistence<ActivityModelRole>() {
 
 				@Override
-				protected ActivityData getStateToPersist() {
+				protected ActivityModelRole getStateToPersist() {
 					return model.get();
 				}
 
 				@Override
-				protected void setPersistentState(ActivityData modelState) {
+				protected void setPersistentState(ActivityModelRole modelState) {
 					model.set(modelState);
 				}
 
 				@Override
-				protected Class<ActivityData> getJAXBClass() {
-					return ActivityData.class;
+				protected Class<ActivityModelRole> getJAXBClass() {
+					return ActivityModelRole.class;
 				}
 		        
 			};
@@ -134,7 +134,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	public List<CostFunctionCapability> getInternalCostFunctions() {
 		List<CostFunctionCapability> internal = new ArrayList<CostFunctionCapability>();
 		for(CostType type: CostType.values()) {
-			double value = Double.valueOf(getModel().getValue(type.getName()));
+			double value = Double.valueOf(getData().getValue(type.getName()));
 			if (value != 0.0) {
 				internal.add(new CostFunctionStub(type));
 			}
@@ -171,7 +171,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	 * Get the container for underlying Activity data
 	 * @return the container for underlying Activity data (its model)
 	 */
-	public ActivityData getModel() {
+	public ActivityModelRole getModel() {
 		return model.get();
 	}
 
@@ -427,8 +427,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		@Override
 		public Object getValue() {
 			return new ActivityCustomProperty(tagPropertyEditor.getValue(), 
-					getModel().getValue("url"),
-					getModel().getValue("procedureUrl"));
+					getData().getValue("url"),
+					getData().getValue("procedureUrl"));
 		}
 
 		@Override
@@ -436,8 +436,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			if (value instanceof ActivityCustomProperty) {
 				ActivityCustomProperty property = (ActivityCustomProperty) value;
 				tagPropertyEditor.setValue(property.getTagStyleChildren());
-				getModel().setValue("url", property.getUrl());
-				getModel().setValue("procedureUrl", property.getProcedureUrl());
+				getData().setValue("url", property.getUrl());
+				getData().setValue("procedureUrl", property.getProcedureUrl());
 			} else {
 				throw new IllegalArgumentException(
 						ActivityCustomProperty.class.getName() + 

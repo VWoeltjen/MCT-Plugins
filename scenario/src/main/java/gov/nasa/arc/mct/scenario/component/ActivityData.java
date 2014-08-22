@@ -21,6 +21,7 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,6 +81,70 @@ public class ActivityData {
 	{		
 		long startTime = Long.parseLong(properties.get("startTime"));
 		properties.put("endTime", String.valueOf(startTime + duration));
+	}
+	
+	public double getPower() {
+		return Double.valueOf(getValue("POWER"));
+	}
+
+	public void setPower(double power) {
+		setValue("POWER", String.valueOf(power));
+	}
+
+	public double getComm() {
+		return Double.valueOf(getValue("COMM"));
+	}
+
+	public void setComm(double comm) {
+		setValue("COMM", String.valueOf(comm));
+	}
+	
+	public String getActivityType() {
+		return getValue("type");
+	}
+	
+	public void setActivityType(String type) {
+		setValue("type", type);
+	}
+	
+	public String getNotes() {
+		return getValue("notes");
+	}
+	
+	public void setNotes(String notes) {
+		setValue("notes", notes);
+	}
+
+	public Date getStartTime() {
+		return new Date(Long.valueOf(getValue("startTime")));
+	}
+
+	public void setStartDate(Date startDate) {
+		setValue("startTime", String.valueOf(startDate.getTime()));
+	}
+
+	public Date getEndTime() {
+		return new Date(Long.valueOf(getValue("endTime")));
+	}
+
+	public void setEndDate(Date endDate) {
+		setValue("endTime", String.valueOf(endDate.getTime()));
+	}
+	
+	public String getUrl() {
+		return getValue("url");
+	}
+	
+	public void setUrl(String url) {
+		setValue("url", url);
+	}
+
+	public String getProcedureUrl() {
+		return getValue("procedureUrl");
+	}
+
+	public void setProcedureUrl(String procedureUrl) {
+		setValue("procedureUrl", procedureUrl);
 	}
 	
 }

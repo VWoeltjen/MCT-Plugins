@@ -46,8 +46,8 @@ public class ActivityCreationServiceImpl implements ActivityCreationService {
 		ComponentRegistry registry = ActivityCreationServiceImpl.registry.get();
 		ActivityComponent activity = 
 		                          registry.newInstance(ActivityComponent.class, parent);
-		activity.getModel().setValue("startTime", String.valueOf(0L));
-		activity.getModel().setValue("endTime", String.valueOf(30L * 60L * 1000L));
+		activity.getData().setValue("startTime", String.valueOf(0L));
+		activity.getData().setValue("endTime", String.valueOf(30L * 60L * 1000L));
 		/** activity.getModel().setValue("POWER", String.valueOf(Double.NaN));
 		activity.getModel().setValue("IMPEDANCE", String.valueOf(Double.NaN));
 		activity.getModel().setValue("COMM", String.valueOf(Double.NaN)); */
