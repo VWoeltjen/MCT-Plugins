@@ -113,7 +113,7 @@ public class ActivityCreationWizardUI  extends CreateWizardUI {
         component = comp.newInstance(componentClass, targetComponent);
 		component.setDisplayName(displayName);
 		ActivityComponent activityComponent = (ActivityComponent) component;
-		ActivityModel data = activityComponent.getData();
+		ActivityData data = activityComponent.getData();
 		
 		long startDate, endDate;
 		try {

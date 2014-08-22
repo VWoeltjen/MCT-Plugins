@@ -35,11 +35,11 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ActivityModel {
+public class ActivityData {
 
 	private Map<String, String> properties = new HashMap<String, String> ();
 	
-	public ActivityModel() {
+	public ActivityData() {
 		init();
 	}
 	

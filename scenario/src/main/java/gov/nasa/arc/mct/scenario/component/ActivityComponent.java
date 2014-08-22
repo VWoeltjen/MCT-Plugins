@@ -57,13 +57,13 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class ActivityComponent extends CostFunctionComponent implements DurationCapability{
 	private ObjectManager objectManager = new ObjectManager.ExplicitObjectManager();
-	private final AtomicReference<ActivityModel> model = new AtomicReference<ActivityModel>(new ActivityModel());
+	private final AtomicReference<ActivityData> model = new AtomicReference<ActivityData>(new ActivityData());
 	
 	/**
 	 * Get the underlying data about this Activity (start time, end time, costs, type...)
 	 * @return underlying activity data
 	 */
-	public ActivityModel getData() {
+	public ActivityData getData() {
 		return model.get();
 	}
 
@@ -106,21 +106,21 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			return capability.cast(new ActivityGraphData());
 		}
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
-		    JAXBModelStatePersistence<ActivityModel> persistence = new JAXBModelStatePersistence<ActivityModel>() {
+		    JAXBModelStatePersistence<ActivityData> persistence = new JAXBModelStatePersistence<ActivityData>() {
 
 				@Override
-				protected ActivityModel getStateToPersist() {
+				protected ActivityData getStateToPersist() {
 					return model.get();
 				}
 
 				@Override
-				protected void setPersistentState(ActivityModel modelState) {
+				protected void setPersistentState(ActivityData modelState) {
 					model.set(modelState);
 				}
 
 				@Override
-				protected Class<ActivityModel> getJAXBClass() {
-					return ActivityModel.class;
+				protected Class<ActivityData> getJAXBClass() {
+					return ActivityData.class;
 				}
 		        
 			};
@@ -171,7 +171,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	 * Get the container for underlying Activity data
 	 * @return the container for underlying Activity data (its model)
 	 */
-	public ActivityModel getModel() {
+	public ActivityData getModel() {
 		return model.get();
 	}
 

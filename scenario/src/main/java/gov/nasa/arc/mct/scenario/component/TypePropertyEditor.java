@@ -57,7 +57,7 @@ public final class TypePropertyEditor implements PropertyEditor<Object> {
 		if (verify(newValue) != null) {
 			throw new IllegalArgumentException(result);
 		}
-			ActivityModel businessModel = activityComponent.getModel();
+			ActivityData businessModel = activityComponent.getModel();
 			businessModel.setValue("type", newValue);
 			
 	}

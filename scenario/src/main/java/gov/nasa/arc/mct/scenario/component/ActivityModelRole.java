@@ -41,9 +41,9 @@ public class ActivityModelRole {
 	// change, MCT persists model data using JAXB.  The XML text written to the MCT database is similar to 
 	// <exampleModelRole><data><doubleData>46.91</doubleData><dataDescription>100 free</dataDescription></data></exampleModelRole>
 	
-	private ActivityModel data = new ActivityModel();
+	private ActivityData data = new ActivityData();
 
-	public ActivityModel getData() {
+	public ActivityData getData() {
 		return data;
 	}
 }
