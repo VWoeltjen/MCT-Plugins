@@ -35,14 +35,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement()
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ActivityTypeModel {
+	private String url = "";
+	private double power;
+	private double comms;
+	
 	private Map<String, Double> costs = new HashMap<String, Double> ();
 	
 	public ActivityTypeModel() {
 		costs.put("COMM", 0.0);
 		costs.put("POWER", 0.0);
-	}
-	
-	private String url = "";
+	}	
 
 	public String getUrl() {
 		return url;
@@ -51,29 +53,15 @@ public class ActivityTypeModel {
 		this.url = url;
 	}
 	
-	public double getPower() {
-		return get("POWER");
-	}
-	public void setPower(double power) {
-		set("POWER", power);
-	}
-	public double getComms() {
-		return get("COMM");
-	}
-	public void setComms(double comms) {
-		set("COMM", comms);
-	}
-	
 	public void set(String typeName, double value) {
 		costs.put(typeName, value);
 	}
 	
 	public double get(String typeName) {
-		if (costs.get(typeName) == null) {
-			return 0.0;
-		} else {
-			return costs.get(typeName);
-		}
+		double value = costs.get(typeName);
+		if (value == 0.0) value = (typeName.equals("POWER")) ? power : comms;
+		if (value != 0.0) costs.put(typeName, value);
+		return value;
 	}
 	
 	public Collection<String> getKeys() {

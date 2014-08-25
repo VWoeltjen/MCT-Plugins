@@ -24,8 +24,6 @@ package gov.nasa.arc.mct.scenario.component;
 import gov.nasa.arc.mct.components.AbstractComponent;
 import gov.nasa.arc.mct.scenario.api.ActivityCreationService;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
-
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ActivityCreationServiceImpl implements ActivityCreationService {
@@ -48,9 +46,6 @@ public class ActivityCreationServiceImpl implements ActivityCreationService {
 		                          registry.newInstance(ActivityComponent.class, parent);
 		activity.getData().setValue("startTime", String.valueOf(0L));
 		activity.getData().setValue("endTime", String.valueOf(30L * 60L * 1000L));
-		/** activity.getModel().setValue("POWER", String.valueOf(Double.NaN));
-		activity.getModel().setValue("IMPEDANCE", String.valueOf(Double.NaN));
-		activity.getModel().setValue("COMM", String.valueOf(Double.NaN)); */
 		activity.save();
 		
 		return activity;

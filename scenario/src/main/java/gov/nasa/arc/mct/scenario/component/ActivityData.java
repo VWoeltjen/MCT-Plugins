@@ -37,37 +37,65 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ActivityData {
+	
+	// keep the instance variable for backward compatability
+	private double power;
+	private double comm;
+	private String type = "";
+	private String notes = "";
+	private Date startDate;
+	private Date endDate;
+	private String url = "";
+	private String procedureUrl = "";
 
 	private Map<String, String> properties = new HashMap<String, String> ();
+	private static final String DEFAULT_VALUE = "";
 	
 	public ActivityData() {
 		init();
 	}
 	
 	private void init() {
-
-		properties.put("COMM", "0.0");
-		properties.put("POWER", "0.0");
-		properties.put("type", "");
-		properties.put("notes", "");
-		properties.put("startTime", "");
-		properties.put("endTime", "");
-		properties.put("url", "");
-		properties.put("procedureUrl", "");
+		properties.put("COMM", DEFAULT_VALUE);
+		properties.put("POWER", DEFAULT_VALUE);
+		properties.put("type", DEFAULT_VALUE);
+		properties.put("notes", DEFAULT_VALUE);
+		properties.put("startTime", DEFAULT_VALUE);
+		properties.put("endTime", DEFAULT_VALUE);
+		properties.put("url", DEFAULT_VALUE);
+		properties.put("procedureUrl", DEFAULT_VALUE);
 	}
 	
 	public String getValue(String key) {
 		String value = "";
+		
 		if (properties.containsKey(key)) {
 			value = properties.get(key);
 		}
+		
+		if (value.equals(DEFAULT_VALUE)) value = readFields(key);
+		if (value != DEFAULT_VALUE) setValue(key, value); // save the value from older ActivityData to the map
+		
+		return value;
+	}
+	
+	// checkout whether reading from older version of Activity Data
+	private String readFields(String key) {
+		String value = "";
+		
+		if (key.equals("POWER")) value = String.valueOf(power);
+		else if (key.equals("COMM")) value = String.valueOf(comm);
+		else if (key.equals("type")) value = type;
+		else if (key.equals("notes")) value = notes;
+		else if (key.equals("startTime")) value = String.valueOf(startDate.getTime());
+		else if (key.equals("endTime")) value = String.valueOf(endDate.getTime());
+		else if (key.equals("url")) value = url;
+		else if (key.equals("procedureUrl")) value = procedureUrl;		
 		return value;
 	}
 	
 	public void setValue(String key, String value) {
-		if (properties.containsKey(key)) {
-			properties.put(key, value);
-		}
+		properties.put(key, value);		
 	}
 
 	public long getDurationTime()
@@ -81,70 +109,6 @@ public class ActivityData {
 	{		
 		long startTime = Long.parseLong(properties.get("startTime"));
 		properties.put("endTime", String.valueOf(startTime + duration));
-	}
-	
-	public double getPower() {
-		return Double.valueOf(getValue("POWER"));
-	}
-
-	public void setPower(double power) {
-		setValue("POWER", String.valueOf(power));
-	}
-
-	public double getComm() {
-		return Double.valueOf(getValue("COMM"));
-	}
-
-	public void setComm(double comm) {
-		setValue("COMM", String.valueOf(comm));
-	}
-	
-	public String getActivityType() {
-		return getValue("type");
-	}
-	
-	public void setActivityType(String type) {
-		setValue("type", type);
-	}
-	
-	public String getNotes() {
-		return getValue("notes");
-	}
-	
-	public void setNotes(String notes) {
-		setValue("notes", notes);
-	}
-
-	public Date getStartTime() {
-		return new Date(Long.valueOf(getValue("startTime")));
-	}
-
-	public void setStartDate(Date startDate) {
-		setValue("startTime", String.valueOf(startDate.getTime()));
-	}
-
-	public Date getEndTime() {
-		return new Date(Long.valueOf(getValue("endTime")));
-	}
-
-	public void setEndDate(Date endDate) {
-		setValue("endTime", String.valueOf(endDate.getTime()));
-	}
-	
-	public String getUrl() {
-		return getValue("url");
-	}
-	
-	public void setUrl(String url) {
-		setValue("url", url);
-	}
-
-	public String getProcedureUrl() {
-		return getValue("procedureUrl");
-	}
-
-	public void setProcedureUrl(String procedureUrl) {
-		setValue("procedureUrl", procedureUrl);
 	}
 	
 }
