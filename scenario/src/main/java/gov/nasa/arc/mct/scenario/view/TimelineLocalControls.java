@@ -610,7 +610,7 @@ public class TimelineLocalControls extends JPanel implements DurationCapability,
 							List<CostFunctionCapability> costs = ((CostOverlay) c).getCostFunctions();
 							String costString = "";
 							for (CostFunctionCapability cost : costs) {
-								costString += FORMAT.format(cost.getValue(time)) + "" + cost.getUnits() + " ";
+								costString += FORMAT.format(cost.getValue(time)) + "" + cost.getInstantaniousUnits() + " ";
 							}
 							if (!costString.isEmpty()) {
 								int leftX = x + getLeftPadding();

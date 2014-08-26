@@ -21,6 +21,8 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.scenario.util.CostType;
+
 public interface CostCapability {
 	/**
 	 * Get the name of this cost.
@@ -32,7 +34,8 @@ public interface CostCapability {
 	 * Get the units used for this cost (as a string)
 	 * @return the units used by this cost
 	 */
-	public String getUnits();
+	public String getInstantaniousUnits();
+	public String getAccumulativeUnits();
 
 	/**
 	 * Assess this cost at the specified time. 
@@ -53,4 +56,6 @@ public interface CostCapability {
 	 * @return true if setValue is supported; otherwise false.
 	 */
 	public boolean isMutable();
+	
+	public CostType getCostType();
 }

@@ -21,6 +21,8 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import gov.nasa.arc.mct.scenario.util.CostType;
+
 import java.util.Collection;
 
 /**
@@ -47,7 +49,8 @@ public interface CostFunctionCapability {
 	 * Get the units used for this cost (as a string)
 	 * @return the units used by this cost
 	 */
-	public String getUnits();
+	public String getInstantaniousUnits();
+	public String getAccumulativeUnits();
 	
 	/**
 	 * Assess this cost at the specified time. 
@@ -66,4 +69,6 @@ public interface CostFunctionCapability {
 	 * @return a collection of times at which costs change
 	 */
 	public Collection<Long> getChangeTimes();
+	
+	public CostType getCostType();
 }

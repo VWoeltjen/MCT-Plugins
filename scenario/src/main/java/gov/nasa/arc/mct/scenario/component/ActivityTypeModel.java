@@ -21,6 +21,10 @@
  *******************************************************************************/
 package gov.nasa.arc.mct.scenario.component;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -32,25 +36,39 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ActivityTypeModel {
 	private String url = "";
-	private double power = 0;
-	private double comms = 0;
+	private double power;
+	private double comms;
+	
+	private Map<String, Double> costs = new HashMap<String, Double> ();
+	
+	public ActivityTypeModel() {
+		costs.put("COMM", 0.0);
+		costs.put("POWER", 0.0);
+	}	
 
-	public double getPower() {
-		return power;
-	}
-	public void setPower(double power) {
-		this.power = power;
-	}
-	public double getComms() {
-		return comms;
-	}
-	public void setComms(double comms) {
-		this.comms = comms;
-	}
 	public String getUrl() {
 		return url;
 	}
 	public void setUrl(String url) {
 		this.url = url;
+	}
+	
+	public void set(String typeName, double value) {
+		costs.put(typeName, value);
+	}
+	
+	public double get(String typeName) {
+		double value = costs.get(typeName);
+		if (value == 0.0) value = (typeName.equals("POWER")) ? power : comms;
+		if (value != 0.0) costs.put(typeName, value);
+		return value;
+	}
+	
+	public Collection<String> getKeys() {
+		return costs.keySet();
+	}
+	
+	public Collection<Double> getValues() {
+		return costs.values();
 	}
 }

@@ -22,6 +22,8 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -35,89 +37,78 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ActivityData {
-
+	
+	// keep the instance variable for backward compatability
 	private double power;
 	private double comm;
-	private String type;
-	private String notes;
+	private String type = "";
+	private String notes = "";
 	private Date startDate;
 	private Date endDate;
-	private String url;
-	private String procedureUrl;
+	private String url = "";
+	private String procedureUrl = "";
+
+	private Map<String, String> properties = new HashMap<String, String> ();
+	private static final String DEFAULT_VALUE = "";
 	
-	public double getPower() {
-		return power;
-	}
-
-	public void setPower(double power) {
-		this.power = power;
-	}
-
-	public double getComm() {
-		return comm;
-	}
-
-	public void setComm(double comm) {
-		this.comm = comm;
+	public ActivityData() {
+		init();
 	}
 	
+	private void init() {
+		properties.put("COMM", DEFAULT_VALUE);
+		properties.put("POWER", DEFAULT_VALUE);
+		properties.put("type", DEFAULT_VALUE);
+		properties.put("notes", DEFAULT_VALUE);
+		properties.put("startTime", DEFAULT_VALUE);
+		properties.put("endTime", DEFAULT_VALUE);
+		properties.put("url", DEFAULT_VALUE);
+		properties.put("procedureUrl", DEFAULT_VALUE);
+	}
+	
+	public String getValue(String key) {
+		String value = "";
+		
+		if (properties.containsKey(key)) {
+			value = properties.get(key);
+		}
+		
+		if (value.equals(DEFAULT_VALUE)) value = readFields(key);
+		if (value != DEFAULT_VALUE) setValue(key, value); // save the value from older ActivityData to the map
+		
+		return value;
+	}
+	
+	// checkout whether reading from older version of Activity Data
+	private String readFields(String key) {
+		String value = "";
+		
+		if (key.equals("POWER")) value = String.valueOf(power);
+		else if (key.equals("COMM")) value = String.valueOf(comm);
+		else if (key.equals("type")) value = type;
+		else if (key.equals("notes")) value = notes;
+		else if (key.equals("startTime")) value = String.valueOf(startDate.getTime());
+		else if (key.equals("endTime")) value = String.valueOf(endDate.getTime());
+		else if (key.equals("url")) value = url;
+		else if (key.equals("procedureUrl")) value = procedureUrl;		
+		return value;
+	}
+	
+	public void setValue(String key, String value) {
+		properties.put(key, value);		
+	}
+
 	public long getDurationTime()
 	{
-		return endDate.getTime() - startDate.getTime();
+		long endTime = Long.parseLong(properties.get("endTime"));
+		long startTime = Long.parseLong(properties.get("startTime"));
+		return endTime - startTime;
 	}
 	
 	public void setDurationTime(long duration)
 	{		
-		Date endDate = new Date(this.startDate.getTime() + duration);
-		this.endDate = endDate;
-	}
-	
-	public String getActivityType() {
-		return type != null ? type : ""; // Never return null
-	}
-	
-	public void setActivityType(String type) {
-		this.type = type;
-	}
-	
-	public String getNotes() {
-		return notes != null ? notes : ""; // Never return null
-	}
-	
-	public void setNotes(String notes) {
-		this.notes = notes;
-	}
-
-	public Date getStartTime() {
-		return startDate;
-	}
-
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
-	}
-
-	public Date getEndTime() {
-		return endDate;
-	}
-
-	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
-	}
-	
-	public String getUrl() {
-		return url != null ? url : "";
-	}
-	
-	public void setUrl(String url) {
-		this.url = url;
-	}
-
-	public String getProcedureUrl() {
-		return procedureUrl != null ? procedureUrl : "";
-	}
-
-	public void setProcedureUrl(String procedureUrl) {
-		this.procedureUrl = procedureUrl;
+		long startTime = Long.parseLong(properties.get("startTime"));
+		properties.put("endTime", String.valueOf(startTime + duration));
 	}
 	
 }

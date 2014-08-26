@@ -29,16 +29,21 @@ import gov.nasa.arc.mct.components.PropertyDescriptor;
 import gov.nasa.arc.mct.components.PropertyDescriptor.VisualControlDescriptor;
 import gov.nasa.arc.mct.components.PropertyEditor;
 import gov.nasa.arc.mct.scenario.component.TimePropertyEditor.TimeProperty;
+import gov.nasa.arc.mct.scenario.util.CostType;
 import gov.nasa.arc.mct.services.component.ComponentTypeInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -50,7 +55,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * time span.
  *
  */
-public class ActivityComponent extends CostFunctionComponent implements DurationCapability {
+public class ActivityComponent extends CostFunctionComponent implements DurationCapability{
 	private ObjectManager objectManager = new ObjectManager.ExplicitObjectManager();
 	private final AtomicReference<ActivityModelRole> model = new AtomicReference<ActivityModelRole>(new ActivityModelRole());
 	
@@ -96,7 +101,10 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		}
 		if (capability.isAssignableFrom(ScenarioCSVExportCapability.class)) {
 			return capability.cast(new ScenarioCSVExportCapability(this));
-		}		
+		}	
+		if (capability.isAssignableFrom(GraphViewCapability.class)) {
+			return capability.cast(new ActivityGraphData());
+		}
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
 		    JAXBModelStatePersistence<ActivityModelRole> persistence = new JAXBModelStatePersistence<ActivityModelRole>() {
 
@@ -125,11 +133,11 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	@Override
 	public List<CostFunctionCapability> getInternalCostFunctions() {
 		List<CostFunctionCapability> internal = new ArrayList<CostFunctionCapability>();
-		if (getModel().getData().getComm() != 0.0) {
-			internal.add(new CostFunctionStub(true));
-		} 
-		if (getModel().getData().getPower() != 0.0) {
-			internal.add(new CostFunctionStub(false));
+		for(CostType type: CostType.values()) {
+			double value = Double.valueOf(getData().getValue(type.getName()));
+			if (value != 0.0) {
+				internal.add(new CostFunctionStub(type));
+			}
 		}
 		internal.addAll(getCostWrappers());
 		return internal;
@@ -211,32 +219,33 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	 * @return
 	 */
 	public String getType() {
-		return getData().getActivityType();
+		return getData().getValue("type");
 	}
 	
 	@Override
 	public long getStart() {
-		return getData().getStartTime().getTime();
+		return Long.valueOf(getData().getValue("startTime"));
 	}
 
 	@Override
 	public long getEnd() {
-		return getData().getEndTime().getTime();
+		return Long.valueOf(getData().getValue("endTime"));
 	}	
 	
 	public void setType(String type) {
-		getData().setActivityType(type);
+		getData().setValue("type", type);
 	}
 
 	@Override
 	public void setStart(long start) {
-
-		getData().setStartDate(new Date(start > 0 ? start : 0));
+		String startTime = String.valueOf(new Date(start > 0 ? start : 0).getTime());
+		getData().setValue("startTime", startTime);
 	}
 
 	@Override
 	public void setEnd(long end) {
-		getData().setEndDate(new Date(end > getStart() ? end : getStart()));
+		String endTime = String.valueOf(new Date(end > getStart() ? end : getStart()).getTime());
+		getData().setValue("endTime", endTime);
 	}
 
 	
@@ -249,26 +258,20 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 	 *
 	 */
 	private class CostFunctionStub implements CostFunctionCapability, CostCapability {
-		private boolean isComm; //Otherwise, is power
+		private CostType type;
 		
-		public CostFunctionStub(boolean isComm) {
-			super();
-			this.isComm = isComm;
+		private CostFunctionStub(CostType type) {
+			this.type = type;
 		}
 
 		@Override
 		public String getName() {
-			return isComm ? "Comms" : "Power";
-		}
-
-		@Override
-		public String getUnits() {
-			return isComm ? "Kbps" : "Watts";
+			return type.getName();
 		}
 
 		@Override
 		public double getValue() {
-			return isComm ? getData().getComm() : getData().getPower();
+			return Double.parseDouble(getData().getValue(getName()));
 		}
 		
 		@Override
@@ -282,12 +285,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public void setValue(double value) {
-			if (isComm) {
-				getData().setComm(value);
-			} else {
-				getData().setPower(value);
-			}
-			
+			getData().setValue(getName(), String.valueOf(value));			
 		}
 		
 		public boolean isMutable() {
@@ -298,7 +296,22 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		public Collection<Long> getChangeTimes() {
 			return Arrays.asList(getStart(), getEnd());
 		}
-		
+
+		@Override
+		public String getInstantaniousUnits() {
+			return type.getInstantaniousUnits();
+		}
+
+		@Override
+		public String getAccumulativeUnits() {
+			return type.getAccumulativeUnits();
+		}
+
+		@Override
+		public CostType getCostType() {
+			return type;
+		}
+
 	}
 	
 	private class CostWrapper implements CostFunctionCapability, CostCapability {
@@ -321,11 +334,6 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		}
 
 		@Override
-		public String getUnits() {
-			return baseCost.getUnits();
-		}
-
-		@Override
 		public double getValue(long time) {
 			// Report zero outside of activity duration
 			return time < getStart() || time >= getEnd() ?
@@ -333,10 +341,27 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		}
 		
 		private double getSum() {
-			double sum = 0.0;
-			for (CostCapability cost : costs) {
-				sum += cost.getValue();
-			}
+			CostType type = getCostType();
+			
+			CostCapability[] arrayType =  new CostCapability[] {};
+			CostCapability[] costArray;
+			costArray = costs.toArray(arrayType);
+		  
+		    double sum = costArray[0].getValue();
+		    int size = costs.size();
+		    if (size > 1) {
+		    	for (int i = 1; i < size; i++) {
+			    	sum = type.add(sum, costArray[i].getValue()); 
+			    }
+		    }
+		    
+			/** if (costs.size() > 1) {
+				
+				for (CostCapability cost : costs) {
+					sum = type.add(sum, cost.getValue()); 
+				} 
+				sum = type.add(sum, offset * -1);
+			} */			
 			return sum;
 		}
 
@@ -361,6 +386,21 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		@Override
 		public boolean isMutable() {
 			return false;
+		}
+
+		@Override
+		public String getInstantaniousUnits() {
+			return baseCost.getInstantaniousUnits();
+		}
+
+		@Override
+		public String getAccumulativeUnits() {
+			return baseCost.getAccumulativeUnits();
+		}
+
+		@Override
+		public CostType getCostType() {
+			return baseCost.getCostType();
 		}
 		
 		
@@ -387,8 +427,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 		@Override
 		public Object getValue() {
 			return new ActivityCustomProperty(tagPropertyEditor.getValue(), 
-					getModel().getData().getUrl(),
-					getModel().getData().getProcedureUrl());
+					getData().getValue("url"),
+					getData().getValue("procedureUrl"));
 		}
 
 		@Override
@@ -396,8 +436,8 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			if (value instanceof ActivityCustomProperty) {
 				ActivityCustomProperty property = (ActivityCustomProperty) value;
 				tagPropertyEditor.setValue(property.getTagStyleChildren());
-				getModel().getData().setUrl(property.getUrl());
-				getModel().getData().setProcedureUrl(property.getProcedureUrl());
+				getData().setValue("url", property.getUrl());
+				getData().setValue("procedureUrl", property.getProcedureUrl());
 			} else {
 				throw new IllegalArgumentException(
 						ActivityCustomProperty.class.getName() + 
@@ -436,4 +476,81 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			return procedureUrl;
 		}
 	}
+	
+	/**
+	 * graph data associated with ActivityComponent
+	 * @author jdong2
+	 *
+	 */
+	private class ActivityGraphData implements GraphViewCapability {
+		private List<CostFunctionCapability> costs;
+		
+		public ActivityGraphData() {
+			costs = getCapabilities(CostFunctionCapability.class);
+		}
+		
+		private CostFunctionCapability getCost(CostType type) {
+			for (CostFunctionCapability cost: costs) {
+				if (cost.getCostType().equals(type)) return cost;
+			}
+			return costs.get(0);
+		}
+
+		private Collection<Long> getChangeTimes(CostType type) {		
+			return new TreeSet<Long>(getCost(type).getChangeTimes());
+		}
+
+		private Map<Long, Double> getInstantaneousData(CostType type) {
+			Map<Long, Double> data = new TreeMap<Long, Double> ();
+			for (CostFunctionCapability cost: costs) {
+				if (cost.getCostType().equals(type)) {
+					for (Long t : getChangeTimes(type)) {
+						data.put(t, cost.getValue(t));
+					}
+				}			
+			}		
+			return data;
+		}
+
+		private Map<Long, Double> getAccumulativeData(CostType type) {
+			Map<Long, Double> map = new TreeMap<Long, Double> ();
+			return map;
+		}
+
+		@Override
+		public Map<Long, Double> getData(CostType type, boolean isInstantaneous) {
+			Map<Long, Double> data = (isInstantaneous? getInstantaneousData(type) : getAccumulativeData(type));	
+			return data;
+		}
+
+		@Override
+		public String getUnits(CostType type, boolean isInstantaneous) {
+			return (isInstantaneous)? type.getInstantaniousUnits() : type.getAccumulativeUnits();
+		}
+
+		@Override
+		public String getDisplayName(CostType type, boolean isInstantaneous) {
+			return type.getName();
+		}
+
+		@Override
+		public boolean hasInstantaneous(CostType type) {
+			return true;
+		}
+
+		@Override
+		public boolean hasAccumulative(CostType type) {
+			return false;
+		}
+
+		@Override
+		public boolean hasInstantaneousGraph() {
+			return true;
+		}
+
+		@Override
+		public boolean hasAccumulativeGraph() {
+			return false;
+		}
+	}	
 }

@@ -45,7 +45,7 @@ public final class NotesPropertyEditor implements PropertyEditor<Object> {
 	@Override
 	public String getAsText() {
 		if (component instanceof ActivityComponent) {
-			return ((ActivityComponent) component).getModel().getData().getNotes();
+			return ((ActivityComponent) component).getData().getValue("notes");
 		} else if (component instanceof DecisionComponent) {
 			return ((DecisionComponent) component).getModel().getData().getNotes();
 		} else {
@@ -66,7 +66,7 @@ public final class NotesPropertyEditor implements PropertyEditor<Object> {
 			throw new IllegalArgumentException("Cannot be null");
 		}
 		if (component instanceof ActivityComponent) {
-			((ActivityComponent) component).getModel().getData().setNotes(newValue);
+			((ActivityComponent) component).getData().setValue("notes", newValue);
 		} else if (component instanceof DecisionComponent) {
 			((DecisionComponent) component).getModel().getData().setNotes(newValue);
 		}			

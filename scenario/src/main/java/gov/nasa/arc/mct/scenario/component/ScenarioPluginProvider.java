@@ -224,7 +224,7 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 			if (DecisionComponent.class.isAssignableFrom(type.getTypeClass())) {
 				return assetClass.cast(new DecisionCreationWizardUI());
 			}
-			if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
+		    if (ActivityTypeComponent.class.isAssignableFrom(type.getTypeClass())) {
 				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
 				return assetClass.cast(new RepositoryWizardDecorator(
 						new ActivityTypeCreationWizardUI(),
@@ -235,6 +235,13 @@ public class ScenarioPluginProvider extends AbstractComponentProvider {
 				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
 				return assetClass.cast(new RepositoryWizardDecorator(
 						new TagCreationWizardUI(),
+						bundle.getString("prefix_tagrepo") + user
+						));
+			}
+			if (TimelineComponent.class.isAssignableFrom(type.getTypeClass())) {
+				String user = PlatformAccess.getPlatform().getCurrentUser().getUserId();
+				return assetClass.cast(new RepositoryWizardDecorator(
+						new TimelineCreationWizardUI(),
 						bundle.getString("prefix_tagrepo") + user
 						));
 			}
