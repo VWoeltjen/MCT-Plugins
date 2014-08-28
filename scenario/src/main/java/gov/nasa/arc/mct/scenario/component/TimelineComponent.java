@@ -277,6 +277,9 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 	 *
 	 */
 	private class TimelineGraphData implements GraphViewCapability {
+		
+		private boolean isLegacy = getModel().isUninitialized();
+		
 		String POWER_INSTANTANEOUS_NAME = "Current";
 		String POWER_ACCUMULATIVE_NAME = "Battery Capacity";
 		String POWER_INSANTANEOUS_UNITS = "A";
@@ -441,7 +444,7 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public boolean hasAccumulative(CostType type) {
-			return true;
+			return !isLegacy;
 		}
 
 		@Override
@@ -451,7 +454,7 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public boolean hasAccumulativeGraph() {
-			return true;
+			return !isLegacy;
 		}
 		
 	}

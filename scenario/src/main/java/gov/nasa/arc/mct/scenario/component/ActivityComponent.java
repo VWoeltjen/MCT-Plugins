@@ -103,6 +103,7 @@ public class ActivityComponent extends CostFunctionComponent implements Duration
 			return capability.cast(new ScenarioCSVExportCapability(this));
 		}	
 		if (capability.isAssignableFrom(GraphViewCapability.class)) {
+			// return capability.cast(new LegacyGraphData(this));
 			return capability.cast(new ActivityGraphData());
 		}
 		if (capability.isAssignableFrom(ModelStatePersistence.class)) {
