@@ -30,5 +30,7 @@ public class BatteryModel {
 		this.initialStateOfCharge = initialStateOfCharge;
 	}
 	
-	
+	public boolean isUninitialized() {
+		return (batteryCapacity == 0.0) && (initialStateOfCharge == 0.0);
+	}
 }
