@@ -41,6 +41,7 @@ public class LegacyGraphData implements GraphViewCapability {
 				for (Long t : getChangeTimes(type)) {
 					data.put(t, cost.getValue(t));
 				}
+				if (!data.containsKey(0l)) data.put(0l, 0.0);
 			}			
 		}		
 		return data;
