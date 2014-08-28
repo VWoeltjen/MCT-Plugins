@@ -9,6 +9,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+/**
+ * Graph data showing Power and Comm usage
+ * 
+ * @author jdong2
+ *
+ */
 public class LegacyGraphData implements GraphViewCapability {
 
 	private List<CostFunctionCapability> costs;

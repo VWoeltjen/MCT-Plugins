@@ -65,6 +65,10 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		model.set(new BatteryModel(capacity, stateOfCharge));
 	}
 	
+	private boolean isLegacy() {
+		return getModel().isUninitialized();
+	}
+	
 	@Override
 	protected <T> T handleGetCapability(Class<T> capability) {
 		if (capability.isAssignableFrom(getClass())) {
@@ -74,7 +78,8 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		} else if (capability.isAssignableFrom(ScenarioCSVExportCapability.class)) {
 			return capability.cast(new ScenarioCSVExportCapability(this));
 		} else if (capability.isAssignableFrom(GraphViewCapability.class)) {
-			return capability.cast(new TimelineGraphData());
+			if (isLegacy()) return capability.cast(new LegacyGraphData(this));
+			else return capability.cast(new TimelineGraphData());
 		} else if (capability.isAssignableFrom(ModelStatePersistence.class)) {
 		    JAXBModelStatePersistence<BatteryModel> persistence = new JAXBModelStatePersistence<BatteryModel>() {
 
@@ -102,25 +107,30 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 	
 	@Override
 	public List<PropertyDescriptor> getFieldDescriptors()  {
-
-		// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
-		List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
-
-		// We specify a mutable text field.  The control display's values are maintained in the business model
-		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
-		PropertyDescriptor batteryState = new PropertyDescriptor("Battery State of Charge (%)", 
-				new BatteryStatePropertyEditor(), 
-				VisualControlDescriptor.TextField);
-		batteryState.setFieldMutable(true);
-		fields.add(batteryState);
 		
-		PropertyDescriptor batteryCapacity = new PropertyDescriptor("Battery Total Capacity", 
-				new BatteryCapacityPropertyEditor(), 
-				VisualControlDescriptor.TextField);
-		batteryCapacity.setFieldMutable(true);
-		fields.add(batteryCapacity);
+		if (!isLegacy()) {
+			// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
+			List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
 
-		return fields;
+			// We specify a mutable text field.  The control display's values are maintained in the business model
+			// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
+			PropertyDescriptor batteryState = new PropertyDescriptor("Battery State of Charge (%)", 
+					new BatteryStatePropertyEditor(), 
+					VisualControlDescriptor.TextField);
+			batteryState.setFieldMutable(true);
+			fields.add(batteryState);
+			
+			PropertyDescriptor batteryCapacity = new PropertyDescriptor("Battery Total Capacity", 
+					new BatteryCapacityPropertyEditor(), 
+					VisualControlDescriptor.TextField);
+			batteryCapacity.setFieldMutable(true);
+			fields.add(batteryCapacity);
+
+			return fields;
+		} else { // not showing fields of BatteryModel for older Timelines 
+			return super.getFieldDescriptors();
+		}
+		
 	} 
 	
 	@Override
@@ -277,8 +287,6 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 	 *
 	 */
 	private class TimelineGraphData implements GraphViewCapability {
-		
-		private boolean isLegacy = getModel().isUninitialized();
 		
 		String POWER_INSTANTANEOUS_NAME = "Current";
 		String POWER_ACCUMULATIVE_NAME = "Battery Capacity";
@@ -444,7 +452,7 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public boolean hasAccumulative(CostType type) {
-			return !isLegacy;
+			return true;
 		}
 
 		@Override
@@ -454,7 +462,7 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 
 		@Override
 		public boolean hasAccumulativeGraph() {
-			return !isLegacy;
+			return true;
 		}
 		
 	}
