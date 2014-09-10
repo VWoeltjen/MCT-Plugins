@@ -21,14 +21,14 @@
 	      <filtered>true</filtered>
 	      <fileMode>0777</fileMode>
 	    </file>
-	    <file>
-	      <source>src/main/resources/battery-table.csv</source>
-	      <outputDirectory>resources</outputDirectory>
-	      <filtered>true</filtered>
-	      <fileMode>0777</fileMode>
-	    </file>
     </files>
     <fileSets>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory>resources</outputDirectory>
+            <includes><include>*.csv</include></includes>
+            <fileMode>0777</fileMode>
+        </fileSet>
     	<fileSet>
     		<directory>${project.build.directory}/platform.dir/mct-platform-${mct.platform.version}</directory>
     		<outputDirectory></outputDirectory>
