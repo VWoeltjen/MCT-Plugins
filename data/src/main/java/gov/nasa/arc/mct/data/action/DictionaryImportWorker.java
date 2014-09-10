@@ -33,8 +33,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.SwingWorker;
 
@@ -56,9 +57,10 @@ public class DictionaryImportWorker extends SwingWorker<Boolean, Void> {
 	
 	public DictionaryImportWorker(AbstractComponent component, File file) {
 		super();
-		this.parent = component;
+		
 		this.file = file;
 		this.registry = PlatformAccess.getPlatform().getComponentRegistry();
+		this.parent = registry.getComponent(component.getComponentId());
 		
 		if (component == null || file == null) {
 			throw new IllegalArgumentException();
@@ -75,15 +77,17 @@ public class DictionaryImportWorker extends SwingWorker<Boolean, Void> {
 	}
 	
 	private Boolean parseDictionary(File file) {
-		List<AbstractComponent> components = new ArrayList<AbstractComponent> ();
+		Map<String, AbstractComponent> components = new HashMap<String, AbstractComponent> ();
 		BufferedReader r = null;
 		boolean success = true;
 
 		try {
 			r = new BufferedReader(new FileReader(file));
 			String reference = null;
-			while ((reference = r.readLine()) != null) {				
-				components.add(createDataComponent(reference, parent));
+			while ((reference = r.readLine()) != null) {	
+				if (!components.containsKey(reference)) {
+					components.put(reference, createDataComponent(reference, parent));				}
+				
 			}			
 		} catch(IOException ioe) {
 			success = false;
@@ -98,25 +102,35 @@ public class DictionaryImportWorker extends SwingWorker<Boolean, Void> {
 				}
 			}
 		}
-		components.add(parent);
+		List<AbstractComponent> toPersist = new ArrayList<AbstractComponent>();
+		toPersist.addAll(components.values());
+		toPersist.add(parent);
+		
 		// save to database
-		PlatformAccess.getPlatform().getPersistenceProvider().persist(components);
+		PlatformAccess.getPlatform().getPersistenceProvider().persist(toPersist);
 		
 		return success;
 	}
 	
 	private AbstractComponent createDataComponent(String reference, AbstractComponent parent) {
-		AbstractComponent dataComponent = registry.newInstance(DataComponent.class, parent);
-		dataComponent.setExternalKey(reference);
-		dataComponent.setDisplayName(reference);
-		if ((dataComponent instanceof DataComponent) && (parent instanceof DataTaxonomyComponent)) {
-			((DataComponent)dataComponent).setParent((DataTaxonomyComponent)parent);
+		String id = DataComponent.PREFIX + reference;
+		AbstractComponent dataComponent = PlatformAccess.getPlatform().getComponentRegistry().getComponent(id);
+		if (dataComponent == null) {
+			dataComponent = registry.newInstance(DataComponent.class, parent);
+			dataComponent.setExternalKey(reference);
+			dataComponent.setDisplayName(reference);
+			if ((dataComponent instanceof DataComponent) && (parent instanceof DataTaxonomyComponent)) {
+				((DataComponent)dataComponent).setParent((DataTaxonomyComponent)parent);
+			}
+					
+			ComponentInitializer dataComponentCapability = dataComponent.getCapability(ComponentInitializer.class);
+	        dataComponentCapability.setId(DataComponent.PREFIX + dataComponent.getExternalKey());
+	        dataComponentCapability.setOwner(BundleAccess.BUNDLE.getString("data_owner"));
+	        dataComponentCapability.setCreator(BundleAccess.BUNDLE.getString("data_owner"));        
+	        
+	        dataComponent.save();
 		}
-				
-		ComponentInitializer dataComponentCapability = dataComponent.getCapability(ComponentInitializer.class);
-        dataComponentCapability.setId(DataComponent.PREFIX + dataComponent.getExternalKey());
-        dataComponentCapability.setOwner(BundleAccess.BUNDLE.getString("data_owner"));
-        dataComponentCapability.setCreator(BundleAccess.BUNDLE.getString("data_owner"));        
+		
 		return dataComponent;
 	}
 
