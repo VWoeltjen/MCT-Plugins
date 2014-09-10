@@ -31,6 +31,6 @@ public class BatteryModel {
 	}
 	
 	public boolean isUninitialized() {
-		return (batteryCapacity == 0.0) && (initialStateOfCharge == 0.0);
+		return (batteryCapacity == 0.0) || (initialStateOfCharge == 0.0);
 	}
 }

@@ -1,9 +1,8 @@
 package gov.nasa.arc.mct.scenario.util;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.HashMap;
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 
 /**
@@ -17,7 +16,8 @@ import java.util.Scanner;
  *
  */
 public class BatteryVoltageTable {
-	private String fileName;
+	private static final String FILE = ResourceBundle.getBundle("Bundle").getString("BATTERY_FILE");
+	
 	// need to change to HashMap, using LinkedHashMap for debugging purposes
 	private Map<Double, Double> voltageMap = new LinkedHashMap<Double, Double> ();
 	private double modifiedState = 100.0; //the modified state of charge which are in 50th
@@ -26,27 +26,18 @@ public class BatteryVoltageTable {
 	private static final double INTERVAL = 0.5; // battery state of charge are in 0.5% precision
 	
 	public BatteryVoltageTable() {
-		this("/Users/jdong2/Documents/NASA/RP Battery Model"
-				+ "/Boston Power Swing 5300 SoC to Voltage Table.csv");
-	}
-	
-	public BatteryVoltageTable(String file) {
-		this.fileName = file;
 		this.parseFile();
 	}
 	
 	public void parseFile() {
-		File file = new File(fileName);
-		try {
-			Scanner fileScanner = new Scanner(file);
+		InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(FILE);
+		if (in != null) {
+			Scanner fileScanner = new Scanner(in, "UTF-8");
 			while (fileScanner.hasNextLine() && success) {
 				String line = fileScanner.nextLine();
 				parseLine(line);
 			}
-		} catch (FileNotFoundException e) {
-			System.out.println(fileName + "does not exist.");
-			e.printStackTrace();
-		}
+		}		
 	}
 	
 	private void parseLine(String line) {
@@ -71,6 +62,11 @@ public class BatteryVoltageTable {
 		return voltageMap;
 	}
 	
+	/**
+	 * round the currentState to the nearest state based on the specified INTERVAL
+	 * @param realState
+	 * @return
+	 */
 	public static double getNearestState(double realState) {
 		double upper = Math.ceil(realState / INTERVAL) * INTERVAL;
 		double lower = Math.floor(realState / INTERVAL) * INTERVAL;
@@ -81,13 +77,19 @@ public class BatteryVoltageTable {
 	public double getVoltage(double realState) {
 		return voltageMap.get(getNearestState(realState));
 	}
+	
+	
+	public static boolean isBatteryFileExists() {
+		return ClassLoader.getSystemClassLoader().getResourceAsStream(FILE) != null;
+	}
 
-	public static void main(String[] args) {
-		BatteryVoltageTable table = new BatteryVoltageTable();
-		table.parseFile();
-		for (Object key: table.getVoltageMap().keySet()) {
-			System.out.println(key + ": " + table.getVoltageMap().get(key));
-		}
-		System.out.println(table.getVoltage(44.6) + ", " + table.getVoltage(85.36));
+	public static void main(String[] args) {			
+		if (BatteryVoltageTable.isBatteryFileExists()) {
+			BatteryVoltageTable table = new BatteryVoltageTable();
+			for (Object key: table.getVoltageMap().keySet()) {
+				System.out.println(key + ": " + table.getVoltageMap().get(key));
+			}
+			System.out.println(table.getVoltage(44.6) + ", " + table.getVoltage(85.36));
+		}		
 	}
 }

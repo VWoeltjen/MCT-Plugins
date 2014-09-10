@@ -22,17 +22,14 @@
 package gov.nasa.arc.mct.scenario.component;
 
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicReference;
 
 import gov.nasa.arc.mct.components.AbstractComponent;
-import gov.nasa.arc.mct.scenario.util.CostType;
 import gov.nasa.arc.mct.services.component.ComponentRegistry;
 import gov.nasa.arc.mct.services.component.CreateWizardUI;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
