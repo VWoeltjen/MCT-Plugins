@@ -78,7 +78,7 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 		} else if (capability.isAssignableFrom(ScenarioCSVExportCapability.class)) {
 			return capability.cast(new ScenarioCSVExportCapability(this));
 		} else if (capability.isAssignableFrom(GraphViewCapability.class)) {
-			if (isLegacy()) return capability.cast(new LegacyGraphData(this));
+			if (isLegacy() || !BatteryVoltageTable.isBatteryFileExists()) return capability.cast(new LegacyGraphData(this));
 			else return capability.cast(new TimelineGraphData());
 		} else if (capability.isAssignableFrom(ModelStatePersistence.class)) {
 		    JAXBModelStatePersistence<BatteryModel> persistence = new JAXBModelStatePersistence<BatteryModel>() {
@@ -107,30 +107,24 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 	
 	@Override
 	public List<PropertyDescriptor> getFieldDescriptors()  {
-		
-		if (!isLegacy()) {
-			// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
-			List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
+		// Provide an ordered list of fields to be included in the MCT Platform's InfoView.
+		List<PropertyDescriptor> fields = new ArrayList<PropertyDescriptor>();
 
-			// We specify a mutable text field.  The control display's values are maintained in the business model
-			// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
-			PropertyDescriptor batteryState = new PropertyDescriptor("Battery State of Charge (%)", 
-					new BatteryStatePropertyEditor(), 
-					VisualControlDescriptor.TextField);
-			batteryState.setFieldMutable(true);
-			fields.add(batteryState);
-			
-			PropertyDescriptor batteryCapacity = new PropertyDescriptor("Battery Total Capacity", 
-					new BatteryCapacityPropertyEditor(), 
-					VisualControlDescriptor.TextField);
-			batteryCapacity.setFieldMutable(true);
-			fields.add(batteryCapacity);
-
-			return fields;
-		} else { // not showing fields of BatteryModel for older Timelines 
-			return super.getFieldDescriptors();
-		}
+		// We specify a mutable text field.  The control display's values are maintained in the business model
+		// via the PropertyEditor object.  When a new value is to be set, the editor also validates the prospective value.
+		PropertyDescriptor batteryState = new PropertyDescriptor("Battery State of Charge (%)", 
+				new BatteryStatePropertyEditor(), 
+				VisualControlDescriptor.TextField);
+		batteryState.setFieldMutable(true);
+		fields.add(batteryState);
 		
+		PropertyDescriptor batteryCapacity = new PropertyDescriptor("Battery Total Capacity", 
+				new BatteryCapacityPropertyEditor(), 
+				VisualControlDescriptor.TextField);
+		batteryCapacity.setFieldMutable(true);
+		fields.add(batteryCapacity);
+
+		return fields;		
 	} 
 	
 	@Override
@@ -204,7 +198,7 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 			} 
 			try {
 				double state = Double.parseDouble(s);
-				if ((state <= 0.0) || (state > 100.0)) {
+				if ((state < 0.0) || (state > 100.0)) {
 					message = "Must be within 0.0 ~ 100.0";
 				}
 			} catch (NumberFormatException e) {
@@ -255,7 +249,7 @@ public class TimelineComponent extends CostFunctionComponent implements Duration
 			} 
 			try {
 				double capacity = Double.parseDouble(s);
-				if (capacity <= 0.0) {
+				if (capacity < 0.0) {
 					message = "Cannot be negative";
 				}
 			} catch (NumberFormatException e) {

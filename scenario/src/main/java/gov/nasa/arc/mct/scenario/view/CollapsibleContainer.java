@@ -115,7 +115,7 @@ public class CollapsibleContainer extends JPanel {
 		final GraphView graphView = (GraphView) view;
 		
 		if (graphView.hasInstantaneousGraph()) {
-			JToggleButton instantButton = new JToggleButton("Instantanious Graph", true);
+			JToggleButton instantButton = new JToggleButton("Instantaneous Graph", true);
 			instantButton.addChangeListener(new ChangeListener() {
 
 				@Override

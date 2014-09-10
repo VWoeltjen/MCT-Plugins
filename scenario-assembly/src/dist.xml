@@ -21,6 +21,12 @@
 	      <filtered>true</filtered>
 	      <fileMode>0777</fileMode>
 	    </file>
+	    <file>
+	      <source>src/main/resources/battery-table.csv</source>
+	      <outputDirectory>resources</outputDirectory>
+	      <filtered>true</filtered>
+	      <fileMode>0777</fileMode>
+	    </file>
     </files>
     <fileSets>
     	<fileSet>
